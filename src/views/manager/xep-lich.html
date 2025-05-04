@@ -60,8 +60,7 @@
                 <!-- Thống kê ca làm việc theo ngày - đã cập nhật -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Thống kê ca làm việc theo ngày</h5>
-                        <span class="text-muted small" id="stats-date-range"></span>
+                        <h6 class="mb-0" id="role-stats-date">Chọn ngày để xem thống kê</h6>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -99,7 +98,10 @@
                             <table class="table table-hover" id="unregisteredEmployeesTable">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width: 50px"><input type="checkbox" id="select-all-employees"></th>
+                                        <th style="width: 50px">
+                                            <input type="checkbox" id="select-all-employees">
+                                            <label for="select-all-employees" class="visually-hidden">Chọn tất cả nhân viên</label>
+                                        </th>
                                         <th>Mã NV</th>
                                         <th>Tên nhân viên</th>
                                         <th>Chức vụ</th>
@@ -214,32 +216,78 @@
                         </nav>
                     </div>
 
-                    <!-- Legend hiển thị số lượng trạng thái -->
-                    <div class="mb-4">
-                        <ul class="list-inline">
-                            <li class="list-inline-item"><h5>Trạng thái:</h5></li>
-                            <li class="list-inline-item">
+                    <!-- Legend hiển thị số lượng trạng thái dạng Accordion -->
+                    <div class="accordion mb-4" id="statusAccordion">
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="statusHeader">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#statusCollapse" aria-expanded="true" aria-controls="statusCollapse">
+                            <ul class="list-inline mb-0 d-flex align-items-center w-100">
+                              <li class="list-inline-item"><h5 class="mb-0">Trạng thái:</h5></li>
+                              <li class="list-inline-item">
                                 <span class="status-badge status-pending">Chờ duyệt (<span id="pending-count">0</span>)</span>
-                            </li>
-                            <li class="list-inline-item">
+                              </li>
+                              <li class="list-inline-item">
                                 <span class="status-badge status-approved">Đã duyệt (<span id="approved-count">0</span>)</span>
-                            </li>
-                            <li class="list-inline-item">
+                              </li>
+                              <li class="list-inline-item">
                                 <span class="status-badge status-timekeeping">Chấm công (<span id="timekeeping-count">0</span>)</span>
-                            </li>
-                            <li class="list-inline-item">
+                              </li>
+                              <li class="list-inline-item">
                                 <span class="status-badge status-confirmed">Đã chấm (<span id="confirmed-count">0</span>)</span>
-                            </li>
-                            <li class="list-inline-item">
+                              </li>
+                              <li class="list-inline-item">
                                 <span class="status-badge status-rejected">Đã từ chối (<span id="rejected-count">0</span>)</span>
-                            </li>
-                        </ul>
+                              </li>
+                            </ul>
+                          </button>
+                        </h2>
+                        <div id="statusCollapse" class="accordion-collapse collapse" aria-labelledby="statusHeader" data-bs-parent="#statusAccordion">
+                          <div class="accordion-body p-0">
+                            <div class="table-responsive">
+                              <table class="table table-bordered table-hover mb-0" id="roleStatsTable">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th rowspan="2" class="align-middle">Chức vụ</th>
+                                    <th class="text-center">Ca sáng (6:00-14:00)</th>
+                                    <th class="text-center">Ca chiều (14:00-22:00)</th>
+                                    <th rowspan="2" class="align-middle text-center">Tổng</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>Phục vụ</td>
+                                    <td id="waiter-morning-count" class="text-center">0</td>
+                                    <td id="waiter-afternoon-count" class="text-center">0</td>
+                                    <td id="waiter-total" class="text-center">0</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Đầu bếp</td>
+                                    <td id="chef-morning-count" class="text-center">0</td>
+                                    <td id="chef-afternoon-count" class="text-center">0</td>
+                                    <td id="chef-total" class="text-center">0</td>
+                                  </tr>
+                                  <tr class="table-secondary">
+                                    <td><strong>Tổng cộng</strong></td>
+                                    <td id="total-morning-count" class="text-center"><strong>0</strong></td>
+                                    <td id="total-afternoon-count" class="text-center"><strong>0</strong></td>
+                                    <td id="grand-total" class="text-center"><strong>0</strong></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
                         <div class="table-responsive">
                             <table class="table table-hover" id="registerShiftTable">
                                 <thead>
                                     <tr>
-                                        <th style="width: 50px"><input type="checkbox" id="select-all"></th>
+                                        <th style="width: 50px">
+                                            <input type="checkbox" id="select-all">
+                                            <label for="select-all" class="visually-hidden">Chọn tất cả ca làm việc</label>
+                                        </th>
                                         <th>Nhân viên</th>
                                         <th>Ca làm việc</th>
                                         <th>Trạng thái</th>
@@ -402,7 +450,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Chọn ngày làm việc</label>
+                        <label for="assign-day" class="form-label">Chọn ngày làm việc</label>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
