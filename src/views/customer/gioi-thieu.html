@@ -1,0 +1,105 @@
+<%- include('../layouts/customer.html', {
+    title: 'Giới thiệu',
+    styles: '<link rel="stylesheet" href="/css/customer/gioi-thieu.css">',
+    scripts: '<script src="/js/customer/gioi-thieu.js"></script>',
+    body: `
+    <!-- Hero Section -->
+    <section class="about-hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="display-4 fw-bold mb-4">Nhà Hàng ND</h1>
+                    <div class="section-divider mb-4"></div>
+                    <p class="lead">Nơi hội tụ tinh hoa ẩm thực Việt Nam với không gian sang trọng và dịch vụ chuyên nghiệp.</p>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/logo.jpg" alt="Nhà hàng XYZ" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section class="our-story py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/story.jpg" width="500px" alt="Câu chuyện của chúng tôi" class="img-fluid rounded shadow">
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h2 class="fw-bold mb-4">Câu Chuyện Của Chúng Tôi</h2>
+                    <div class="section-divider mb-4"></div>
+                    <p>Được thành lập từ năm 2010, Nhà hàng ND đã trở thành điểm đến ẩm thực yêu thích của nhiều thực khách...</p>
+                    <p>Chúng tôi tự hào mang đến những trải nghiệm ẩm thực độc đáo với menu đa dạng, từ các món ăn truyền thống đến các món fusion sáng tạo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="our-values py-5">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="fw-bold">Giá Trị Cốt Lõi</h2>
+                <div class="section-divider mx-auto mb-4"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="value-card text-center p-4">
+                        <i class="fas fa-star-half-alt value-icon mb-3"></i>
+                        <h4 class="mb-3">Chất Lượng</h4>
+                        <p>Cam kết sử dụng nguyên liệu tươi ngon nhất và quy trình chế biến đảm bảo vệ sinh an toàn thực phẩm.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="value-card text-center p-4">
+                        <i class="fas fa-hands-helping value-icon mb-3"></i>
+                        <h4 class="mb-3">Dịch Vụ</h4>
+                        <p>Đội ngũ nhân viên chuyên nghiệp, tận tâm, luôn sẵn sàng phục vụ quý khách với nụ cười thân thiện.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="value-card text-center p-4">
+                        <i class="fas fa-heart value-icon mb-3"></i>
+                        <h4 class="mb-3">Trải Nghiệm</h4>
+                        <p>Không gian sang trọng, ấm cúng cùng những món ăn đặc sắc tạo nên trải nghiệm ẩm thực hoàn hảo cho mọi thực khách.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="our-team py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="fw-bold">Đội Ngũ Của Chúng Tôi</h2>
+                <div class="section-divider mx-auto mb-4"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="team-member text-center">
+                        <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/christine-ha.jpg" alt="Chef" class="img-fluid rounded-circle mb-3">
+                        <h4>Christine Hà</h4>
+                        <p class="text-muted">Bếp Trưởng</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="team-member text-center">
+                        <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/pham-tuan-hai.jpg" alt="Chef" class="img-fluid rounded-circle mb-3">
+                        <h4>Phạm Tuấn Hải</h4>
+                        <p class="text-muted">Bếp Phó</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="team-member text-center">
+                        <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/luke-nguyen.jpg" alt="Manager" class="img-fluid rounded-circle mb-3">
+                        <h4>Luke Nguyễn</h4>
+                        <p class="text-muted">Quản Lý</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    `
+}) %>

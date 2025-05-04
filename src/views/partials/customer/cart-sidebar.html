@@ -1,0 +1,34 @@
+
+<style>
+    .fixed-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1050; /* Cao hơn các phần tử khác */
+    }
+    
+    body {
+        padding-top: 120px; /* Đảm bảo nội dung bắt đầu dưới header cố định */
+    }
+    
+    .offcanvas {
+        z-index: 1060; /* Cao hơn header, để giỏ hàng xuất hiện trên header */
+    }
+    
+</style>
+<div class="offcanvas offcanvas-end" tabindex="-1" id="cartSidebar" aria-labelledby="cartSidebarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="cartSidebarLabel">Giỏ hàng của bạn</h5>
+        <button type="button" id="cartClose" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="cart-items-container">
+                
+                
+                
+                
+
+        </div>
+    </div>
+</div>

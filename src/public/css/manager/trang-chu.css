@@ -1,0 +1,234 @@
+.dashboard-container {
+    padding-bottom: 30px;
+}
+
+/* Welcome banner styles */
+.welcome-banner {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Summary cards */
+.summary-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+}
+
+.icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.bg-light-primary {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.bg-light-success {
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-light-info {
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.bg-light-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.bg-light-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Table styles */
+.table {
+    vertical-align: middle;
+}
+
+.today-row {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Notification styles */
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: rgba(13, 110, 253, 0.03);
+}
+
+.notification-item .icon-box {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-content p {
+    margin-bottom: 5px;
+}
+
+/* Quick actions */
+.quick-action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.quick-action-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-3px);
+    color: #0d6efd;
+}
+
+.quick-action-item .icon-box {
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.quick-action-item h6 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Chart styles */
+#performance-chart {
+    height: 300px;
+}
+
+.chart-period-selector .btn {
+    margin-left: 5px;
+}
+
+/* Task list */
+.task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.task-list li:last-child {
+    border-bottom: none;
+}
+
+.task-list .form-check {
+    margin: 0;
+}
+
+.task-list .form-check-label {
+    padding-left: 5px;
+}
+
+.task-list .form-check-label.completed {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+/* Thêm vào trang-chu.css */
+#performance-chart.loading {
+    opacity: 0.5;
+    position: relative;
+}
+
+#performance-chart.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    margin-left: -20px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.chart-period-selector .btn {
+    transition: all 0.3s;
+}
+
+.chart-period-selector .btn.active {
+    background-color: #2E93fA;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .summary-card {
+        margin-bottom: 20px;
+    }
+    
+    .notification-item .icon-box {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+    
+    .quick-action-item .icon-box {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .table {
+        font-size: 0.875rem;
+    }
+}

@@ -1,0 +1,33 @@
+<%- include('../layouts/customer.html', {
+    title: 'Thực đơn',
+    styles: '<link rel="stylesheet" href="/css/customer/thuc-don.css">',
+    scripts: '<script src="/js/customer/thuc-don.js"></script>',
+    body: `
+    <!-- Hero Section -->
+    <section class="menu-hero-section py-5 bg-light">
+        <div class="container">
+            <div class="text-center" data-aos="fade-up">
+                <h1 class="display-4 fw-bold mb-4">Thực Đơn</h1>
+                <div class="section-divider mx-auto my-4"></div>
+                <p class="lead mb-0">Khám phá menu đa dạng với những món ăn đặc sắc</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Categories Section -->
+    <section class="menu-categories py-5">
+        <div class="container">
+            <div id="danhSachLoaiMonAn" class="menu-filter mb-5" data-aos="fade-up">
+                <ul class="nav nav-pills justify-content-center" id="danhSachLoaiMonList">
+                    
+                </ul>
+            </div>
+
+            <div id="danhSachMonAn" class="row g-4">
+                <!-- Menu Item Card -->
+            </div>
+        </div>
+    </section>
+    `,
+    isMenu: true  // Add the isMenu property here
+}) %>

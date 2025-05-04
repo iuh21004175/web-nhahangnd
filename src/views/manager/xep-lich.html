@@ -1,0 +1,461 @@
+<%- include('../layouts/manager.html', {
+    title: 'Xếp lịch',
+    styles: '<link rel="stylesheet" href="/css/manager/xep-lich.css">',
+    scripts: '<script src="/js/manager/xep-lich.js"></script>',
+    body: `
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs mb-4" id="scheduleTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="assignment-tab" data-bs-toggle="tab" data-bs-target="#assignment" type="button" role="tab" aria-controls="assignment" aria-selected="true">
+                <i class="fas fa-calendar-alt me-2"></i>Phân công
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval" type="button" role="tab" aria-controls="approval" aria-selected="false">
+                <i class="fas fa-check-circle me-2"></i>Duyệt ca
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab content -->
+    <div class="tab-content" id="scheduleTabContent">
+        <!-- Tab Phân công -->
+        <div class="tab-pane fade show active" id="assignment" role="tabpanel" aria-labelledby="assignment-tab">
+            <div class="phan-cong-container">
+                <!-- Bộ lọc -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Chọn thời gian phân công</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label for="assignment-week-filter" class="form-label">Tuần</label>
+                                    <select class="form-control" id="assignment-week-filter">
+                                        <!-- Options sẽ được thêm bằng JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="assignment-role-filter" class="form-label">Bộ phận</label>
+                                    <select class="form-control" id="assignment-role-filter">
+                                        <option value="all">Tất cả bộ phận</option>
+                                        <option value="0">Phục vụ</option>
+                                        <option value="1">Đầu bếp</option>
+                                        <option value="2">Thu ngân</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary btn-block w-100" id="btn-refresh-stats">
+                                    <i class="fas fa-sync-alt me-2"></i>Cập nhật thống kê
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Thống kê ca làm việc theo ngày - đã cập nhật -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Thống kê ca làm việc theo ngày</h5>
+                        <span class="text-muted small" id="stats-date-range"></span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dailyStatsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th class="text-center">Ca sáng<br><small class="text-muted">(6:00-14:00)</small></th>
+                                        <th class="text-center">Ca chiều<br><small class="text-muted">(14:00-22:00)</small></th>
+                                        <th class="text-center">Đã duyệt</th>
+                                        <th class="text-center">Chờ duyệt</th>
+                                        <th class="text-center">Đang chấm</th>
+                                        <th class="text-center">Đã chấm</th>
+                                        <th class="text-center">Từ chối</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách nhân viên chưa đăng ký ca -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Nhân viên chưa đăng ký ca làm việc</h5>
+                        <button class="btn btn-success" id="btn-assign-shift">
+                            <i class="fas fa-plus me-2"></i>Phân công ca
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="unregisteredEmployeesTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px"><input type="checkbox" id="select-all-employees"></th>
+                                        <th>Mã NV</th>
+                                        <th>Tên nhân viên</th>
+                                        <th>Chức vụ</th>
+                                        <th>Tổng ca đăng ký</th>
+                                        <th>Lần đăng ký cuối</th>
+                                        <th style="width: 100px">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng lịch phân công theo tuần -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Lịch làm việc tuần</h5>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" id="btn-export-schedule">
+                                <i class="fas fa-file-export me-2"></i>Xuất Excel
+                            </button>
+                            <button class="btn btn-outline-primary" id="btn-print-schedule">
+                                <i class="fas fa-print me-2"></i>In lịch
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="weeklyScheduleTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 200px">Nhân viên</th>
+                                        <th>Thứ hai<br><span class="day-date" id="monday-schedule"></span></th>
+                                        <th>Thứ ba<br><span class="day-date" id="tuesday-schedule"></span></th>
+                                        <th>Thứ tư<br><span class="day-date" id="wednesday-schedule"></span></th>
+                                        <th>Thứ năm<br><span class="day-date" id="thursday-schedule"></span></th>
+                                        <th>Thứ sáu<br><span class="day-date" id="friday-schedule"></span></th>
+                                        <th>Thứ bảy<br><span class="day-date" id="saturday-schedule"></span></th>
+                                        <th>Chủ nhật<br><span class="day-date" id="sunday-schedule"></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dữ liệu phân công sẽ được thêm bằng JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Duyệt ca -->
+        <div class="tab-pane fade" id="approval" role="tabpanel" aria-labelledby="approval-tab">
+            <div class="duyet-ca-container">
+                <!-- Bảng danh sách đăng ký ca -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <select id="week-select" class="form-select form-select-sm custom-select-sm d-inline-block" style="width: auto; max-width: 300px;">
+                                    <!-- Options sẽ được thêm bằng JavaScript -->
+                                </select>
+                                <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
+                                    <option value="all">Chức vụ: Tất cả</option>
+                                    <option value="0">Chức vụ: Phục vụ</option>
+                                    <option value="1">Chức vụ: Đầu bếp</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button id="btn-save" class="btn btn-success" disabled>
+                                    <i class="fas fa-save me-2"></i>Lưu
+                                </button>
+                                <button id="btn-cancel" class="btn btn-secondary" disabled>
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </button>
+                                <button id="btn-bulk-approve" class="btn btn-primary" disabled>
+                                    <i class="fas fa-check-circle me-2"></i>Duyệt đã chọn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                    <!-- Thanh điều hướng từ thứ 2 đến chủ nhật -->
+                    <div class="d-flex justify-content-center">
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="monday-nav">Thứ hai<br><span id="monday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="tuesday-nav">Thứ ba<br><span id="tuesday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="wednesday-nav">Thứ tư<br><span id="wednesday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="thursday-nav">Thứ năm<br><span id="thursday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="friday-nav">Thứ sáu<br><span id="friday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="saturday-nav">Thứ bảy<br><span id="saturday-date"></span></a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="sunday-nav">Chủ nhật<br><span id="sunday-date"></span></a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- Legend hiển thị số lượng trạng thái -->
+                    <div class="mb-4">
+                        <ul class="list-inline">
+                            <li class="list-inline-item"><h5>Trạng thái:</h5></li>
+                            <li class="list-inline-item">
+                                <span class="status-badge status-pending">Chờ duyệt (<span id="pending-count">0</span>)</span>
+                            </li>
+                            <li class="list-inline-item">
+                                <span class="status-badge status-approved">Đã duyệt (<span id="approved-count">0</span>)</span>
+                            </li>
+                            <li class="list-inline-item">
+                                <span class="status-badge status-timekeeping">Chấm công (<span id="timekeeping-count">0</span>)</span>
+                            </li>
+                            <li class="list-inline-item">
+                                <span class="status-badge status-confirmed">Đã chấm (<span id="confirmed-count">0</span>)</span>
+                            </li>
+                            <li class="list-inline-item">
+                                <span class="status-badge status-rejected">Đã từ chối (<span id="rejected-count">0</span>)</span>
+                            </li>
+                        </ul>
+                    </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="registerShiftTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px"><input type="checkbox" id="select-all"></th>
+                                        <th>Nhân viên</th>
+                                        <th>Ca làm việc</th>
+                                        <th>Trạng thái</th>
+                                        <th style="width: 120px">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                     <!-- Dữ liệu đăng ký ca sẽ được thêm bằng JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal xác nhận duyệt -->
+    <div class="modal fade" id="approveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận duyệt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn duyệt ca làm việc này?</p>
+                    <input type="hidden" id="shift-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="btn-approve-confirm">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận từ chối -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận từ chối</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn từ chối ca làm việc này?</p>
+                    <div class="mb-3">
+                        <label for="reject-reason" class="form-label">Lý do từ chối</label>
+                        <textarea class="form-control" id="reject-reason" rows="3"></textarea>
+                    </div>
+                    <input type="hidden" id="reject-shift-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="btn-reject-confirm">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận chấm công -->
+    <div class="modal fade" id="confirmTimekeepingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận chấm công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Xác nhận nhân viên đã hoàn thành ca làm việc này?</p>
+                    <div class="mb-3">
+                        <label for="timekeeping-hours" class="form-label">Số giờ làm thực tế</label>
+                        <input type="number" class="form-control" id="timekeeping-hours" min="0" max="24" step="0.5">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timekeeping-note" class="form-label">Ghi chú (nếu có)</label>
+                        <textarea class="form-control" id="timekeeping-note" rows="2"></textarea>
+                    </div>
+                    <input type="hidden" id="timekeeping-shift-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-info" id="btn-confirm-timekeeping">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận lưu thay đổi -->
+    <div class="modal fade" id="confirmSaveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận lưu thay đổi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn lưu các thay đổi?</p>
+                    <div id="changes-summary">
+                        <p>Tổng số ca được cập nhật: <strong id="total-updates">0</strong></p>
+                        <p>Duyệt: <span id="approved-updates">0</span></p>
+                        <p>Từ chối: <span id="rejected-updates">0</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xem chi tiết ca làm việc -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết ca làm việc - <span id="employee-name">Nguyễn Văn A</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="assignmentDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Ca làm việc</th>
+                                    <th>Thời gian</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Chi tiết ca sẽ được thêm bằng JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal phân công ca làm việc -->
+    <div class="modal fade" id="assignShiftModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Phân công ca làm việc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="selected-employees" class="form-label">Nhân viên được chọn</label>
+                        <div id="selected-employees" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                            <!-- Danh sách nhân viên được chọn sẽ hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chọn ngày làm việc</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <select class="form-select" id="assign-day">
+                                        <option value="monday">Thứ hai</option>
+                                        <option value="tuesday">Thứ ba</option>
+                                        <option value="wednesday">Thứ tư</option>
+                                        <option value="thursday">Thứ năm</option>
+                                        <option value="friday">Thứ sáu</option>
+                                        <option value="saturday">Thứ bảy</option>
+                                        <option value="sunday">Chủ nhật</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div id="day-display" class="form-control bg-light" readonly></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chọn ca làm việc</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="0" id="shift-morning">
+                            <label class="form-check-label" for="shift-morning">
+                                Ca sáng (6:00 - 14:00)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="shift-afternoon">
+                            <label class="form-check-label" for="shift-afternoon">
+                                Ca chiều (14:00 - 22:00)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="assign-note" class="form-label">Ghi chú (nếu có)</label>
+                        <textarea class="form-control" id="assign-note" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Khi phân công từ quản lý, ca làm việc sẽ tự động được duyệt.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-assign">Xác nhận phân công</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

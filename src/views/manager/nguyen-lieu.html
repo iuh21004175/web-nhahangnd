@@ -1,0 +1,274 @@
+<%- include('../layouts/manager.html', {
+    title: 'Quản lý nguyên liệu',
+    styles: '<link rel="stylesheet" href="/css/manager/nguyen-lieu.css">',
+    scripts: '<script src="/js/manager/nguyen-lieu.js"></script>',
+    body: `
+    <div class="ingredient-container">
+        <!-- Header với tiêu đề, bộ lọc và nút thêm -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <h4 class="mb-0">Nguyên liệu</h4>
+                <div class="d-flex gap-2">
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="searchInput" 
+                        placeholder="Tìm kiếm nguyên liệu..."
+                        style="width: 250px;">
+                    <select class="form-select" style="width: 200px;" id="categoryFilter">
+                        <option value="all">Tất cả danh mục</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addIngredientModal">
+                <i class="fas fa-plus me-2"></i>Thêm nguyên liệu
+            </button>
+        </div>
+
+        <!-- Bảng danh sách nguyên liệu -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px">STT</th>
+                                <th style="width: 100px">Hình ảnh</th>
+                                <th>Tên nguyên liệu</th>
+                                <th>Danh mục</th>
+                                <th>Đơn vị tính</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 120px">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu nguyên liệu sẽ được thêm vào bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal thêm nguyên liệu mới -->
+        <div class="modal fade" id="addIngredientModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Thêm nguyên liệu mới</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="addIngredientForm">
+                        <div class="modal-body">
+                            <div class="row">
+                                <!-- Cột trái: Thông tin cơ bản -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ingredientName" class="form-label">Tên nguyên liệu <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="ingredientName" name="ten" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="unit" id="ingredientUnit" required>
+                                            <option value="">Chọn đơn vị</option>
+                                            <option value="kg">Kilogram (kg)</option>
+                                            <option value="g">Gram (g)</option>
+                                            <option value="l">Lít (l)</option>
+                                            <option value="ml">Mililít (ml)</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="ingredientMinStock" class="form-label">Tồn kho tối thiểu <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="ingredientMinStock" name="toiThieu" min="0" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- Cột phải: Danh mục, nhà cung cấp và hình ảnh -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ingredientCategory" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="ingredientCategory" name="idDanhMuc" required>
+                                            <option value="">Chọn danh mục</option>
+                                            <!-- Danh sách danh mục sẽ được thêm vào bằng JavaScript -->
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="ingredientSupplier" class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="ingredientSupplier" name="idNhaCungCap" required>
+                                            <option value="">Chọn nhà cung cấp</option>
+                                            <!-- Danh sách nhà cung cấp sẽ được thêm vào bằng JavaScript -->
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="ingredientImage" class="form-label">Hình ảnh</label>
+                                        <input type="file" class="form-control" id="ingredientImage" name="hinhAnh" accept="image/*">
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                        <div class="mt-2 text-center">
+                                            <img id="ingredientPreview" src="/images/default-ingredient.png" class="img-thumbnail" height="150" width="150">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Lưu nguyên liệu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal chỉnh sửa nguyên liệu -->
+        <div class="modal fade" id="editIngredientModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Chỉnh sửa nguyên liệu</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editIngredientForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="id" id="editIngredientId">
+                            <div class="row">
+                                <!-- Cột trái: Thông tin cơ bản -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editIngredientName" class="form-label">Tên nguyên liệu <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="editIngredientName" name="ten" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="donVi" id="editIngredientUnit" required>
+                                            <option value="">Chọn đơn vị</option>
+                                            <option value="kg">Kilogram (kg)</option>
+                                            <option value="g">Gram (g)</option>
+                                            <option value="l">Lít (l)</option>
+                                            <option value="ml">Mililít (ml)</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editIngredientMinStock" class="form-label">Tồn kho tối thiểu <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="editIngredientMinStock" name="toiThieu" min="0" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- Cột phải: Danh mục, nhà cung cấp và hình ảnh -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editIngredientCategory" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="editIngredientCategory" name="idDanhMuc" required>
+                                            <option value="">Chọn danh mục</option>
+                                            <!-- Danh sách danh mục sẽ được thêm vào bằng JavaScript -->
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editIngredientSupplier" class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="editIngredientSupplier" name="idNhaCungCap" required>
+                                            <option value="">Chọn nhà cung cấp</option>
+                                            <!-- Danh sách nhà cung cấp sẽ được thêm vào bằng JavaScript -->
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editIngredientImage" class="form-label">Hình ảnh mới</label>
+                                        <input type="file" class="form-control" id="editIngredientImage" name="hinhAnh" accept="image/*">
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                        <small class="text-muted">Để trống nếu không muốn thay đổi hình ảnh</small>
+                                        <div class="mt-2 text-center">
+                                            <img id="editIngredientPreview" src="/images/default-ingredient.png" class="img-thumbnail" style="max-height: 150px; max-width: 100%;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Modal xem chi tiết nguyên liệu -->
+        <div class="modal fade" id="viewIngredientModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">Thông tin chi tiết nguyên liệu</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Cột trái - hình ảnh và thông tin cơ bản -->
+                            <div class="col-md-5 text-center mb-4">
+                                <img id="viewIngredientImage" src="/images/default-ingredient.png" 
+                                    class="img-thumbnail mb-3" alt="Hình ảnh nguyên liệu"
+                                    style="max-height: 200px; max-width: 100%;">
+                                <h5 id="viewIngredientName" class="fw-bold mb-2">Tên nguyên liệu</h5>
+                                <div class="d-flex justify-content-center gap-2 mb-2">
+                                    <span id="viewIngredientCategory" class="badge bg-secondary">Danh mục</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Cột phải - thông tin chi tiết -->
+                            <div class="col-md-7">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-bold bg-light" style="width: 40%"><i class="fas fa-balance-scale me-2"></i>Đơn vị tính</td>
+                                            <td id="viewIngredientUnit"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold bg-light"><i class="fas fa-boxes me-2"></i>Tồn kho</td>
+                                            <td id="viewIngredientStock"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold bg-light"><i class="fas fa-exclamation-triangle me-2"></i>Tồn kho tối thiểu</td>
+                                            <td id="viewIngredientMinStock"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold bg-light"><i class="fas fa-truck me-2"></i>Nhà cung cấp</td>
+                                            <td id="viewIngredientSupplier"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold bg-light"><i class="fas fa-history me-2"></i>Trạng thái</td>
+                                            <td id="viewIngredientStatus"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

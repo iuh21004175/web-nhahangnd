@@ -1,0 +1,231 @@
+<%- include('../layouts/customer.html', {
+    title: 'Trang chủ',
+    styles: '<link rel="stylesheet" href="/css/customer/trang-chu.css">',
+    scripts: '<script src="/js/customer/trang-chu.js"></script>',
+    body: `
+        <!-- Hero Section với Video Background -->
+        
+        
+        
+
+        <!-- Điểm nổi bật -->
+        <section class="features-section py-5">
+            <div class="container">
+                <div class="row g-4 text-center">
+                    <div class="col-md-4" data-aos="fade-up">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-utensils fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="mt-4">Ẩm thực đẳng cấp</h4>
+                            <p>Những món ăn được chế biến từ nguyên liệu tươi ngon nhất</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-glass-cheers fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="mt-4">Không gian sang trọng</h4>
+                            <p>Không gian thiết kế tinh tế, phù hợp cho mọi dịp</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-award fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="mt-4">Dịch vụ 5 sao</h4>
+                            <p>Đội ngũ nhân viên chuyên nghiệp, tận tâm phục vụ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Giới thiệu với nền parallax -->
+        <!-- <section class="intro-parallax-section py-6 position-relative">
+            <div class="parallax-bg"></div>
+            <div class="container position-relative">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                        <div class="intro-image-container">
+                            <img src="/images/about/restaurant.jpg" alt="Nhà Hàng XYZ" class="img-fluid rounded intro-main-image">
+                            <img src="/images/about/chef.jpg" alt="Đầu bếp" class="img-fluid rounded intro-sub-image">
+                        </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-left">
+                        <div class="intro-content bg-white p-5 rounded shadow">
+                            <h2 class="section-title">Chào Mừng Đến Với Nhà Hàng XYZ</h2>
+                            <div class="section-divider my-4"></div>
+                            <p class="lead">Nơi hội tụ tinh hoa ẩm thực với không gian sang trọng</p>
+                            <p>Nhà hàng XYZ tự hào mang đến cho quý khách trải nghiệm ẩm thực đẳng cấp với những món ăn được chế biến từ nguyên liệu tươi ngon nhất. Đội ngũ đầu bếp giàu kinh nghiệm của chúng tôi luôn tận tâm để mang đến những hương vị đặc trưng, kết hợp giữa truyền thống và hiện đại.</p>
+                            <p>Với không gian sang trọng và dịch vụ chuyên nghiệp, nhà hàng XYZ là điểm đến lý tưởng cho mọi dịp, từ bữa tối lãng mạn đến tiệc gia đình hay gặp gỡ đối tác.</p>
+                            <a href="/gioi-thieu" class="btn btn-outline-primary mt-3">Tìm hiểu thêm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+        <!-- Thực đơn nổi bật với tabs -->
+        <section class="featured-menu py-6">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="section-title">Thực Đơn Nổi Bật</h2>
+                    <div class="section-divider mx-auto my-4"></div>
+                    <p class="section-subtitle">Khám phá những món ăn được yêu thích nhất của chúng tôi</p>
+                </div>
+                
+                <!-- <ul class="nav nav-pills menu-tabs mb-5 justify-content-center" id="menuTabs" role="tablist" data-aos="fade-up">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="khai-vi-tab" data-bs-toggle="pill" data-bs-target="#khai-vi" type="button">Khai vị</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="mon-chinh-tab" data-bs-toggle="pill" data-bs-target="#mon-chinh" type="button">Món chính</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="trang-mieng-tab" data-bs-toggle="pill" data-bs-target="#trang-mieng" type="button">Tráng miệng</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="do-uong-tab" data-bs-toggle="pill" data-bs-target="#do-uong" type="button">Đồ uống</button>
+                    </li>
+                </ul> -->
+                
+                <div id="danhSachMonAn" class="row g-4">
+                    
+                </div>
+                
+                <div class="text-center mt-5" data-aos="fade-up">
+                    <a href="/thuc-don" class="btn btn-primary btn-lg">Xem toàn bộ thực đơn</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Giới thiệu đầu bếp -->
+        <!-- <section class="chef-section py-6 bg-light">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="section-title">Đầu Bếp Của Chúng Tôi</h2>
+                    <div class="section-divider mx-auto my-4"></div>
+                    <p class="section-subtitle">Đội ngũ đầu bếp tài năng và đầy nhiệt huyết</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-4" data-aos="fade-up">
+                        <div class="chef-card">
+                            <div class="chef-image">
+                                <img src="/images/chefs/chef1.jpg" alt="Đầu bếp" class="img-fluid">
+                            </div>
+                            <div class="chef-info text-center p-4">
+                                <h4>Nguyễn Văn Minh</h4>
+                                <p class="text-primary">Bếp trưởng</p>
+                                <p>Với hơn 15 năm kinh nghiệm tại các nhà hàng 5 sao trong và ngoài nước</p>
+                                <div class="chef-social mt-3">
+                                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="chef-card">
+                            <div class="chef-image">
+                                <img src="/images/chefs/chef2.jpg" alt="Đầu bếp" class="img-fluid">
+                            </div>
+                            <div class="chef-info text-center p-4">
+                                <h4>Lê Thị Hương</h4>
+                                <p class="text-primary">Bếp phó</p>
+                                <p>Chuyên gia về ẩm thực Á - Âu với nhiều giải thưởng ẩm thực quốc tế</p>
+                                <div class="chef-social mt-3">
+                                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="chef-card">
+                            <div class="chef-image">
+                                <img src="/images/chefs/chef3.jpg" alt="Đầu bếp" class="img-fluid">
+                            </div>
+                            <div class="chef-info text-center p-4">
+                                <h4>Trần Đức Mạnh</h4>
+                                <p class="text-primary">Bếp bánh</p>
+                                <p>Chuyên gia bánh ngọt với phong cách sáng tạo độc đáo, từng tu nghiệp tại Pháp</p>
+                                <div class="chef-social mt-3">
+                                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+        
+
+        <!-- Thư viện ảnh -->
+        <section class="gallery-section py-6 bg-light">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="section-title">Khám Phá Nhà Hàng</h2>
+                    <div class="section-divider mx-auto my-4"></div>
+                </div>
+                
+                <div class="row g-3" data-aos="fade-up">
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a href="#" class="gallery-item" data-bs-toggle="modal" data-bs-target="#galleryModal" data-src="/images/gallery/gallery1-large.jpg">
+                            <div class="gallery-img-container">
+                                <img src="/images/gallery/gallery1-thumb.jpg" alt="Không gian nhà hàng" class="img-fluid rounded">
+                                <div class="gallery-overlay">
+                                    <i class="fas fa-search-plus"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <!-- Thêm các ảnh gallery khác tương tự -->
+                </div>
+                
+                <!-- Modal Thư viện ảnh -->
+                <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <img src="" id="galleryImage" class="img-fluid w-100" alt="Hình ảnh phóng to">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Instagram Feed Section -->
+        <section class="instagram-section py-5">
+            <div class="container-fluid px-0">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="section-title">Instagram</h2>
+                    <div class="section-divider mx-auto my-4"></div>
+                    <p class="section-subtitle mb-4">Theo dõi chúng tôi <a href="https://instagram.com/nhahangxyz" class="text-primary">@nhahangxyz</a></p>
+                </div>
+                
+                <div class="instagram-grid">
+                    <div class="instagram-item" data-aos="fade-up">
+                        <img src="/images/instagram/insta1.jpg" alt="Instagram" class="img-fluid">
+                        <div class="instagram-overlay">
+                            <a href="#" class="insta-icon"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                    <!-- Thêm 5 ảnh instagram khác tương tự -->
+                </div>
+            </div>
+        </section>
+    `
+}) %>

@@ -1,0 +1,75 @@
+/* Styles for the assignment view */
+.xem-phan-cong-container {
+    padding-bottom: 20px;
+}
+
+#assignmentSummaryTable th,
+#assignmentSummaryTable td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+#assignmentSummaryTable th:first-child,
+#assignmentSummaryTable td:first-child,
+#assignmentSummaryTable th:nth-child(2),
+#assignmentSummaryTable td:nth-child(2) {
+    text-align: left;
+}
+
+/* Style cho badge ca làm việc */
+.badge-morning {
+    background-color: #4fc3f7;
+    color: #fff;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
+}
+
+.badge-afternoon {
+    background-color: #ffb74d;
+    color: #fff;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
+}
+
+.badge-evening {
+    background-color: #7986cb;
+    color: #fff;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
+}
+
+/* ApexCharts styles */
+.apexcharts-tooltip {
+    background: #f3f3f3;
+    color: #333;
+}
+
+.apexcharts-tooltip-title {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.apexcharts-legend-text {
+    color: #333 !important;
+    font-size: 13px !important;
+}
+
+.apexcharts-title-text {
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .card-header h5 {
+        font-size: 1rem;
+    }
+    
+    #assignmentSummaryTable {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}

@@ -1,0 +1,384 @@
+<%- include('../layouts/manager.html', {
+    title: 'Quản lý món ăn',
+    styles: '<link rel="stylesheet" href="/css/manager/mon-an.css">',
+    scripts: '<script src="/js/manager/mon-an.js"></script>',
+    body: `
+    <div class="food-container">
+        <!-- Header với tiêu đề, bộ lọc và nút thêm -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <h4 class="mb-0 me-4">Danh mục món ăn</h4>
+                <select class="form-select" style="width: 200px;" id="categoryFilter">
+                    <option value="all">Tất cả danh mục</option>
+                    
+                </select>
+            </div>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFoodModal">
+                <i class="fas fa-plus me-2"></i>Thêm món ăn
+            </button>
+        </div>
+        <!-- Bảng danh sách món ăn -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-danhSach">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px">STT</th>
+                                <th style="width: 100px">Hình ảnh</th>
+                                <th>Tên món</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th style="width: 150px">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Modal thêm món ăn -->
+        <div class="modal fade" id="addFoodModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Thêm món ăn mới</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="addFoodForm">
+                        <div class="modal-body">
+                            <div class="row">
+                                <!-- Cột trái - Thông tin cơ bản -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tên món ăn <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="foodName" id="addFoodName" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="categoryId" id="addFoodCategory" required>
+                                            <option value="">Chọn danh mục</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Giá <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" name="price" id="addFoodPrice" min="1000" step="1000" required>
+                                            <span class="input-group-text">VNĐ</span>
+                                            <div class="invalid-feedback">Vui lòng nhập giá hợp lệ</div>
+                                        </div>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Hình ảnh <span class="text-danger">*</span></label>
+                                        <input type="file" class="form-control" name="image" id="addFoodImage" accept="image/*" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                        <div class="mt-2">
+                                            <img id="addFoodImagePreview" src="/images/default-food.png" alt="Ảnh món ăn" class="img-thumbnail" style="max-height: 150px; max-width: 100%;">
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- Cột phải - Danh sách nguyên liệu -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả món ăn <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" name="description" id="addFoodDescription" rows="3" required></textarea>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label fw-bold">Danh sách nguyên liệu <span class="text-danger">*</span></label>
+                                        <button type="button" class="btn btn-sm btn-success" id="btnAddIngredient">
+                                            <i class="fas fa-plus me-1"></i>Thêm nguyên liệu
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-bordered" id="ingredientsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 40%">Nguyên liệu</th>
+                                                    <th style="width: 25%">Định lượng</th>
+                                                    <th style="width: 25%">Đơn vị</th>
+                                                    <th style="width: 10%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ingredientsList">
+                                                <!-- Các hàng nguyên liệu sẽ được thêm bằng JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="alert alert-info" id="noIngredientsAlert">
+                                        <i class="fas fa-info-circle me-2"></i>Vui lòng thêm ít nhất một nguyên liệu
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Lưu món ăn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Template cho hàng nguyên liệu mới -->
+        <template id="ingredientRowTemplate">
+            <tr class="ingredient-row">
+                <td>
+                    <div class="position-relative">
+                        <input type="text" class="form-control form-control-sm ingredient-name-input" 
+                               list="ingredient-options" placeholder="Nhập tên nguyên liệu" required autocomplete="off">
+                        <input type="hidden" class="ingredient-id-input" name="ingredientId">
+                        <datalist id="ingredient-options">
+                            <!-- Options sẽ được thêm bằng JavaScript -->
+                        </datalist>
+                    </div>
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm ingredient-quantity" min="0.01" step="0.01" required>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm ingredient-unit-select" required>
+                        <option value="">Đơn vị</option>
+                        <option value="g">gram</option>
+                        <option value="ml">mililit</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-ingredient">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        </template>
+        <!-- Modal chỉnh sửa món ăn -->
+        <div class="modal fade" id="editFoodModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chỉnh sửa món ăn</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editFoodForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="foodId" id="editFoodId">
+                            <div class="row">
+                                <!-- Cột trái - Thông tin cơ bản -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tên món ăn <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="foodName" id="editFoodName" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="categoryId" id="editFoodCategory" required>
+                                            <option value="">Chọn danh mục</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Giá <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" name="price" id="editFoodPrice" min="1000" step="1000" required>
+                                            <span class="input-group-text">VNĐ</span>
+                                        </div>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Hình ảnh</label>
+                                        <input type="file" class="form-control" name="image" id="editFoodImage" accept="image/*">
+                                        <small class="form-text text-muted">Để trống nếu không muốn thay đổi hình ảnh</small>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                        <div class="mt-2">
+                                            <img id="editFoodImagePreview" src="/images/default-food.png" alt="Ảnh món ăn" class="img-thumbnail" style="max-height: 150px; max-width: 100%;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cột phải - Mô tả và danh sách nguyên liệu -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả món ăn <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" name="description" id="editFoodDescription" rows="3" required></textarea>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label fw-bold">Danh sách nguyên liệu <span class="text-danger">*</span></label>
+                                        <button type="button" class="btn btn-sm btn-primary" id="btnAddEditIngredient">
+                                            <i class="fas fa-plus me-1"></i>Thêm nguyên liệu
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-bordered" id="editIngredientsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 40%">Nguyên liệu</th>
+                                                    <th style="width: 25%">Định lượng</th>
+                                                    <th style="width: 25%">Đơn vị</th>
+                                                    <th style="width: 10%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="editIngredientsList">
+                                                <!-- Các hàng nguyên liệu sẽ được thêm bằng JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="alert alert-info" id="editNoIngredientsAlert">
+                                        <i class="fas fa-info-circle me-2"></i>Vui lòng thêm ít nhất một nguyên liệu
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnSubmitEditFood">
+                                <span class="spinner-container d-none me-2">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                </span>
+                                <i class="fas fa-save me-1"></i><span class="button-text">Lưu thay đổi</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Template cho hàng nguyên liệu khi chỉnh sửa -->
+        <template id="editIngredientRowTemplate">
+            <tr class="edit-ingredient-row">
+                <td>
+                    <div class="position-relative">
+                        <input type="text" class="form-control form-control-sm ingredient-name-input" 
+                            list="edit-ingredient-options" placeholder="Nhập tên nguyên liệu" required autocomplete="off">
+                        <input type="hidden" class="ingredient-id-input" name="ingredientId">
+                        <datalist id="edit-ingredient-options">
+                            <!-- Options sẽ được thêm bằng JavaScript -->
+                        </datalist>
+                    </div>
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm ingredient-quantity" min="0.01" step="0.01" required>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm ingredient-unit-select" required>
+                        <option value="">Đơn vị</option>
+                        <option value="g">gram</option>
+                        <option value="ml">mililit</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-ingredient">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        </template>
+        <!-- Modal xem chi tiết món ăn -->
+        <div class="modal fade" id="viewFoodModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-utensils me-2"></i>Chi tiết món ăn
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <!-- Banner đơn giản hơn với chiều cao giảm xuống -->
+                        <div class="container-fluid py-3">
+                            <div class="row align-items-center">
+                                <!-- Hình ảnh món ăn -->
+                                <div class="col-md-4 text-center">
+                                    <img id="viewFoodImage" src="/images/default-food.png" alt="Hình ảnh món ăn" 
+                                        class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                                </div>
+                                
+                                <!-- Thông tin món ăn -->
+                                <div class="col-md-8">
+                                    <h4 id="viewFoodName" class="fw-bold mb-3">Tên món ăn</h4>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2" id="viewFoodCategory">Danh mục</span>
+                                        <span class="badge bg-success price-badge" id="viewFoodPrice">50,000 VNĐ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-fluid py-3">
+                            <div class="row">
+                                <!-- Mô tả món ăn -->
+                                <div class="col-md-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-info-circle me-2"></i>Mô tả món ăn
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p id="viewFoodDescription" class="mb-0">Mô tả món ăn sẽ hiển thị ở đây...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Danh sách nguyên liệu -->
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-list me-2"></i>Danh sách nguyên liệu
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-xemNguyenLieu mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 50px" class="text-center">STT</th>
+                                                            <th>Tên nguyên liệu</th>
+                                                            <th style="width: 300px">Định lượng</th>
+                                                            <th style="width: 100px">Đơn vị</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="viewFoodIngredients">
+                                                        <!-- JS sẽ render danh sách nguyên liệu động ở đây -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+    <title>404 page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', serif;
+            background: #fff;
+        }
+
+        .page_404 {
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .four_zero_four_bg {
+            background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
+            height: 400px;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
+        .four_zero_four_bg h1 {
+            font-size: 80px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contant_box_404 {
+            margin-top: -50px;
+        }
+
+        .contant_box_404 h3 {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .contant_box_404 p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .link_404 {
+            color: #fff;
+            text-decoration: none;
+            background: #39ac31;
+            padding: 12px 24px;
+            display: inline-block;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .link_404:hover {
+            background: #2d8a26;
+        }
+
+        @media (max-width: 768px) {
+            .four_zero_four_bg {
+                height: 300px;
+            }
+            
+            .four_zero_four_bg h1 {
+                font-size: 60px;
+            }
+
+            .contant_box_404 h3 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="page_404">
+        <div class="container">
+            <div class="four_zero_four_bg">
+                <h1>404</h1>
+            </div>
+            <div class="contant_box_404">
+                <!-- <h3>Look like you're lost</h3>
+                <p>The page you are looking for is not available!</p>
+                <a href="/" class="link_404">Go to Home</a> -->
+                <h3>Có vẻ như bạn đã bị lạc</h3>
+                <p>Trang bạn đang tìm kiếm không tồn tại!</p>
+                <a href="/" class="link_404">Về Trang Chủ</a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

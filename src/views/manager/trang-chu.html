@@ -1,0 +1,170 @@
+<%- include('../layouts/manager.html', {
+    title: 'Trang chủ',
+    styles: '<link rel="stylesheet" href="/css/manager/trang-chu.css">',
+    scripts: `
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script src="/js/manager/trang-chu.js"></script>`,
+    body: `
+    <div class="dashboard-container">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner mb-4">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h3>Xin chào, <span id="user-name">Nguyễn Văn A</span>!</h3>
+                    <p class="text-muted">Hôm nay là <span id="current-date"></span></p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <button class="btn btn-outline-primary" id="btn-check-in">
+                        <i class="fas fa-clock me-2"></i>Chấm công
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-6 col-md-6 mb-3 mb-lg-0">
+                <div class="card summary-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-auto">
+                            <div>
+                                <h6 class="card-title text-muted mb-0">Ca làm việc hôm nay</h6>
+                                <h4 class="mt-2 mb-0" id="today-shift">Ca chiều (12:00 - 17:00)</h4>
+                            </div>
+                            <div class="icon-box bg-light-primary">
+                                <i class="fas fa-calendar-day text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3" style="height: 6px;">
+                            <!-- Div trống để giữ khoảng trống giống với card bên cạnh -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 col-md-6 mb-3 mb-lg-0">
+                <div class="card summary-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-auto">
+                            <div>
+                                <h6 class="card-title text-muted mb-0">Giờ làm tuần này</h6>
+                                <h4 class="mt-2 mb-0" id="week-hours">28 / 40 giờ</h4>
+                            </div>
+                            <div class="icon-box bg-light-success">
+                                <i class="fas fa-clock text-success"></i>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 6px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Row -->
+        <div class="row">
+            <div class="col-12">
+                <!-- Schedule Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Lịch làm việc tuần này</h5>
+                            <a href="/manager/xem-phan-cong-ca" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Ca làm việc</th>
+                                        <th>Thời gian</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weekly-schedule">
+                                    <!-- Sample data - sẽ được thay thế bằng dữ liệu thực từ API -->
+                                    <tr>
+                                        <td>Thứ hai, 20/03/2025</td>
+                                        <td>Ca sáng</td>
+                                        <td>07:00 - 12:00</td>
+                                        <td><span class="badge bg-success">Hoàn thành</span></td>
+                                    </tr>
+                                    <tr class="today-row">
+                                        <td>Thứ ba, 21/03/2025</td>
+                                        <td>Ca chiều</td>
+                                        <td>12:00 - 17:00</td>
+                                        <td><span class="badge bg-primary">Hôm nay</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Thứ tư, 22/03/2025</td>
+                                        <td>Ca tối</td>
+                                        <td>17:00 - 22:00</td>
+                                        <td><span class="badge bg-warning text-dark">Sắp tới</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Thứ sáu, 24/03/2025</td>
+                                        <td>Ca sáng</td>
+                                        <td>07:00 - 12:00</td>
+                                        <td><span class="badge bg-warning text-dark">Sắp tới</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chủ nhật, 26/03/2025</td>
+                                        <td>Ca tối</td>
+                                        <td>17:00 - 22:00</td>
+                                        <td><span class="badge bg-warning text-dark">Sắp tới</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Chart -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Thống kê giờ làm việc</h5>
+                            <div class="chart-period-selector">
+                                <button class="btn btn-sm btn-outline-secondary active" data-period="week">Tuần</button>
+                                <button class="btn btn-sm btn-outline-secondary" data-period="month">Tháng</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="performance-chart"></div>
+                    </div>
+                </div>
+                
+                <!-- Staff Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Thông tin cá nhân</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Mã nhân viên:</strong> <span id="staff-id">NV001</span></p>
+                                <p><strong>Họ và tên:</strong> <span id="staff-name">Nguyễn Văn A</span></p>
+                                <p><strong>Chức vụ:</strong> <span id="staff-position">Nhân viên phục vụ</span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Ngày vào làm:</strong> <span id="join-date">01/01/2023</span></p>
+                                <p><strong>Số điện thoại:</strong> <span id="staff-phone">0123456789</span></p>
+                                <p><strong>Email:</strong> <span id="staff-email">nguyenvana@example.com</span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Giờ làm lũy kế:</strong> <span id="total-hours">850 giờ</span></p>
+                                <p><strong>Nghỉ phép còn lại:</strong> <span id="remaining-days">10 ngày</span></p>
+                                <p><strong>Quản lý trực tiếp:</strong> <span id="manager">Trần Văn B</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

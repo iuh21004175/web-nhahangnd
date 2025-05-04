@@ -1,0 +1,114 @@
+<style>
+    .fixed-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1050; /* cao hơn mọi thứ khác */
+      }
+      
+      body {
+        padding-top: 120px; /* hoặc đúng chiều cao của header, để nội dung không bị che */
+      }
+      
+</style>
+<div class="fixed-header">
+<div class="top-bar bg-dark text-light py-2">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <span><i class="fas fa-phone me-2"></i> 0987 654 321</span>
+                <span class="ms-3"><i class="fas fa-envelope me-2"></i> info@ndrestaurant.com</span>
+            </div>
+            <div class="col-md-6 text-end">
+                <span><i class="fas fa-clock me-2"></i> Mở cửa: 10:00 - 22:00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="https://res.cloudinary.com/dtkm5uyx1/image/upload/v1743584417/hinh-anh/logo.jpg"  height="60">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof isHome != 'undefined' && isHome ? 'active' : '' %>" href="/">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof isMenu != 'undefined' && isMenu ? 'active' : '' %>" href="/thuc-don">Thực đơn</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof isAbout != 'undefined' && isAbout ? 'active' : '' %>" href="/gioi-thieu">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof isContact != 'undefined' && isContact ? 'active' : '' %>" href="/tim-kiem">Liên hệ</a>
+                </li>
+            </ul>
+            
+            <div class="d-flex align-items-center">
+                <% if (typeof isMenu !== 'undefined' && isMenu) { %>
+                    <div class="search-box me-3 d-none d-lg-block">
+                        <form id="formTimKiem" class="d-flex" method="GET">
+                            <input type="text" id="tuKhoa" name="q" class="form-control me-2" placeholder="Tìm món ăn...">
+                            <button type="submit" class="btn btn-outline-success"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                <% } %>
+                
+                <div class="user-actions d-flex align-items-center">
+                    
+                    <!-- Kiểm tra người dùng đã đăng nhập chưa -->
+                    <% if (locals.user) { %>
+                        <!-- Người dùng đã đăng nhập -->
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle user-dropdown" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <% if (locals.user.hinhAnh) { %>
+                                    <img src='<%= locals.user.hinhAnh %>' alt="Avatar" class="avatar-img">
+                                <% } else { %>
+                                    <i class="fas fa-user-circle"></i>
+                                <% } %>
+                                <span class="d-none d-lg-inline ms-1"><%= locals.user.ten %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/thong-tin-ca-nhan"><i class="fas fa-user-cog me-2"></i>Thông tin cá nhân</a></li>
+                                <li><a class="dropdown-item" href="/don-hang"><i class="fas fa-receipt me-2"></i>Đơn hàng của tôi</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/dang-xuat"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <!-- Người dùng chưa đăng nhập -->
+                        <div class="auth-buttons d-none d-md-flex me-2">
+                            <a href="#" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                            </a>
+                            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                <i class="fas fa-user-plus me-1"></i> Đăng ký
+                            </a>
+                        </div>
+                        <!-- Icon cho mobile -->
+                        <div class="d-md-none me-2">
+                            <a href="#" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </a>
+                        </div>
+                    <% } %>
+                    
+                    <!-- Giỏ hàng luôn hiển thị -->
+                    <button class="btn btn-link cart-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger cart-count"><%= typeof cartCount != 'undefined' ? cartCount : 0 %></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+</div>

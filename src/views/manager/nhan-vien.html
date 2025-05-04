@@ -1,0 +1,279 @@
+<%- include('../layouts/manager.html', {
+    title: 'Quản lý nhân viên',
+    styles: '<link rel="stylesheet" href="/css/manager/nhan-vien.css">',
+    scripts: '<script src="/js/manager/nhan-vien.js"></script>',
+    body: `
+    <div class="staff-container">
+        <!-- Header với tiêu đề, bộ lọc và nút thêm -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <h4 class="mb-0 me-4">Nhân viên</h4>
+                <select class="form-select filter-select" id="positionFilter">
+                    <option value="">Tất cả chức vụ</option>
+                    <option value="0">Phục vụ</option>
+                    <option value="1">Đầu bếp</option>
+                </select>
+            </div>
+            <button class="btn btn-success add-btn" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+                <i class="fas fa-plus me-2"></i>Thêm nhân viên
+            </button>
+        </div>
+
+        <!-- Bảng danh sách nhân viên -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-danhSach">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px">STT</th>
+                                <th style="width: 100px">Ảnh</th>
+                                <th>Họ và tên</th>
+                                <th>Số điện thoại</th>
+                                <th>Chức vụ</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 110px">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu nhân viên sẽ được thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Modal xem chi tiết nhân viên -->
+        <div class="modal fade" id="viewStaffModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">Thông tin chi tiết nhân viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <img id="viewStaffImage" src="" alt="Ảnh đại diện" class="img-fluid rounded img-thumbnail mb-3" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                <h5 id="viewStaffName" class="fw-bold mb-2"></h5>
+                                <span id="viewStaffPosition" class="badge bg-info mb-2"></span>
+                                <span id="viewStaffStatus" class="badge bg-success mb-0 d-block mx-auto" style="width: fit-content;"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-venus-mars me-2"></i>Giới tính</td>
+                                            <td id="viewStaffGender"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-birthday-cake me-2"></i>Ngày sinh</td>
+                                            <td id="viewStaffBirthDate"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-phone me-2"></i>Số điện thoại</td>
+                                            <td id="viewStaffPhone"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ</td>
+                                            <td id="viewStaffAddress"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-user-clock me-2"></i>Ngày bắt đầu</td>
+                                            <td id="viewStaffStartDate"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold"><i class="fas fa-user me-2"></i>Tên đăng nhập</td>
+                                            <td id="viewStaffUsername"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal thêm nhân viên mới -->
+        <div class="modal fade" id="addStaffModal" tabindex="-1">
+            <div class="modal-dialog modal-lg"> <!-- Mở rộng kích thước modal -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Thêm nhân viên mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="addStaffForm">
+                        <div class="modal-body">
+                            <div class="row">
+                                <!-- Thông tin cá nhân -->
+                                <div class="col-md-6">
+                                    <div>
+                                        <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="txt-themTen" name="staffName" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Giới tính</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked required>
+                                            <label class="form-check-label" for="genderMale">Nam</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="1" required>
+                                            <label class="form-check-label" for="genderFemale">Nữ</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="txt-themNgaySinh" name="birthdate" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                        <input type="tel" class="form-control" id="txt-themSoDienThoai" name="phone" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" name="address" id="txt-themDiaChi" rows="3" required></textarea>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Thông tin công việc và hình ảnh -->
+                                <div class="col-md-6">
+                                    <div>
+                                        <label class="form-label">Chức vụ <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="combobox-themChucVu" name="position" required>
+                                            <option value="">Chọn chức vụ</option>
+                                            <option value="0">Phục vụ</option>
+                                            <option value="1">Đầu bếp</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="txt-themNgayBatDau" name="ngayBatDau" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
+                                        <input type="file" class="form-control" id="file-themHinhAnh" name="avatar" accept="image/*">
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                        <div class="mt-2" id="avatarPreview">
+                                            <img src="/images/avatars/default.jpg" class="img-thumbnail avatar-preview" alt="Preview" height="100" width="100" >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Thêm nhân viên
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal chỉnh sửa nhân viên -->
+        <div class="modal fade" id="editStaffModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chỉnh sửa thông tin nhân viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editStaffForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="staffId" id="editStaffId">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div>
+                                        <label class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" name="staffName" id="editStaffName" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Số điện thoại</label>
+                                        <input type="tel" class="form-control" name="phone" id="editStaffPhone" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Giới tính</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="editGender" id="editGenderMale" value="1" required>
+                                            <label class="form-check-label" for="editGenderMale">Nam</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="editGender" id="editGenderFemale" value="0" required>
+                                            <label class="form-check-label" for="editGenderFemale">Nữ</label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Ngày sinh</label>
+                                        <input type="date" class="form-control" name="birthdate" id="editStaffBirthDate" required>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Địa chỉ</label>
+                                        <textarea class="form-control" name="address" id="editStaffAddress" rows="3" required></textarea>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                   
+                                </div>
+                                <div class="col-md-6">
+                                    <div>
+                                        <label class="form-label">Chức vụ</label>
+                                        <select class="form-select" name="position" id="editStaffPosition" required>
+                                            <option value="0">Phục vụ</option>
+                                            <option value="1">Đầu bếp</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Trạng thái</label>
+                                        <select class="form-select" name="status" id="editStaffStatus" required>
+                                            <option value="1">Đang làm việc</option>
+                                            <option value="0">Nghỉ việc</option>
+                                        </select>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Ảnh đại diện mới</label>
+                                        <input type="file" class="form-control" name="avatar" id="editHinhAnh" accept="image/*">
+                                        <small class="form-text text-muted">Để trống nếu không thay đổi</small>
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Ảnh hiện tại</label>
+                                        <img id="currentStaffImage" src="" alt="Current staff image" class="img-thumbnail d-block" height="100" width="100">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Mật khẩu mới</label>
+                                        <input type="password" class="form-control" name="password" id="editStaffPassword" placeholder="Để trống nếu không thay đổi">
+                                        <span class="text-danger message-error">&nbsp;</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

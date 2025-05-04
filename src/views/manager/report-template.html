@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @page { size: A4; margin: 20mm; }
+    @media print {
+      .container-a4 {
+        margin: 20mm;
+      }
+      .page {
+        page-break-after: always;
+      }
+      .no-break {
+        page-break-inside: avoid;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    
+    .container-a4 {
+      width: 170mm;
+      margin: 30px auto;
+      background-color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      padding: 20mm;
+    }
+
+    .page {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      padding-bottom: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .restaurant-name {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0;
+      color: #2e7d32;
+      letter-spacing: 0.5px;
+    }
+    
+    .restaurant-info {
+      font-size: 13px;
+      margin: 5px 0;
+      color: #555;
+    }
+    
+    .title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      margin: 25px 0 15px;
+      color: #1b5e20;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .info {
+      margin: 15px 0 30px;
+    }
+    
+    .period {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      padding: 8px 16px;
+      background-color: #e8f5e9;
+      border-radius: 20px;
+      display: inline-block;
+      margin: 0 auto;
+      color: #2e7d32;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #2e7d32;
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background-color: #4caf50;
+      margin-right: 10px;
+      border-radius: 2px;
+    }
+    
+    .section-container {
+      margin-bottom: 40px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .section-container:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    hr {
+      border: none;
+      height: 1px;
+      background-color: #e0e0e0;
+      margin: 10px 0 20px;
+    }
+    
+    .chart-container {
+      text-align: center;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    img.chart-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    
+    /* Buttons */
+    .action-buttons {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 1000;
+    }
+    
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary {
+      background-color: #4caf50;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background-color: #2196f3;
+      color: white;
+    }
+    
+    .btn:hover {
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    /* Spinner */
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* PDF Overlay */
+    .pdf-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    
+    .pdf-progress {
+      width: 250px;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    
+    .pdf-progress-bar {
+      height: 100%;
+      background-color: #4caf50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .pdf-status {
+      color: white;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 12px;
+      color: #777;
+    }
+    
+    /* Page numbers */
+    .page-number {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #777;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-a4">
+    <!-- TRANG 1 -->
+    <div class="page">
+      <div class="header">
+        <h1 class="restaurant-name">NHÀ HÀNG ND</h1>
+        <p class="restaurant-info">123 Nguyễn Văn Bảo, P.4, Q. Gò Vấp, TP. Hồ Chí Minh</p>
+        <p class="restaurant-info">Điện thoại: 090.259.9450 - Email: nhahangnd@gmail.com</p>
+      </div>
+      
+      <div class="title">BÁO CÁO DOANH THU</div>
+      
+      <div class="info" style="text-align: center;">
+        <span class="period"><%= type %> <%= value %></span>
+      </div>
+      
+      <div class="section-container">
+        <h4 class="section-title">1. TỔNG QUÁT</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/tong-quat.svg" alt="TỔNG QUÁT" crossorigin="anonymous" style="width: 150mm; height: auto;">
+        </div>
+      </div>
+      
+      <div class="section-container">
+        <h4 class="section-title">2. DOANH THU THEO THỜI GIAN</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/doanh-thu-theo-thoi-gian.svg" alt="THỐNG KÊ THEO THỜI GIAN" crossorigin="anonymous" style="width: 150mm; height: auto;">
+        </div>
+      </div>
+      
+      <div class="page-number">1/4</div>
+    </div>
+    
+    <!-- TRANG 2 -->
+    <div class="page">
+      <div class="header" style="margin-top: 20px;">
+        <h2 class="restaurant-name" style="font-size: 20px;">NHÀ HÀNG ND - BÁO CÁO DOANH THU</h2>
+        <p class="restaurant-info" style="font-size: 12px;"><%= type %> <%= value %></p>
+      </div>
+      
+      <div class="section-container">
+        <h4 class="section-title">3. DOANH THU THEO KHUNG GIỜ</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/doanh-thu-theo-khung-gio.svg" alt="DOANH THU THEO KHUNG GIỜ" crossorigin="anonymous" style="width: 100mm; height: auto;">
+        </div>
+      </div>
+      
+      <div class="section-container">
+        <h4 class="section-title">4. TỈ LỆ DOANH THU THEO DANH MỤC</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/ti-le-doanh-thu-theo-danh-muc.svg" alt="TỈ LỆ DOANH THU THEO DANH MỤC" crossorigin="anonymous" style="width: 100mm; height: auto;">
+        </div>
+      </div>
+      
+      <div class="page-number">2/4</div>
+    </div>
+    
+    <!-- TRANG 3 -->
+    <div class="page">
+      <div class="header" style="margin-top: 20px;">
+        <h2 class="restaurant-name" style="font-size: 20px;">NHÀ HÀNG ND - BÁO CÁO DOANH THU</h2>
+        <p class="restaurant-info" style="font-size: 12px;"><%= type %> <%= value %></p>
+      </div>
+      
+      <div class="section-container">
+        <h4 class="section-title">5. TOP MÓN BÁN CHẠY</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/top-5-mon.svg" alt="TOP MÓN BÁN CHẠY" crossorigin="anonymous" style="width: 100mm; height: auto;">
+        </div>
+      </div>
+      
+      <!-- Phần mô tả thêm về báo cáo - Trang 3 sẽ có nhiều không gian hơn -->
+      <div class="section-container">
+        <h4 class="section-title">PHÂN TÍCH KẾT QUẢ</h4>
+        <hr>
+        <div style="padding: 10px;">
+          <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Báo cáo này cung cấp tổng quan về hoạt động kinh doanh của nhà hàng trong <%= type.toLowerCase() %> <%= value %>. 
+            Các biểu đồ trực quan hóa doanh thu theo thời gian, khung giờ và phân loại theo danh mục món ăn. 
+            Top món bán chạy giúp phân tích xu hướng tiêu dùng của khách hàng.
+          </p>
+          <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Dựa trên số liệu này, quản lý có thể đưa ra các quyết định về chương trình khuyến mãi, điều chỉnh nhân sự theo khung giờ, 
+            và tối ưu hóa menu nhà hàng để tăng doanh thu và cải thiện trải nghiệm khách hàng.
+          </p>
+        </div>
+      </div>
+      
+      <div class="page-number">3/4</div>
+    </div>
+    
+    <!-- TRANG 4 - CHI TIẾT DOANH THU -->
+    <div class="page">
+      <div class="header" style="margin-top: 20px;">
+        <h2 class="restaurant-name" style="font-size: 20px;">NHÀ HÀNG ND - BÁO CÁO DOANH THU</h2>
+        <p class="restaurant-info" style="font-size: 12px;"><%= type %> <%= value %></p>
+      </div>
+      
+      <div class="section-container" style="margin-bottom: 20px;">
+        <h4 class="section-title">6. CHI TIẾT DOANH THU</h4>
+        <hr>
+        <div class="chart-container">
+          <img src="/img/report/chi-tiet-doanh-thu.svg" alt="CHI TIẾT DOANH THU" crossorigin="anonymous" style="width: 150mm; height: auto;">
+        </div>
+      </div>
+      
+      <!-- Phần giải thích về chi tiết doanh thu -->
+      <!-- <div class="section-container">
+        <h4 class="section-title">GHI CHÚ VỀ CHI TIẾT DOANH THU</h4>
+        <hr>
+        <div style="padding: 10px;">
+          <p style="font-size: 14px; line-height: 1.6; text-align: justify;">
+            Bảng chi tiết doanh thu trên thể hiện các chỉ số quan trọng của nhà hàng trong <%= type.toLowerCase() %> <%= value %>, bao gồm:
+          </p>
+          <ul style="font-size: 14px; line-height: 1.6; text-align: justify; padding-left: 20px;">
+            <li><strong>Tổng doanh thu:</strong> Tổng giá trị đơn hàng đã thanh toán</li>
+            <li><strong>Số lượng đơn hàng:</strong> Tổng số đơn hàng đã phục vụ</li>
+            <li><strong>Giá trị đơn hàng trung bình:</strong> Doanh thu trung bình mỗi đơn hàng</li>
+            <li><strong>Số lượng khách:</strong> Tổng số khách hàng đã phục vụ</li>
+            <li><strong>Chi tiêu trung bình:</strong> Doanh thu trung bình trên mỗi khách hàng</li>
+          </ul>
+        </div>
+      </div> -->
+      
+      <div class="footer">
+        <p>© 2025 Nhà Hàng ND. Báo cáo được tạo tự động ngày <%= new Date().toLocaleDateString('vi-VN') %></p>
+      </div>
+      
+      <div class="page-number">4/4</div>
+    </div> 
+  </div>
+  
+  <!-- Action buttons -->
+  <div class="action-buttons no-print">
+    <button id="backBtn" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Quay lại
+    </button>
+    <button id="savePdfBtn" class="btn btn-primary">
+      <i class="fas fa-file-pdf"></i> Lưu file PDF
+    </button>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  
+  <script>
+    // Hàm tạo overlay loading
+    function createPdfOverlay() {
+      const overlay = document.createElement('div');
+      overlay.className = 'pdf-overlay';
+      
+      const spinner = document.createElement('div');
+      spinner.className = 'spinner';
+      spinner.style.width = '40px';
+      spinner.style.height = '40px';
+      spinner.style.borderWidth = '5px';
+      
+      const status = document.createElement('div');
+      status.className = 'pdf-status';
+      status.textContent = 'Đang xử lý...';
+      
+      const progress = document.createElement('div');
+      progress.className = 'pdf-progress';
+      
+      const progressBar = document.createElement('div');
+      progressBar.className = 'pdf-progress-bar';
+      
+      progress.appendChild(progressBar);
+      overlay.appendChild(spinner);
+      overlay.appendChild(status);
+      overlay.appendChild(progress);
+      
+      document.body.appendChild(overlay);
+      
+      return {
+        overlay,
+        status,
+        progressBar,
+        updateProgress: (percent, message) => {
+          progressBar.style.width = `${percent}%`;
+          if (message) status.textContent = message;
+        },
+        remove: () => {
+          document.body.removeChild(overlay);
+        }
+      };
+    }
+
+    // Chuẩn bị hình ảnh
+    async function prepareImages() {
+      // Lấy tất cả ảnh trong container
+      const images = document.querySelectorAll('.container-a4 img');
+      
+      // Thay thế src của mỗi ảnh bằng dataURL
+      for(let img of images) {
+        const src = img.src;
+        try {
+          // Tạo một ảnh mới và tải từ nguồn gốc 
+          const response = await fetch(src);
+          const blob = await response.blob();
+          const dataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+          
+          // Thay src bằng dataURL
+          img.src = dataUrl;
+          
+          // Đợi ảnh tải xong
+          await new Promise(resolve => {
+            if (img.complete) {
+              resolve();
+            } else {
+              img.onload = resolve;
+            }
+          });
+        } catch (error) {
+          console.error(`Lỗi khi tải ảnh ${src}:`, error);
+        }
+      }
+      
+      return true;
+    }
+
+    // Khởi tạo khi trang tải xong
+    document.addEventListener('DOMContentLoaded', function() {
+      const savePdfBtn = document.getElementById('savePdfBtn');
+      const backBtn = document.getElementById('backBtn');
+      
+      // Xử lý nút quay lại
+      backBtn.addEventListener('click', function() {
+        window.location.href = '/manager/thong-ke';
+      });
+      
+      // Chuẩn bị hình ảnh cho PDF
+      prepareImages();
+      
+      // Xử lý nút lưu PDF
+      savePdfBtn.addEventListener('click', async function() {
+        try {
+          // Hiển thị overlay với progress bar
+          const loadingOverlay = createPdfOverlay();
+          loadingOverlay.updateProgress(10, 'Đang khởi tạo...');
+          
+          // Đảm bảo thư viện được tải
+          if (typeof jspdf === 'undefined') {
+            throw new Error('Thư viện jsPDF chưa được tải');
+          }
+          
+          const { jsPDF } = window.jspdf;
+          
+          loadingOverlay.updateProgress(20, 'Đang tạo file PDF...');
+          
+          // Tạo một PDF trống với kích thước A4
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          
+          // Lấy kích thước trang PDF
+          const margin = 20; // Margin 20mm
+          const pageWidth = pdf.internal.pageSize.getWidth() - 2 * margin;
+          const pageHeight = pdf.internal.pageSize.getHeight() - 2 * margin;
+          
+          // Lấy tất cả các phần tử `.page`
+          const pages = document.querySelectorAll('.page');
+          
+          // Xử lý từng trang
+          for (let i = 0; i < pages.length; i++) {
+            loadingOverlay.updateProgress(30 + (i * 15), `Đang xử lý trang ${i+1}/${pages.length}...`);
+            
+            const page = pages[i];
+            
+            // Sử dụng html2canvas để chuyển phần tử `.page` thành hình ảnh
+            const canvas = await html2canvas(page, { 
+              scale: 2,
+              useCORS: true,
+              allowTaint: false,
+              backgroundColor: '#FFFFFF'
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = pageWidth;
+            const imgHeight = (canvas.height * pageWidth) / canvas.width;
+            
+            // Thêm hình ảnh vào PDF với margin
+            pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+            
+            // Thêm trang mới trừ trang cuối cùng
+            if (i < pages.length - 1) {
+              pdf.addPage();
+            }
+          }
+          
+          loadingOverlay.updateProgress(90, 'Đang hoàn thành...');
+          
+          // Thêm metadata cho PDF
+          pdf.setProperties({
+            title: 'Báo cáo doanh thu Nhà hàng ND',
+            subject: 'Báo cáo doanh thu <%= type %> <%= value %>',
+            author: 'Hệ thống quản lý Nhà hàng ND',
+            creator: 'Nhà hàng ND'
+          });
+          
+          loadingOverlay.updateProgress(100, 'Hoàn tất!');
+          
+          // Lưu file sau khi hoàn thành
+          setTimeout(() => {
+            pdf.save('baocao-doanhthu.pdf');
+            loadingOverlay.remove();
+          }, 500);
+          
+        } catch (error) {
+          console.error('Lỗi khi tạo PDF:', error);
+          alert('Đã xảy ra lỗi khi tạo PDF: ' + error.message);
+          document.querySelector('.pdf-overlay')?.remove();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

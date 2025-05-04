@@ -1,0 +1,198 @@
+/* Auth Modal Styling */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: #fff;
+}
+
+.modal-title {
+    font-weight: 700;
+    color: var(--secondary-color, #2c3e50);
+}
+
+.social-login {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s;
+    width: 140px;
+}
+
+.social-btn i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.social-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Đăng nhập bằng mạng xã hội */
+.divider {
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.divider p {
+    margin: 0;
+    padding: 0 10px;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-primary:hover {
+    color: #fff;
+}
+
+.btn-outline-danger:hover i,
+.btn-outline-primary:hover i {
+    color: #fff;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--secondary-color, #2c3e50);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+    padding: 10px 15px;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.btn-primary {
+    background-color: var(--primary-color, #d4a762);
+    border-color: var(--primary-color, #d4a762);
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: darken(var(--primary-color, #d4a762), 10%);
+    box-shadow: 0 5px 15px rgba(212, 167, 98, 0.3);
+    color: #d4a762;
+}
+
+.toggle-password {
+    border-left: none;
+    background-color: white;
+}
+
+.toggle-password:hover {
+    background-color: #f8f9fa;
+}
+
+.form-check-label a {
+    color: var(--primary-color, #d4a762);
+}
+/* User dropdown styles */
+.user-dropdown {
+    display: flex;
+    align-items: center;
+    color: var(--secondary-color, #2c3e50);
+    text-decoration: none;
+    padding: 0;
+}
+
+.avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color, #d4a762);
+}
+
+.user-actions .fas {
+    font-size: 1.25rem;
+}
+
+.user-actions .dropdown-item {
+    padding: 8px 15px;
+    transition: all 0.2s;
+}
+
+.user-actions .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.user-actions .dropdown-item i {
+    color: var(--primary-color, #d4a762);
+    width: 20px;
+    text-align: center;
+}
+
+/* Auth buttons */
+.auth-buttons .btn {
+    border-radius: 20px;
+    padding: 6px 15px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.auth-buttons .btn-outline-primary {
+    border-color: var(--primary-color, #d4a762);
+    color: var(--primary-color, #d4a762);
+}
+
+.auth-buttons .btn-outline-primary:hover {
+    background-color: var(--primary-color, #d4a762);
+    color: white;
+}
+
+.auth-buttons .btn-primary {
+    background-color: var(--primary-color, #d4a762);
+    border-color: var(--primary-color, #d4a762);
+}
+
+.auth-buttons .btn-primary:hover {
+    background-color: darken(var(--primary-color, #d4a762), 10%);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .search-box {
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+    
+    .navbar .container {
+        position: relative;
+    }
+    
+    .user-actions {
+        position: absolute;
+        top: 15px;
+        right: 70px;
+    }
+}

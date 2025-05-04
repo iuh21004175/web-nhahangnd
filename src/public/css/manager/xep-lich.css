@@ -1,0 +1,195 @@
+#assignmentSummaryTable th,
+#assignmentSummaryTable td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+#assignmentSummaryTable th:first-child,
+#assignmentSummaryTable td:first-child,
+#assignmentSummaryTable th:nth-child(2),
+#assignmentSummaryTable td:nth-child(2) {
+    text-align: left;
+}
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-pending {
+    background-color: #FFF8E1;
+    color: #FFB300;
+}
+
+.status-approved {
+    background-color: #E0F2F1;
+    color: #00897B;
+}
+
+.status-rejected {
+    background-color: #FFEBEE;
+    color: #E53935;
+}
+.status-timekeeping {
+    background-color: #E3F2FD;
+    color: #1976D2;
+}
+
+.status-confirmed {
+    background-color: #F3E5F5;
+    color: #8E24AA;
+}
+/* Style cho bảng */
+#registerShiftTable {
+    vertical-align: middle;
+}
+
+#registerShiftTable th {
+    font-weight: 600;
+}
+
+/* Thêm CSS để làm nổi bật hàng theo ngày */
+tr.highlight-row {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Tạo hiệu ứng hover cho hàng */
+#registerShiftTable tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Style cho action buttons */
+.action-btn {
+    padding: 4px 8px;
+    margin: 0 2px;
+}
+
+/* Style cho checkbox */
+#select-all, .shift-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Thêm vào file CSS */
+#week-select {
+    font-weight: 500;
+    margin-left: 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+#week-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* CSS cho select box chức vụ giống với week-select */
+#duyetChucVu-select {
+    font-weight: 500;
+    margin-left: 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+#duyetChucVu-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Có thể tạo class chung cho cả 2 select để tái sử dụng */
+.custom-select-sm {
+    font-weight: 500;
+    margin-left: 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.custom-select-sm:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Styles cho tab Phân công */
+.shift-info {
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.shift-info.morning {
+    border-left: 3px solid #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.shift-info.afternoon {
+    border-left: 3px solid #fd7e14;
+    background-color: rgba(253, 126, 20, 0.1);
+}
+
+.shift-time {
+    font-weight: 500;
+}
+
+.shift-status {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Status colors */
+.shift-info.status-pending .shift-status {
+    color: #fd7e14;
+}
+
+.shift-info.status-approved .shift-status {
+    color: #198754;
+}
+
+.shift-info.status-timekeeping .shift-status {
+    color: #0dcaf0;
+}
+
+.shift-info.status-confirmed .shift-status {
+    color: #0d6efd;
+}
+
+.shift-info.status-rejected .shift-status {
+    color: #dc3545;
+}
+
+/* Custom styles for day-date */
+.day-date {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #6c757d;
+}
+
+/* Styles for the selected employees badges */
+#selected-employees {
+    min-height: 40px;
+}
+
+#day-display {
+    font-weight: 500;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .card-header .btn {
+        font-size: 0.8rem;
+    }
+    
+    #weeklyScheduleTable th,
+    #weeklyScheduleTable td {
+        font-size: 0.85rem;
+    }
+}

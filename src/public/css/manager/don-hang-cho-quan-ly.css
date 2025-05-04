@@ -1,0 +1,64 @@
+ /* CSS cho timeline trạng thái */
+ .status-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.status-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.status-item {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.status-item::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #adb5bd;
+}
+
+.status-item.active::before {
+    background-color: #198754;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #198754;
+}
+
+.status-item.rejected::before {
+    background-color: #dc3545;
+}
+
+.status-item .status-time {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Badge styles */
+.badge-status {
+    font-size: 0.85rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Animation for new orders */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.new-order {
+    animation: pulse 1.5s infinite;
+    background-color: #f8f9fa;
+}

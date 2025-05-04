@@ -1,0 +1,41 @@
+/* Style cho card */
+.card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+/* Style cho table */
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Style cho buttons */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Tooltip */
+[data-bs-tooltip] {
+    position: relative;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .category-container {
+        padding: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 14px;
+    }
+} 

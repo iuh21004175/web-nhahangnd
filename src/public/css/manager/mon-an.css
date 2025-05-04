@@ -1,0 +1,78 @@
+/* Card styles */
+.card {
+    border: none;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Table styles */
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Food image in table */
+.food-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Modal styles */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Button info color */
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+}
+
+/* Modal chi tiết */
+.modal-lg {
+    max-width: 800px;
+}
+
+/* Table trong modal chi tiết */
+.table-borderless th {
+    font-weight: 600;
+    color: #666;
+}
+
+/* Text area */
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+} 
+
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    #viewFoodImage {
+        margin-bottom: 1rem;
+        max-height: 120px;
+    }
+    
+    #viewFoodName {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+    }
+}

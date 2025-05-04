@@ -1,0 +1,38 @@
+.shift-box {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin: 5px auto;
+    font-size: 0.8rem;
+    color: white;
+    transition: transform 0.2s;
+    cursor: default;
+}
+.shift-box:hover {
+    transform: scale(1.05);
+}
+.shift-working {
+    background-color: #17a2b8;
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
+}
+.shift-approved {
+    background-color: #28a745;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+.shift-pending {
+    background-color: #ffc107;
+    color: #000;
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.2);
+}
+.shift-empty {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    color: #6c757d;
+}
+.date-cell {
+    background-color: #f8f9fa;
+    vertical-align: middle !important;
+}

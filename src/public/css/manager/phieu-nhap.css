@@ -1,0 +1,195 @@
+.table th {
+    background-color: #f8f9fa;
+}
+
+.modal-lg {
+    max-width: 800px;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+/* Style cho phần in */
+@media print {
+    .modal-footer,
+    .btn-close {
+        display: none;
+    }
+    
+    .modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 0;
+        overflow: visible!important;
+    }
+}
+
+/* Thêm styles cho form tạo phiếu nhập */
+.modal-xl {
+    max-width: 1200px;
+}
+
+.ingredient-row td {
+    vertical-align: middle;
+}
+
+.form-control:read-only {
+    background-color: #e9ecef;
+}
+
+.amount-cell {
+    font-weight: 500;
+}
+
+#ingredientTable {
+    margin-bottom: 0;
+}
+
+#ingredientTable th {
+    background-color: #f8f9fa;
+}
+
+.remove-row {
+    padding: 0.25rem 0.5rem;
+}
+
+.quantity-input,
+.price-input {
+    text-align: right;
+}
+
+/* Thêm style cho phần đơn vị */
+.unit-select {
+    min-width: 100px;
+    transition: width 0.3s;
+}
+
+.unit-input {
+    min-width: 80px;
+    transition: display 0.3s;
+}
+
+/* Điều chỉnh độ rộng cột đơn vị */
+#ingredientTable th:nth-child(3) {
+    width: 200px !important;
+}
+
+/* Thêm style cho form tìm kiếm */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#searchForm .form-label.small {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+#searchForm .form-label.fw-bold {
+    margin-bottom: 0.5rem;
+}
+
+#searchForm .btn {
+    padding: 0.5rem 1rem;
+}
+
+/* Điều chỉnh responsive */
+@media (max-width: 768px) {
+    #searchForm .d-flex {
+        flex-direction: column;
+    }
+    
+    #searchForm .flex-grow-1 {
+        width: 100%;
+    }
+} 
+/* Custom Dropdown CSS */
+.custom-dropdown-container {
+    position: relative;
+    width: 170px;
+}
+
+.dropdown-wrapper {
+    display: flex;
+    /* position: relative; */
+    width: 100%;
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+/* Đảm bảo dropdown hiển thị trên mọi thành phần khác */
+.ingredient-dropdown {
+    position: fixed !important; /* Dùng position fixed để thoát khỏi ràng buộc của parent */
+    z-index: 9999 !important; /* Z-index rất cao */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    width: 300px;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    display: none;
+}
+
+.ingredient-dropdown.active {
+    display: block;
+}
+
+/* Đảm bảo dropdown-item hiển thị đẹp */
+.dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Tránh conflict với table-responsive */
+.table-responsive {
+    position: static !important; /* Đảm bảo không tạo context mới */
+}
+
+.dropdown-item.active {
+    background-color: #e9ecef;
+}
+
+.dropdown-search-results {
+    width: 100%;
+}
+
+.dropdown-no-results {
+    padding: 8px 12px;
+    color: #6c757d;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Styling for matched text */
+.highlight {
+    background-color: rgba(0, 123, 255, 0.1);
+    font-weight: bold;
+}
+
+/* Loading indicator inside dropdown */
+.dropdown-loading {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}

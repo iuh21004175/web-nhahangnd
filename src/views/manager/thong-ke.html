@@ -1,0 +1,240 @@
+<%- include('../layouts/manager.html', {
+    title: 'Thống kê doanh thu',
+    styles: '<link rel="stylesheet" href="/css/manager/thongke.css">',
+    scripts: `
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+        <script src="/js/manager/thongke.js"></script>
+    `,
+    body: `
+    <div class="thongke-container">
+        <!-- Bộ lọc thống kê -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Bộ lọc thống kê</h5>
+            </div>
+            <div class="card-body">
+                <form id="filterForm" class="row g-3">
+                    <!-- Lọc theo thời gian -->
+                    <div class="col-md-3">
+                        <label class="form-label">Thời gian</label>
+                        <select class="form-select" id="timeFilter">
+                            <option value="day">Theo ngày</option>
+                            <option value="week">Theo tuần</option>
+                            <option value="month">Theo tháng</option>
+                            <option value="year">Theo năm</option>
+                        </select>
+                    </div>
+
+                    <!-- Chọn ngày cụ thể -->
+                    <div class="col-md-3" id="dayFilterGroup">
+                        <label class="form-label">Chọn ngày</label>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="prevDayBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <input type="date" class="form-control" id="dayFilter">
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="nextDayBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chọn tháng -->
+                    <div class="col-md-3" id="monthFilterGroup" style="display: none;">
+                        <label class="form-label">Chọn tháng</label>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="prevMonthBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <input type="month" class="form-control" id="monthFilter">
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="nextMonthBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chọn năm -->
+                    <div class="col-md-3" id="yearFilterGroup" style="display: none;">
+                        <label class="form-label">Chọn năm</label>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="prevYearBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <select class="form-select" id="yearFilter">
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                                <option value="2025">2025</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="nextYearBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chọn tuần -->
+                    <div class="col-md-3" id="weekFilterGroup" style="display: none;">
+                        <label class="form-label">Chọn tuần</label>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="prevWeekBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <input type="week" class="form-control" id="weekFilter">
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="nextWeekBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Nút lọc -->
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-success" id="exportBtn">
+                            <i class="fas fa-download me-2"></i>Xuất báo cáo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Box chỉ số theo kỳ -->
+        <div class="card mb-4" id="currentPeriodCard">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        Kỳ hiện tại 
+                        <span id="currentPeriodLabel" class="badge bg-primary ms-2">--/--/----</span>
+                    </h5>
+                    <span class="text-muted" id="comparePeriodLabel">
+                        So với kỳ trước: <span id="prevPeriodLabel">--/--/----</span>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card text-center border-primary">
+                            <div class="card-body">
+                                <h6 class="text-muted">Tổng doanh thu</h6>
+                                <h3 id="totalRevenue" class="text-brown">25,500,000đ</h3>
+                                <span id="revenueGrowth" class="text-success">
+                                    <i class="fas fa-arrow-up"></i> 15% so với kỳ trước
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card text-center border-primary">
+                            <div class="card-body">
+                                <h6 class="text-muted">Tổng số đơn hàng</h6>
+                                <h3 id="totalOrders" class="text-primary">125 đơn</h3>
+                                <span id="orderGrowth" class="text-success">
+                                    <i class="fas fa-arrow-up"></i> 8% so với kỳ trước
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card text-center border-primary">
+                            <div class="card-body">
+                                <h6 class="text-muted">Giá trị TB/đơn</h6>
+                                <h3 id="averageOrderValue" class="text-info">204,000đ</h3>
+                                <span id="avgOrderGrowth" class="text-success">
+                                    <i class="fas fa-arrow-up"></i> 5% so với kỳ trước
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card text-center border-primary">
+                            <div class="card-body">
+                                <h6 class="text-muted">Khách hàng mới</h6>
+                                <h3 class="text-warning">32</h3>
+                                <span class="text-success" id="customerGrowth">
+                                    <i class="fas fa-arrow-up"></i> 12% so với kỳ trước
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ -->
+        <div class="row mb-4">
+            <div class="col-md-8 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Doanh thu theo thời gian</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="revenueByTimeChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Tỉ lệ doanh thu theo danh mục</h5>
+                    </div>
+                    <div class="card-body" id="categoryRevenueCard">
+                        <div id="categoryRevenueChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Doanh thu theo khung giờ</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="hourlyRevenueChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Top món bán chạy</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group" id="topDishesList">
+                            <!-- JS render top món bán chạy -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết doanh thu -->
+        <div class="card mb-4" id="revenueDetailCard">
+            <div class="card-header">
+                <h5 class="card-title" id="revenueDetailTableTitle">Chi tiết doanh thu</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th id="revenueDetailTimeHeading" style="width: 30%;">Thời gian</th>
+                                <th class="text-center" style="width: 20%;">Số lượng đơn</th>
+                                <th class="text-end" style="width: 25%;">Doanh thu</th>
+                                <th class="text-center" style="width: 25%;">% Tổng doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenueDetailTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Chọn thời gian để xem thống kê chi tiết
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

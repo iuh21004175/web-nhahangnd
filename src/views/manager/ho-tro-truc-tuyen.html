@@ -1,0 +1,49 @@
+<%- include('../layouts/manager.html', {
+    title: 'Hỗ trợ trực tuyến',
+    styles: '<link rel="stylesheet" href="/css/manager/ho-tro-truc-tuyen.css">',
+    scripts: `
+        <!--Socket.io-->
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script src="/js/manager/ho-tro-truc-tuyen.js"></script>
+    `,
+    body: `
+    <div class="container-fluid py-3">
+        <input type="hidden" id="tenDangNhap" value="${locals.taiKhoan.tenDangNhap}">
+        <div class="row chat-container">
+            <!-- Danh sách cuộc hội thoại (bên trái) -->
+            <div class="col-md-4 conversation-list-col p-0">
+                <div class="header-section p-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Hỗ trợ khách hàng</h5>
+                    </div>
+                    <div class="search-box mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" id="searchConversation" placeholder="Tìm kiếm cuộc hội thoại...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="conversations-section overflow-auto">
+                    <!-- Cuộc hội thoại -->
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
+                        <div class="d-flex">
+                            <div class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-secondary ms-2">Đang tải danh sách cuộc hội thoại...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Khu vực chat (bên phải) -->
+            <div class="col-md-8 chat-area-col p-0 d-flex flex-column">
+                
+            </div>
+        </div>
+    </div>
+    `
+}) %>

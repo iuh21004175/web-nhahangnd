@@ -1,0 +1,246 @@
+.chat-container {
+    height: calc(100vh - 130px);
+    overflow: hidden;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Danh sách cuộc hội thoại */
+.conversation-list-col {
+    border-right: 1px solid #e5e5e5;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+}
+
+.conversations-section {
+    flex-grow: 1;
+    height: 0;
+}
+
+.conversation-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conversation-item:hover {
+    background-color: #f0f2f5;
+}
+
+.conversation-item.active {
+    background-color: #e6f2fe;
+    border-left: 3px solid #0d6efd;
+}
+
+.conversation-item.new-message {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.avatar-wrapper {
+    position: relative;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.status-indicator.online {
+    background-color: #28a745;
+}
+
+.status-indicator.offline {
+    background-color: #6c757d;
+}
+
+.status-indicator.away {
+    background-color: #ffc107;
+}
+
+/* Khu vực chat */
+.chat-area-col {
+    height: 100%;
+    background-color: #fff;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #f0f2f5;
+}
+
+.chat-date {
+    position: relative;
+    margin: 20px 0;
+}
+
+.chat-date span {
+    background-color: #e4e6eb;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #65676b;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.message-row.customer {
+    justify-content: flex-start;
+}
+
+.message-row.staff {
+    justify-content: flex-end;
+}
+
+.message-content {
+    max-width: 70%;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.customer .message-bubble {
+    background-color: #e4e6eb;
+    color: #050505;
+    border-bottom-left-radius: 4px;
+}
+
+.staff .message-bubble {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-info {
+    font-size: 11px;
+    margin-top: 4px;
+    color: #65676b;
+}
+
+/* Textarea auto-resize */
+.chat-input-area {
+    background-color: #fff;
+}
+
+/* Hiệu ứng đang gõ */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    margin: 0 1px;
+    background-color: #9e9ea1;
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing-bounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+    }
+    40% { 
+        transform: scale(1.0);
+    }
+}
+
+/* For small screens - responsive */
+@media (max-width: 767px) {
+    .conversation-list-col {
+        height: 30%;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+    }
+    
+    .chat-area-col {
+        height: 70%;
+    }
+    
+    .chat-container {
+        flex-direction: column;
+    }
+}
+
+/* Giao diện khi hội thoại đang được phục vụ bởi nhân viên khác */
+.conversation-item.being-served {
+    position: relative;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.conversation-item.being-served:hover {
+    background-color: #fff;
+}
+
+.conversation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(200, 200, 200, 0.1);
+    cursor: not-allowed;
+    z-index: 10;
+    opacity: 0;
+}
+.conversation-overlay.show {
+    opacity: 1;
+}
+.conversation-status {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    opacity: 0;
+}
+.conversation-status.show{
+    opacity: 1;
+}
+
+.conversation-status i {
+    margin-right: 3px;
+}
+
+.chat-date-label {
+    color: #888;
+    font-size: 13px;
+    margin: 10px 0;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 0.5px;
+}

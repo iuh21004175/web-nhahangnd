@@ -1,0 +1,55 @@
+<%- include('../layouts/manager.html', {
+    title: 'Quản lý kho',
+    styles: '<link rel="stylesheet" href="/css/manager/kho.css">',
+    scripts: '<script src="/js/manager/kho.js"></script>',
+    body: `
+    <div class="inventory-container">
+        <!-- Header với tiêu đề và tìm kiếm -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <h4 class="mb-0">Kho nguyên liệu</h4>
+                <div class="d-flex gap-2">
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="searchInput" 
+                        placeholder="Tìm kiếm theo tên, mã phiếu..."
+                        style="width: 250px;">
+                    <select class="form-select" style="width: 200px;" id="categoryFilter">
+                        <option value="all">Tất cả danh mục</option>
+                        <option value="1">Gia vị</option>
+                        <option value="2">Thịt</option>
+                        <option value="3">Rau củ</option>
+                        <option value="4">Hải sản</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng danh sách kho -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-danhSach">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên nguyên liệu</th>
+                                <th>Danh mục</th>
+                                <th>Đơn vị</th>
+                                <th>Giá</th>
+                                <th>Số lượng tồn</th>
+                                <th>Hạn sử dụng</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Nhóm Gia vị -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

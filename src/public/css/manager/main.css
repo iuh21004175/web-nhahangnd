@@ -1,0 +1,375 @@
+:root {
+    --sidebar-width: 250px;
+    --header-height: 60px;
+    --footer-height: 50px;
+    --primary-color: #8B4513;
+    --sidebar-bg: #2c3e50;
+    --sidebar-color: #ecf0f1;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-color);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    color: var(--sidebar-color);
+    padding: 12px 20px;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+/* Main wrapper - phần bên phải sidebar */
+.main-wrapper {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+/* Header */
+.main-header {
+    height: var(--header-height);
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 100%;
+}
+
+.header-container {
+    height: 100%;
+    padding: 0 20px;
+}
+
+/* Phần bên trái header */
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-title {
+    margin-right: auto; /* Đẩy tiêu đề về bên trái */
+}
+
+.page-title h4 {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* Phần bên phải header */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto; /* Đẩy các phần tử về bên phải */
+}
+
+/* Nút trong header */
+.header-right .btn-light {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    padding: 8px 15px;
+}
+
+.header-right .btn-light:hover {
+    background: #e9ecef;
+}
+
+/* Main content */
+.main-content {
+    flex: 1;
+    padding: 10px 20px;
+    /* padding-bottom: calc(var(--footer-height) + 20px); */
+    overflow-y: auto;
+    background-color: #f5f5f5;
+}
+
+/* Footer */
+.main-footer {
+    height: var(--footer-height);
+    background-color: white;
+    padding: 0 20px;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+    width: 100%;
+    /* Đã xóa position: fixed và các thuộc tính bottom, right, left */
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+/* Footer container - nếu đã có trong HTML */
+.footer-container {
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+    justify-content: space-between; /* Giữ các phần tử cách đều nhau theo chiều ngang */
+    width: 100%;
+    height: 100%;
+}
+
+/* Copyright */
+.footer-copyright {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+/* Links hữu ích */
+.footer-links {
+    display: flex;
+    gap: 15px;
+    align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+.footer-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #723a0f;
+    text-decoration: underline;
+}
+
+/* Version */
+.footer-version {
+    color: #6c757d;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+/* Thêm style cho bảng chi tiết doanh thu */
+.table-responsive {
+    margin-bottom: 20px;
+}
+
+/* Card cuối cùng trong thống kê */
+.thongke-container .card:last-child {
+    margin-bottom: var(--footer-height);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-wrapper {
+        margin-left: 0;
+    }
+
+    .header-container {
+        padding: 0 10px;
+    }
+    
+    .page-title h4 {
+        font-size: 1rem;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .footer-links {
+        margin: 10px 0;
+    }
+
+    .main-footer {
+        height: auto;
+    }
+}
+
+/* Logo area trong sidebar */
+.sidebar-logo {
+    padding: 20px;
+    text-align: center;
+    background-color: rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.sidebar-logo img {
+    max-width: 150px;
+    height: auto;
+}
+
+/* Dropdown trong sidebar */
+.sidebar .dropdown-menu {
+    background-color: var(--sidebar-bg);
+    border: none;
+    margin-left: 20px;
+}
+
+.sidebar .dropdown-item {
+    color: var(--sidebar-color);
+}
+
+.sidebar .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Notifications */
+.notification-badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.6em;
+}
+
+/* User Avatar */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+}
+
+/* Điều chỉnh card đầu tiên trong content */
+.thongke-container .card:first-child {
+    margin-top: 0;
+}
+
+/* Submenu styles */
+.nav-link[data-bs-toggle="collapse"] .fa-chevron-down {
+    transition: transform 0.3s;
+}
+
+.nav-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Active state cho parent menu khi ở trang con */
+.nav-link[data-bs-toggle="collapse"].active {
+    background-color: rgba(255,255,255,0.1);
+}
+
+
+/* Style cho các link trong submenu */
+.sub-menu .nav-link {
+    padding-left: 2.5rem;
+    white-space: nowrap;
+}
+
+.sub-menu .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Style cho active link */
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Thêm style này */
+.sub-menu.hidden {
+    display: none;
+}
+
+/* Style cho submenu links */
+.sub-link {
+    padding-left: 2.5rem !important; /* Tăng padding bên trái để dịch phải */
+    font-size: 0.9rem;
+}
+
+.sub-link i {
+    width: 20px;
+    margin-right: 0.5rem;
+}
+
+/* Style cho submenu kho giống với submenu thực đơn */
+.sub-menu {
+    display: none;
+}
+
+/* Thêm style cho icon trong submenu Sơ đồ bàn */
+.nav-link .fa-map-marker-alt,
+.nav-link .fa-chair {
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+/* Style cho icon sơ đồ bàn trong menu chính */
+.nav-link .fa-th {
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+/* Style cho trạng thái active của các menu toggle */
+.menu-toggle.active,
+.menu-toggle-inventory.active,
+.menu-toggle-table.active,
+.menu-toggle-schedule.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-toggle.active .fa-chevron-down,
+.menu-toggle-inventory.active .fa-chevron-down,
+.menu-toggle-table.active .fa-chevron-down,
+.menu-toggle-schedule.active .fa-chevron-down {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}

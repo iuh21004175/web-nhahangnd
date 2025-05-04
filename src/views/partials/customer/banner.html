@@ -1,0 +1,55 @@
+<div class="banner-container">
+    <% if (typeof bannerType != 'undefined' && bannerType === 'carousel') { %>
+        <!-- Carousel Banner -->
+        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="/images/banners/banner1.jpg" class="d-block w-100" alt="Khuyến mãi đặc biệt">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>Khuyến mãi đặc biệt</h2>
+                        <p>Giảm 20% cho set menu ngày thường</p>
+                        <a href="/khuyen-mai" class="btn btn-primary">Xem ngay</a>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="/images/banners/banner2.jpg" class="d-block w-100" alt="Món mới">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>Món mới đặc sắc</h2>
+                        <p>Khám phá hương vị mới tại nhà hàng chúng tôi</p>
+                        <a href="/thuc-don" class="btn btn-primary">Xem thực đơn</a>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="/images/banners/banner3.jpg" class="d-block w-100" alt="Đặt bàn">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>Đặt bàn ngay hôm nay</h2>
+                        <p>Đảm bảo chỗ ngồi tốt nhất cho bạn và người thân</p>
+                        <a href="/dat-ban" class="btn btn-primary">Đặt bàn</a>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    <% } else { %>
+        <!-- Simple Banner -->
+        <div class="simple-banner position-relative">
+            <img src="<%= typeof bannerImage != 'undefined' ? bannerImage : '/images/banners/default.jpg' %>" class="w-100" alt="<%= typeof bannerAlt != 'undefined' ? bannerAlt : 'Banner' %>">
+            <div class="banner-content position-absolute top-50 start-50 translate-middle text-center">
+                <h1 class="display-4 text-white"><%= typeof bannerTitle != 'undefined' ? bannerTitle : 'Nhà Hàng XYZ' %></h1>
+                <% if (typeof bannerSubtitle != 'undefined') { %>
+                    <p class="lead text-white"><%= bannerSubtitle %></p>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</div>

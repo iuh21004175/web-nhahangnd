@@ -1,0 +1,36 @@
+<%- include('../layouts/customer.html', { 
+    title: 'Đơn hàng của tôi',
+    styles: '<link rel="stylesheet" href="/css/customer/don-hang.css">',
+    scripts: '<script src="/js/customer/don-hang.js"></script>',
+    body: `
+        <div class="container py-5">
+            <h2 class="text-center mb-4">Đơn hàng của tôi</h2>
+
+            <!-- Tab đơn hàng -->
+            <ul class="nav nav-pills nav-fill mb-4" id="orderTabs">
+                <li class="nav-item">
+                    <button class="nav-link active" data-status="all">Tất cả</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-status="3">Đang giao</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-status="6">Đã giao</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-status="0">Đã hủy</button>
+                </li>
+            </ul>
+
+            <!-- Danh sách đơn hàng -->
+            <div id="orderList" class="row g-4">
+                <!-- Đơn hàng sẽ được thêm vào đây bằng JavaScript -->
+            </div>
+        </div>
+
+        <!-- Template cho đơn hàng -->
+        <div id="orderTemplate">
+            
+        </div>
+    `
+}) %>

@@ -1,0 +1,93 @@
+<%- include('../layouts/manager.html', {
+    title: 'Xem lịch làm việc',
+    styles: `<link rel="stylesheet" href="/css/manager/xem-lich-lam-viec.css">`,
+    scripts: '<script src="/js/manager/xem-lich-lam-viec.js"></script>',
+    body: `
+    <div class="container mt-5">
+        <h4 class="mb-4">Xem lịch làm việc</h4>
+        
+        <!-- Chọn tuần -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <select class="form-select" id="weekSelector">
+                    <!-- <option>Tuần 1: 22/04/2025 - 28/04/2025</option>
+                    <option>Tuần 2: 29/04/2025 - 05/05/2025</option> -->
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th class="text-center">Thời gian</th>
+                        <th class="text-center">Ca sáng (10:00 - 16:00)</th>
+                        <th class="text-center">Ca chiều (16:00 - 22:00)</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                    <!-- Mẫu dữ liệu -->
+                    <tr>
+                        <td class="date-cell text-center">
+                            <strong>Thứ hai</strong><br>
+                            <small>22/04/2025</small>
+                        </td>
+                        <td class="text-center">
+                            <div class="shift-box shift-working">
+                                Ca làm
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="shift-box shift-approved">
+                                Đã duyệt
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="date-cell text-center">
+                            <strong>Thứ ba</strong><br>
+                            <small>23/04/2025</small>
+                        </td>
+                        <td class="text-center">
+                            <div class="shift-box shift-pending">
+                                Chờ duyệt
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="shift-box shift-empty">
+                                Trống
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Chú thích -->
+        <!-- <div class="mt-4">
+            <div class="d-flex gap-4 justify-content-center">
+                <div class="shift-info">
+                    <div class="shift-box shift-working">
+                        Ca làm
+                    </div>
+                </div>
+                <div class="shift-info">
+                    <div class="shift-box shift-approved">
+                        Đã duyệt
+                    </div>
+                </div>
+                <div class="shift-info">
+                    <div class="shift-box shift-pending">
+                        Chờ duyệt
+                    </div>
+                </div>
+                <div class="shift-info">
+                    <div class="shift-box shift-empty">
+                        Trống
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+    `
+}) %>

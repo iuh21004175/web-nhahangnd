@@ -1,0 +1,13 @@
+# Bỏ qua thư mục node_modules
+node_modules/
+credentials/
+# Bỏ qua file cấu hình cá nhân
+.env
+config.json
+package-lock.json
+# Bỏ qua thư mục build
+dist/
+build/
+
+# Bỏ qua file log
+*.log
