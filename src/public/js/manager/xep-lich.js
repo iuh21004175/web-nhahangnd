@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     window.fullShiftsList = listDangKyCa; // Lưu vào biến toàn cục
     thaoTacCaLamViec(listDangKyCa);
     
+
+    
+    
     // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
     updateStatusVisibility(defaultWeekValue);
     
@@ -111,6 +114,46 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Thêm khởi tạo cho tab Phân công
     initializeAssignmentTab();
 
+    let listHeSoLuong = await getAPIHeSoLuong(); 
+    thaoTacHeSoLuong(listHeSoLuong);
+    
+    document.getElementById('rest-day-form').addEventListener('submit', themHeSoLuong);
+
+    const editHeSoModal = document.getElementById('editHeSoModal');
+    editHeSoModal.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        // // Xử lý cập nhật danh mục ở đây
+        const heSo = this.querySelector('#edit-he-so').value;
+        const id = this.querySelector('#heSoId').value;
+        const ghiChu = this.querySelector('#edit-ghi-chu').value;
+        try {
+            const res = await fetch('/api/he-so-luong', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, heSo, ghiChu })
+            })
+            const data = await res.json();
+            if(data.status){
+                // Cập nhật thành công
+                const index =listHeSoLuong.findIndex(item => item.id == id);
+                listHeSoLuong[index] = data.obj;
+                thaoTacHeSoLuong(listHeSoLuong);
+                alert("Cập nhật thành công!");
+            }
+            else{
+                //showToastDanger(data.error);
+                console.error('Lỗi server:', data.error);
+            }
+        } catch (error) {
+            showToastDanger();
+            console.error('Error:', error);
+        }
+        // Đóng modal sau khi cập nhật
+        bootstrap.Modal.getInstance(document.getElementById('editHeSoModal')).hide();
+    });
+    
     // Bật tính năng hover cho các dropdown trạng thái
     const statusDropdowns = document.querySelectorAll('.status-badge.dropdown-toggle');
     statusDropdowns.forEach(dropdown => {
@@ -135,6 +178,127 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
+function thaoTacHeSoLuong(danhSach) {
+    const tbody = document.querySelector('#salary-table tbody');
+    tbody.innerHTML = ''; // Xóa dữ liệu cũ (nếu có)
+
+    if (danhSach.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5">Chưa có hệ số lương nào.</td></tr>`; // Cập nhật lại số cột là 5 (thêm cột Sửa)
+        return;
+    }
+
+    danhSach.forEach((item, index) => {
+        const row = document.createElement('tr');
+
+        const ngay = new Date(item.ngay).toLocaleDateString('vi-VN');
+        const heSo = item.heSo;
+        const ghiChu = item.ghiChu || '';
+
+        row.innerHTML = `
+            <td>${index + 1}</td> <!-- Thêm chỉ số cho hàng -->
+            <td>${ngay}</td>
+            <td>${heSo}</td>
+            <td>${ghiChu}</td>
+            <td>
+                <button class="btn btn-sm btn-primary btn-edit" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#editHeSoModal" 
+                    data-bs-tooltip="tooltip"
+                    title="Chỉnh sửa"
+                    data-id="${item.id}"
+                    data-ngay="${item.ngay}"
+                    data-he-so="${item.heSo}"
+                    data-ghi-chu="${item.ghiChu}">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+    });
+
+    // Khởi tạo tất cả tooltips
+    const tooltips = document.querySelectorAll('[data-bs-tooltip="tooltip"]');
+    tooltips.forEach(tooltip => {
+        new bootstrap.Tooltip(tooltip);
+    });
+
+    // Gắn sự kiện cho các nút "Chỉnh sửa"
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const ngay = this.dataset.ngay;
+            const heSo = this.dataset.heSo;
+            const ghiChu = this.dataset.ghiChu;
+
+            // Lấy modal chỉnh sửa
+           // const modal = new bootstrap.Modal(document.getElementById('editHeSoModal'));
+
+            // Cập nhật thông tin vào các trường trong modal
+            document.querySelector('#edit-he-so').value = heSo;
+            document.querySelector('#edit-ghi-chu').value = ghiChu;
+            document.querySelector('#edit-ngay-hidden').value = ngay;
+            document.querySelector('#heSoId').value = id;
+            
+
+            // Mở modal
+           // modal.show();
+           bootstrap.Modal.getInstance(document.getElementById('editHeSoModal')).show();
+        });
+    });
+}
+
+
+
+async function getAPIHeSoLuong() {
+    const response = await fetch('/api/he-so-luong');
+    try {
+        const data = await response.json();
+        if (data.status) {
+            return data.data; 
+        } else {
+            console.error('Lỗi server:', data.message);
+            return [];
+        }
+    } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+        return [];
+    }
+}
+
+async function themHeSoLuong(e) {
+    e.preventDefault();
+
+    const ngay = document.getElementById('rest-date').value;
+    const heSo= document.getElementById('salary-factor').value;
+    const ghiChu = document.getElementById('note').value;
+
+    try {
+        const res = await fetch('/api/them-he-so-luong', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ngay, heSo, ghiChu })
+        });
+
+        const data = await res.json();
+
+        if (data.status) {
+            alert(data.message); // Thông báo thành công
+            document.getElementById('rest-day-form').reset();
+
+            const listHeSoLuong = await getAPIHeSoLuong();
+            thaoTacHeSoLuong(listHeSoLuong);
+        } else {
+            alert(data.message); // Lỗi nghiệp vụ
+        }
+
+    } catch (err) {
+        console.error('Lỗi gọi API:', err);
+        alert('Đã xảy ra lỗi khi lưu hệ số lương.');
+    }
+}
 
 async function getAPICaLamViec(weekValue) {
     try {

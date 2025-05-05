@@ -188,4 +188,39 @@ module.exports = {
         }
         
     },
+    layThongTinNhanVien: async (req, res) => {
+        const token = req.cookies.AuthTokenManager;
+        if (!token) {
+            return res.status(401).json({ error: 'Chưa đăng nhập' });
+        }
+        // Giải mã token để lấy thông tin tài khoản
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ error: 'Token không hợp lệ' });
+        }
+
+        try {
+            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap: decoded.tenDangNhap } });
+      
+            if (!taiKhoan) {
+            console.log('Tài khoản không tồn tại');
+            return res.json({ status: false, error: 'Tài khoản không tồn tại' });
+            }
+      
+            const id = taiKhoan.idNhanVien;
+
+            const nhanVien = await NhanVien.findAll({
+                where: {
+                    id  
+                },
+                attributes: ['id' ,'ten', 'chucVu', 'ngayBatDau', 'ngaySinh', 'soDienThoai', 'diaChi']
+            })
+            return res.json({status: true, obj: nhanVien});
+        }
+        catch (error) {
+            console.error('Lỗi server:', error);
+            res.status(500).json({ error: 'Lỗi server' });
+        }
+        
+    }
 }

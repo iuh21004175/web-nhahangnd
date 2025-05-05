@@ -33,7 +33,7 @@ module.exports = {
                     ]
                 },
                 order: [['ngay', 'ASC']],
-                attributes: ['ngay', 'tuan', 'caLamViec', 'checkIn', 'checkOut']
+                attributes: ['ngay', 'tuan', 'caLamViec', 'checkIn', 'checkOut', 'heSoLuong']
             });
     
             // Nếu có dữ liệu, trả về kết quả

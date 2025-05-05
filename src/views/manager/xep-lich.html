@@ -15,6 +15,11 @@
                 <i class="fas fa-check-circle me-2"></i>Duyệt ca
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="setting-tab" data-bs-toggle="tab" data-bs-target="#setting" type="button" role="tab" aria-controls="setting" aria-selected="false">
+                <i class="fas fa-cogs me-2"></i>Thiết lập hệ số lương
+            </button>
+        </li>
     </ul>
     
     <!-- Tab content -->
@@ -357,7 +362,96 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tab Thiết lập ngày nghỉ -->
+        <div class="tab-pane fade p-4" id="setting" role="tabpanel" aria-labelledby="setting-tab">
+            <h5 class="mb-4">Thiết lập hệ số lương</h5>
+            
+            <form id="rest-day-form">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="rest-date" class="form-label">Chọn ngày nhân hệ số</label>
+                        <input type="date" class="form-control" id="rest-date" name="rest-date" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="salary-factor" class="form-label">Hệ số lương</label>
+                        <select class="form-select" id="salary-factor" name="salary-factor" required>
+                            <option value="2.00">2.00</option>
+                            <option value="3.00">3.00</option>
+                            <option value="4.00">4.00</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="note" class="form-label">Ghi chú</label>
+                        <input type="text" class="form-control" id="note" name="note" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-2">
+                    <i class="fas fa-save me-1"></i>Lưu
+                </button>
+            </form>
+
+            <!-- Bảng hiển thị các thông tin đã nhập -->
+            <h5 class="mt-4">Danh sách hệ số lương đã thiết lập</h5>
+            <table class="table table-bordered" id="salary-table">
+                <thead>
+                    <tr>
+                        <th>Số thứ tự</th>
+                        <th>Ngày</th>
+                        <th>Hệ số lương</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
+
+
     </div>
+
+    
+
+    <!-- Modal sửa hệ số lương -->
+    <div class="modal fade" id="editHeSoModal" tabindex="-1" aria-labelledby="editHeSoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <form id="edit-he-so-form" class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="editHeSoModalLabel">Chỉnh sửa hệ số lương</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+            <!-- Trường ẩn để giữ lại ngày -->
+            <input type="hidden" id="edit-ngay-hidden" name="ngay">
+            <input type="hidden" name="heSoId" id="heSoId">
+            <div class="mb-3">
+                <label for="edit-he-so" class="form-label">Hệ số lương</label>
+                <select class="form-control" id="edit-he-so" name="he_so" required>
+                    <option value="1.00">1.00</option>
+                    <option value="2.00">2.00</option>
+                    <option value="3.00">3.00</option>
+                    <option value="4.00">4.00</option>
+                    <!-- Thêm các giá trị hệ số lương khác nếu cần -->
+                </select>
+            </div>
+            
+    
+            <div class="mb-3">
+                <label for="edit-ghi-chu" class="form-label">Ghi chú</label>
+                <textarea class="form-control" id="edit-ghi-chu" name="ghi_chu" rows="2"></textarea>
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </form>
+        </div>
+    </div>
+    
     
     <!-- Modal xác nhận duyệt -->
     <div class="modal fade" id="approveModal" tabindex="-1">
