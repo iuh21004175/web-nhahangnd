@@ -47,5 +47,6 @@ router.get('/dang-ky-lich-lam-viec', CtrlDangKyLich.index);
 router.get('/xem-lich-lam-viec', CtrlDangKyLich.xemLichLamViec);
 router.get('/ghi-don-hang', CtrlDonHang.indexGhiDonHang);
 router.get('/danh-sach-ban', CtrlBan.indexBanNhanVien);
+router.get('/xem-luong', CtrlChamCong.indexXemLuong);
 
 module.exports = router;

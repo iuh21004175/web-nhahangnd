@@ -64,8 +64,8 @@ module.exports = {
     },
     layBan: async (req, res) => {
         try {
-            if(req.query.id) {
-                const id = req.query.id;
+            if(req.query.idBan) {
+                const id = req.query.idBan;
                 const ban = await Ban.findOne({
                     include: [{
                         model: KhuVuc,
@@ -128,9 +128,9 @@ module.exports = {
         }
     },
     updateTrangThaiBan: async (req, res) => {
-        const { id, newStatus } = req.body; // Lấy idBan và newStatus từ body request
+        const { idBan, newStatus } = req.body; // Lấy idBan và newStatus từ body request
         try {
-            const ban = await Ban.findByPk(id);
+            const ban = await Ban.findByPk(idBan);
             if (!ban) {
                 return res.status(404).json({ status: false, error: 'Bàn không tồn tại' });
             }

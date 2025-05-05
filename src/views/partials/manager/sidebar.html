@@ -170,6 +170,14 @@
                     <span>Ghi đơn hàng </span>
                 </a>
             </li>
+
+            <!-- Xem lương -->
+            <li class="nav-item">
+                <a href="/manager/xem-luong" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Xem lương</span>
+                </a>
+            </li>
         <% } %>
 
         <% if (locals.taiKhoan && locals.taiKhoan.vaiTro === 'Đầu bếp') { %>
@@ -180,7 +188,30 @@
                     <span>Trang chủ</span>
                 </a>
             </li>
+
+            <!-- Đăng ký lịch làm việc -->
+            <li class="nav-item">
+                <a href="/manager/dang-ky-lich-lam-viec" class="nav-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Đăng ký lịch làm việc</span>
+                </a>
+            </li>
+
+            <!-- Xem lịch làm việc -->
+            <li class="nav-item">
+                <a href="/manager/xem-lich-lam-viec" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Xem lịch làm việc</span>
+                </a>
+            </li>
             
+             <!-- Xem lương -->
+             <li class="nav-item">
+                <a href="/manager/xem-luong" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Xem lương</span>
+                </a>
+            </li>
         <% } %>
          
         <!-- Đơn hàng chung -->

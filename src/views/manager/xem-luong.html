@@ -1,0 +1,66 @@
+<%- include('../layouts/manager.html', {
+    title: 'Xem lương',
+    styles: `<link rel="stylesheet" href="/css/manager/xem-luong.css">`,
+    body: `
+    <div class="salary-container">
+        <h4 class="mb-4">Bảng lương</h4>
+
+        <div class="filters-section">
+            <div class="form-group month-select">
+                <label class="form-label">Chọn tháng:</label>
+                <select class="form-select" id="monthSelect">
+                    
+                </select>
+            </div>
+            <div class="form-group month-select">
+                <label class="form-label">Chọn năm:</label>
+                <select class="form-select" id="yearSelect">
+                    
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Tổng giờ</th>
+                        <th>Hệ số</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceData">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="salary-summary">
+            <h5 class="mb-4">Tổng kết tháng</h5>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Tổng ngày làm</div>
+                    <div class="summary-value" id="totalWorkingDays"></div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Tổng giờ làm</div>
+                    <div class="summary-value" id="totalWorkingHours"></div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Lương theo giờ</div>
+                    <div class="summary-value">30,000₫</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Tổng lương</div>
+                    <div class="summary-value" id="totalSalary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `,
+    scripts: `
+        <script src="/js/manager/xem-luong.js"></script>
+    `
+}) %>
