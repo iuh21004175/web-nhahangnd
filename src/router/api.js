@@ -153,4 +153,5 @@ router.get('/ca-lam-viec', CtrlXepLich.layCaLamViec);
 router.put('/ca-lam-viec', CtrlXepLich.capNhatCa);
 router.get('/luong', CtrlTaiKhoan.kiemTraTruyCap, CtrlChamCong.layLuong);
 router.get('/lay-ngay-bat-dau-ca', CtrlXepLich.layNgayBatDauCa);
+router.get('/lay-danh-sach-nhan-chua-co-ca', CtrlXepLich.layNhanVienChuaCoCa);
 module.exports = router;

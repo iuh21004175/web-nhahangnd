@@ -22,132 +22,44 @@
         <!-- Tab Phân công -->
         <div class="tab-pane fade show active" id="assignment" role="tabpanel" aria-labelledby="assignment-tab">
             <div class="phan-cong-container">
-                <!-- Bộ lọc -->
-                <div class="card mb-4">
+                <!-- Danh sách nhân viên chưa đăng ký ca -->
+                <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Chọn thời gian phân công</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-5">
-                                <div class="mb-3">
-                                    <label for="assignment-week-filter" class="form-label">Tuần</label>
-                                    <select class="form-control" id="assignment-week-filter">
-                                        <!-- Options sẽ được thêm bằng JavaScript -->
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="assignment-role-filter" class="form-label">Bộ phận</label>
-                                    <select class="form-control" id="assignment-role-filter">
-                                        <option value="all">Tất cả bộ phận</option>
-                                        <option value="0">Phục vụ</option>
-                                        <option value="1">Đầu bếp</option>
-                                        <option value="2">Thu ngân</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-primary btn-block w-100" id="btn-refresh-stats">
-                                    <i class="fas fa-sync-alt me-2"></i>Cập nhật thống kê
+                        <div class="d-flex justify-content-between align-items-center">
+                            <select id="assignment-week-filter" class="form-select form-select-sm custom-select-sm d-inline-block m-0" style="width: auto; max-width: 300px;">
+                                <!-- Options sẽ được thêm bằng JavaScript -->
+                            </select>
+                            <select id="assignment-role-filter" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
+                                <option value="all">Bộ phận: Tất cả</option>
+                                <option value="0">Bộ phận: Phục vụ</option>
+                                <option value="1">Bộ phận: Đầu bếp</option>
+                            </select>
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" id="btn-export-employees">
+                                    <i class="fas fa-file-export me-2"></i>Xuất Excel
+                                </button>
+                                <button class="btn btn-success" id="btn-assign-shift">
+                                    <i class="fas fa-plus me-2"></i>Phân công ca
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Thống kê ca làm việc theo ngày - đã cập nhật -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0" id="role-stats-date">Chọn ngày để xem thống kê</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dailyStatsTable">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Ngày</th>
-                                        <th class="text-center">Ca sáng<br><small class="text-muted">(6:00-14:00)</small></th>
-                                        <th class="text-center">Ca chiều<br><small class="text-muted">(14:00-22:00)</small></th>
-                                        <th class="text-center">Đã duyệt</th>
-                                        <th class="text-center">Chờ duyệt</th>
-                                        <th class="text-center">Đang chấm</th>
-                                        <th class="text-center">Đã chấm</th>
-                                        <th class="text-center">Từ chối</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Danh sách nhân viên chưa đăng ký ca -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Nhân viên chưa đăng ký ca làm việc</h5>
-                        <button class="btn btn-success" id="btn-assign-shift">
-                            <i class="fas fa-plus me-2"></i>Phân công ca
-                        </button>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover" id="unregisteredEmployeesTable">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width: 50px">
-                                            <input type="checkbox" id="select-all-employees">
-                                            <label for="select-all-employees" class="visually-hidden">Chọn tất cả nhân viên</label>
-                                        </th>
                                         <th>Mã NV</th>
                                         <th>Tên nhân viên</th>
                                         <th>Chức vụ</th>
-                                        <th>Tổng ca đăng ký</th>
-                                        <th>Lần đăng ký cuối</th>
-                                        <th style="width: 100px">Hành động</th>
+                                        <th style="width: 120px">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bảng lịch phân công theo tuần -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Lịch làm việc tuần</h5>
-                        <div>
-                            <button class="btn btn-outline-secondary me-2" id="btn-export-schedule">
-                                <i class="fas fa-file-export me-2"></i>Xuất Excel
-                            </button>
-                            <button class="btn btn-outline-primary" id="btn-print-schedule">
-                                <i class="fas fa-print me-2"></i>In lịch
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="weeklyScheduleTable">
-                                <thead class="table-light">
                                     <tr>
-                                        <th style="width: 200px">Nhân viên</th>
-                                        <th>Thứ hai<br><span class="day-date" id="monday-schedule"></span></th>
-                                        <th>Thứ ba<br><span class="day-date" id="tuesday-schedule"></span></th>
-                                        <th>Thứ tư<br><span class="day-date" id="wednesday-schedule"></span></th>
-                                        <th>Thứ năm<br><span class="day-date" id="thursday-schedule"></span></th>
-                                        <th>Thứ sáu<br><span class="day-date" id="friday-schedule"></span></th>
-                                        <th>Thứ bảy<br><span class="day-date" id="saturday-schedule"></span></th>
-                                        <th>Chủ nhật<br><span class="day-date" id="sunday-schedule"></span></th>
+                                        <td colspan="4" class="text-center">Đang tải dữ liệu...</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Dữ liệu phân công sẽ được thêm bằng JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -165,15 +77,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <div>
-                                    <label for="week-select" class="me-2">Tuần:</label>
                                     <select id="week-select" class="form-select form-select-sm custom-select-sm d-inline-block" style="width: auto; max-width: 300px;">
                                         <!-- Options sẽ được thêm bằng JavaScript -->
                                     </select>
-                                    <label for="duyetChucVu-select" class="me-2 ms-3">Bộ phận:</label>
                                     <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
-                                        <option value="all">Tất cả</option>
-                                        <option value="0">Phục vụ</option>
-                                        <option value="1">Đầu bếp</option>
+                                        <option value="all">Bộ phận: Tất cả</option>
+                                        <option value="0">Bộ phận: Phục vụ</option>
+                                        <option value="1">Bộ phận: Đầu bếp</option>
                                     </select>
                                 </div>
                             </div>
@@ -219,69 +129,209 @@
                             </ul>
                         </nav>
                     </div>
-
-                    <!-- Legend hiển thị số lượng trạng thái dạng Accordion -->
-                    <div class="accordion mb-4" id="statusAccordion">
-                      <div class="accordion-item">
-                        <h2 class="accordion-header" id="statusHeader">
-                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#statusCollapse" aria-expanded="true" aria-controls="statusCollapse">
-                            <ul class="list-inline mb-0 d-flex align-items-center w-100">
-                              <li class="list-inline-item"><h5 class="mb-0">Trạng thái:</h5></li>
-                              <li class="list-inline-item">
-                                <span class="status-badge status-pending">Chờ duyệt (<span id="pending-count">0</span>)</span>
-                              </li>
-                              <li class="list-inline-item">
-                                <span class="status-badge status-approved">Đã duyệt (<span id="approved-count">0</span>)</span>
-                              </li>
-                              <li class="list-inline-item">
-                                <span class="status-badge status-timekeeping">Chấm công (<span id="timekeeping-count">0</span>)</span>
-                              </li>
-                              <li class="list-inline-item">
-                                <span class="status-badge status-confirmed">Đã chấm (<span id="confirmed-count">0</span>)</span>
-                              </li>
-                              <li class="list-inline-item">
-                                <span class="status-badge status-rejected">Đã từ chối (<span id="rejected-count">0</span>)</span>
-                              </li>
-                            </ul>
-                          </button>
-                        </h2>
-                        <div id="statusCollapse" class="accordion-collapse collapse" aria-labelledby="statusHeader" data-bs-parent="#statusAccordion">
-                          <div class="accordion-body p-0">
-                            <div class="table-responsive">
-                              <table class="table table-bordered table-hover mb-0" id="roleStatsTable">
-                                <thead class="table-light">
-                                  <tr>
-                                    <th rowspan="2" class="align-middle">Chức vụ</th>
-                                    <th class="text-center">Ca sáng (6:00-14:00)</th>
-                                    <th class="text-center">Ca chiều (14:00-22:00)</th>
-                                    <th rowspan="2" class="align-middle text-center">Tổng</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>Phục vụ</td>
-                                    <td id="waiter-morning-count" class="text-center">0</td>
-                                    <td id="waiter-afternoon-count" class="text-center">0</td>
-                                    <td id="waiter-total" class="text-center">0</td>
-                                  </tr>
-                                  <tr>
-                                    <td>Đầu bếp</td>
-                                    <td id="chef-morning-count" class="text-center">0</td>
-                                    <td id="chef-afternoon-count" class="text-center">0</td>
-                                    <td id="chef-total" class="text-center">0</td>
-                                  </tr>
-                                  <tr class="table-secondary">
-                                    <td><strong>Tổng cộng</strong></td>
-                                    <td id="total-morning-count" class="text-center"><strong>0</strong></td>
-                                    <td id="total-afternoon-count" class="text-center"><strong>0</strong></td>
-                                    <td id="grand-total" class="text-center"><strong>0</strong></td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div class="mb-4">
+                        <ul class="list-inline mb-0 d-flex align-items-center w-100">
+                            <li class="list-inline-item dropdown">
+                                <span class="status-badge status-pending dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    <i class="fas fa-clock me-1"></i>Chờ duyệt (<span id="pending-count">0</span>)
+                                </span>
+                                <div class="dropdown-menu status-details p-2" style="min-width: 280px;">
+                                    <h6 class="dropdown-header">Chi tiết ca chờ duyệt</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Chức vụ</th>
+                                                    <th class="text-center">Ca sáng</th>
+                                                    <th class="text-center">Ca chiều</th>
+                                                    <th class="text-center">Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Phục vụ</td>
+                                                    <td class="text-center" id="pending-waiter-morning">0</td>
+                                                    <td class="text-center" id="pending-waiter-afternoon">0</td>
+                                                    <td class="text-center" id="pending-waiter-total">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Đầu bếp</td>
+                                                    <td class="text-center" id="pending-chef-morning">0</td>
+                                                    <td class="text-center" id="pending-chef-afternoon">0</td>
+                                                    <td class="text-center" id="pending-chef-total">0</td>
+                                                </tr>
+                                                <tr class="fw-bold">
+                                                    <td>Tổng</td>
+                                                    <td class="text-center" id="pending-total-morning">0</td>
+                                                    <td class="text-center" id="pending-total-afternoon">0</td>
+                                                    <td class="text-center" id="pending-total-all">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-inline-item dropdown">
+                                <span class="status-badge status-approved dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    <i class="fas fa-check-circle me-1"></i>Đã duyệt (<span id="approved-count">0</span>)
+                                </span>
+                                <div class="dropdown-menu status-details p-2" style="min-width: 280px;">
+                                    <h6 class="dropdown-header">Chi tiết ca đã duyệt</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Chức vụ</th>
+                                                    <th class="text-center">Ca sáng</th>
+                                                    <th class="text-center">Ca chiều</th>
+                                                    <th class="text-center">Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Phục vụ</td>
+                                                    <td class="text-center" id="approved-waiter-morning">0</td>
+                                                    <td class="text-center" id="approved-waiter-afternoon">0</td>
+                                                    <td class="text-center" id="approved-waiter-total">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Đầu bếp</td>
+                                                    <td class="text-center" id="approved-chef-morning">0</td>
+                                                    <td class="text-center" id="approved-chef-afternoon">0</td>
+                                                    <td class="text-center" id="approved-chef-total">0</td>
+                                                </tr>
+                                                <tr class="fw-bold">
+                                                    <td>Tổng</td>
+                                                    <td class="text-center" id="approved-total-morning">0</td>
+                                                    <td class="text-center" id="approved-total-afternoon">0</td>
+                                                    <td class="text-center" id="approved-total-all">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-inline-item dropdown">
+                                <span class="status-badge status-timekeeping dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    <i class="fas fa-user-clock me-1"></i>Chấm công (<span id="timekeeping-count">0</span>)
+                                </span>
+                                <div class="dropdown-menu status-details p-2" style="min-width: 280px;">
+                                    <h6 class="dropdown-header">Chi tiết ca chấm công</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Chức vụ</th>
+                                                    <th class="text-center">Ca sáng</th>
+                                                    <th class="text-center">Ca chiều</th>
+                                                    <th class="text-center">Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Phục vụ</td>
+                                                    <td class="text-center" id="timekeeping-waiter-morning">0</td>
+                                                    <td class="text-center" id="timekeeping-waiter-afternoon">0</td>
+                                                    <td class="text-center" id="timekeeping-waiter-total">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Đầu bếp</td>
+                                                    <td class="text-center" id="timekeeping-chef-morning">0</td>
+                                                    <td class="text-center" id="timekeeping-chef-afternoon">0</td>
+                                                    <td class="text-center" id="timekeeping-chef-total">0</td>
+                                                </tr>
+                                                <tr class="fw-bold">
+                                                    <td>Tổng</td>
+                                                    <td class="text-center" id="timekeeping-total-morning">0</td>
+                                                    <td class="text-center" id="timekeeping-total-afternoon">0</td>
+                                                    <td class="text-center" id="timekeeping-total-all">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-inline-item dropdown">
+                                <span class="status-badge status-confirmed dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    <i class="fas fa-check-double me-1"></i>Đã chấm (<span id="confirmed-count">0</span>)
+                                </span>
+                                <div class="dropdown-menu status-details p-2" style="min-width: 280px;">
+                                    <h6 class="dropdown-header">Chi tiết ca đã chấm</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Chức vụ</th>
+                                                    <th class="text-center">Ca sáng</th>
+                                                    <th class="text-center">Ca chiều</th>
+                                                    <th class="text-center">Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Phục vụ</td>
+                                                    <td class="text-center" id="confirmed-waiter-morning">0</td>
+                                                    <td class="text-center" id="confirmed-waiter-afternoon">0</td>
+                                                    <td class="text-center" id="confirmed-waiter-total">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Đầu bếp</td>
+                                                    <td class="text-center" id="confirmed-chef-morning">0</td>
+                                                    <td class="text-center" id="confirmed-chef-afternoon">0</td>
+                                                    <td class="text-center" id="confirmed-chef-total">0</td>
+                                                </tr>
+                                                <tr class="fw-bold">
+                                                    <td>Tổng</td>
+                                                    <td class="text-center" id="confirmed-total-morning">0</td>
+                                                    <td class="text-center" id="confirmed-total-afternoon">0</td>
+                                                    <td class="text-center" id="confirmed-total-all">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-inline-item dropdown">
+                                <span class="status-badge status-rejected dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    <i class="fas fa-times-circle me-1"></i>Đã từ chối (<span id="rejected-count">0</span>)
+                                </span>
+                                <div class="dropdown-menu status-details p-2" style="min-width: 280px;">
+                                    <h6 class="dropdown-header">Chi tiết ca đã từ chối</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Chức vụ</th>
+                                                    <th class="text-center">Ca sáng</th>
+                                                    <th class="text-center">Ca chiều</th>
+                                                    <th class="text-center">Tổng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Phục vụ</td>
+                                                    <td class="text-center" id="rejected-waiter-morning">0</td>
+                                                    <td class="text-center" id="rejected-waiter-afternoon">0</td>
+                                                    <td class="text-center" id="rejected-waiter-total">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Đầu bếp</td>
+                                                    <td class="text-center" id="rejected-chef-morning">0</td>
+                                                    <td class="text-center" id="rejected-chef-afternoon">0</td>
+                                                    <td class="text-center" id="rejected-chef-total">0</td>
+                                                </tr>
+                                                <tr class="fw-bold">
+                                                    <td>Tổng</td>
+                                                    <td class="text-center" id="rejected-total-morning">0</td>
+                                                    <td class="text-center" id="rejected-total-afternoon">0</td>
+                                                    <td class="text-center" id="rejected-total-all">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
 
                         <div class="table-responsive">
@@ -438,58 +488,48 @@
     </div>
 
     <!-- Modal phân công ca làm việc -->
-    <div class="modal fade" id="assignShiftModal" tabindex="-1">
+    <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Phân công ca làm việc</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="assignModalLabel">Phân công ca làm việc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="selected-employees" class="form-label">Nhân viên được chọn</label>
-                        <div id="selected-employees" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                            <!-- Danh sách nhân viên được chọn sẽ hiển thị ở đây -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="search-employee" class="form-label">Tìm kiếm nhân viên</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="search-employee" placeholder="Nhập tên nhân viên...">
+                                <button class="btn btn-outline-secondary" type="button" id="btn-search-employee">
+                                    <i class="fas fa-search"></i> Tìm
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="assign-day" class="form-label">Chọn ngày làm việc</label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <select class="form-select" id="assign-day">
-                                        <option value="monday">Thứ hai</option>
-                                        <option value="tuesday">Thứ ba</option>
-                                        <option value="wednesday">Thứ tư</option>
-                                        <option value="thursday">Thứ năm</option>
-                                        <option value="friday">Thứ sáu</option>
-                                        <option value="saturday">Thứ bảy</option>
-                                        <option value="sunday">Chủ nhật</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div id="day-display" class="form-control bg-light" readonly></div>
-                                </div>
-                            </div>
+                        <label class="form-label">Nhân viên được chọn</label>
+                        <div id="selected-employees" class="d-flex flex-wrap gap-2 border rounded p-2 min-height-50">
+                            <em class="text-muted">Chưa có nhân viên nào được chọn</em>
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Chọn ca làm việc</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="0" id="shift-morning">
-                            <label class="form-check-label" for="shift-morning">
-                                Ca sáng (6:00 - 14:00)
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="shift-afternoon">
-                            <label class="form-check-label" for="shift-afternoon">
-                                Ca chiều (14:00 - 22:00)
-                            </label>
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center">
+                                <thead>
+                                    <tr>
+                                        <th width="20%">Ngày</th>
+                                        <th width="40%">Ca sáng<br><small>(06:00 - 14:00)</small></th>
+                                        <th width="40%">Ca chiều<br><small>(14:00 - 22:00)</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignmentTableBody">
+                                    <!-- Dữ liệu sẽ được render bằng JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     
@@ -499,12 +539,36 @@
                     </div>
                     
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> Khi phân công từ quản lý, ca làm việc sẽ tự động được duyệt.
+                        <i class="fas fa-info-circle me-2"></i> Ca làm việc được phân công bởi quản lý sẽ tự động được duyệt.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-primary" id="btn-confirm-assign">Xác nhận phân công</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal tìm kiếm nhân viên -->
+    <div class="modal fade" id="searchEmployeeModal" tabindex="-1" aria-labelledby="searchEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchEmployeeModalLabel">Tìm kiếm nhân viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="search-employee-input" class="form-label">Tìm kiếm</label>
+                        <input type="text" class="form-control" id="search-employee-input" placeholder="Nhập tên hoặc ID nhân viên...">
+                    </div>
+                    <div id="employee-search-results" class="list-group mt-3" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
