@@ -44,5 +44,36 @@ module.exports = {
         } else {
             return res.json({ status: false, message: 'Không có thông tin cập nhật' });
         }
+    },
+    layNgayBatDauCa: async (req, res) => {
+        try {
+            // Lấy ca chấm công sớm nhất từ CSDL
+            const earliestRecord = await ChamCong.findOne({
+                order: [['ngay', 'ASC']],
+                attributes: ['ngay'] // Chỉ lấy thuộc tính ngày
+            });
+            
+            // Nếu không có bản ghi nào
+            if (!earliestRecord) {
+                return res.json({
+                    status: true,
+                    hasRecords: false,
+                    message: 'Không có bản ghi chấm công nào trong CSDL'
+                });
+            }
+            
+            // Trả về chỉ ngày của bản ghi đầu tiên
+            return res.json({
+                status: true,
+                hasRecords: true,
+                firstRecordDate: earliestRecord.ngay
+            });
+        } catch (error) {
+            console.error('Lỗi khi lấy ngày bắt đầu chấm công:', error);
+            return res.status(500).json({
+                status: false,
+                message: 'Đã xảy ra lỗi khi lấy thông tin ngày bắt đầu chấm công'
+            });
+        }
     }
 }

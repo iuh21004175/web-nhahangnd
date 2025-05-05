@@ -164,14 +164,18 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <select id="week-select" class="form-select form-select-sm custom-select-sm d-inline-block" style="width: auto; max-width: 300px;">
-                                    <!-- Options sẽ được thêm bằng JavaScript -->
-                                </select>
-                                <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
-                                    <option value="all">Chức vụ: Tất cả</option>
-                                    <option value="0">Chức vụ: Phục vụ</option>
-                                    <option value="1">Chức vụ: Đầu bếp</option>
-                                </select>
+                                <div>
+                                    <label for="week-select" class="me-2">Tuần:</label>
+                                    <select id="week-select" class="form-select form-select-sm custom-select-sm d-inline-block" style="width: auto; max-width: 300px;">
+                                        <!-- Options sẽ được thêm bằng JavaScript -->
+                                    </select>
+                                    <label for="duyetChucVu-select" class="me-2 ms-3">Bộ phận:</label>
+                                    <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
+                                        <option value="all">Tất cả</option>
+                                        <option value="0">Phục vụ</option>
+                                        <option value="1">Đầu bếp</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <button id="btn-save" class="btn btn-success" disabled>

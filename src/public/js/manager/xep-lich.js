@@ -1,70 +1,41 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    // Chỉ sử dụng weekSelect
-    const weekSelect = document.getElementById('week-select');
-    // Set default week to next week (tuần sau)
-    function getNextWeekNumber() {
-        // Giữ nguyên logic tính tuần sau
-        const now = new Date();
-        // Thêm 7 ngày để tính tuần kế tiếp
-        const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
-        
-        // Triển khai đúng chuẩn ISO 8601
-        const d = new Date(Date.UTC(nextWeek.getFullYear(), nextWeek.getMonth(), nextWeek.getDate()));
-        
-        // Đặt về thứ Năm của tuần hiện tại
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-        
-        // Lấy ngày đầu tiên của năm
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        
-        // Tính số tuần
-        const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        
-        return {
-            year: d.getUTCFullYear(),
-            week: weekNum
-        };
-    }
-    
-    // Lấy thông tin tuần kế tiếp
-    const { year, week } = getNextWeekNumber();
-
-    // Format: YYYY-Www
-    const formattedWeek = `${year}-W${week.toString().padStart(2, '0')}`;
-    
-    // Tạo options cho select tuần và đặt giá trị mặc định
-    generateWeekOptions(formattedWeek);
+    // Cập nhật options tuần dựa trên ngày bắt đầu từ CSDL
+    const defaultWeekValue = await updateWeekOptions();
     
     // Cập nhật ngày cho các tab điều hướng ngày trong tuần
-    updateWeekDateRange(formattedWeek);
+    updateWeekDateRange(defaultWeekValue);
     
     // Lấy dữ liệu và hiển thị danh sách ca làm việc
-    let listDangKyCa = await getAPICaLamViec(week);
+    let listDangKyCa = await getAPICaLamViec(defaultWeekValue);
+    window.fullShiftsList = listDangKyCa; // Lưu vào biến toàn cục
     thaoTacCaLamViec(listDangKyCa);
     
-    // Lắng nghe sự kiện change trên weekSelect
-    weekSelect.addEventListener('change', function() {
-        // Cập nhật các tab ngày và danh sách ca làm việc
-        updateWeekDateRange(this.value);
-        
-        // Lấy số tuần mới
-        const weekNumber = parseInt(this.value.split('-W')[1]);
-        
-        // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
-        updateStatusVisibility(this.value);
-        
-        // Lấy dữ liệu cho tuần mới
-        getAPICaLamViec(weekNumber).then(data => {
-            window.fullShiftsList = data; // Đảm bảo lưu dữ liệu vào biến toàn cục
-            thaoTacCaLamViec(data);
-            
-            // Cập nhật bảng thống kê với tuần mới
-            updateRoleStatistics(data);
-        });
-    });
+    // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
+    updateStatusVisibility(defaultWeekValue);
     
-    // Cập nhật hiển thị trạng thái dựa trên tuần được chọn ban đầu
-    updateStatusVisibility(weekSelect.value);
+    // Lắng nghe sự kiện change trên weekSelect
+    const weekSelect = document.getElementById('week-select');
+    if (weekSelect) {
+        weekSelect.addEventListener('change', function() {
+            // Cập nhật các tab ngày và danh sách ca làm việc
+            updateWeekDateRange(this.value);
+            
+            // Sử dụng chuỗi tuần đầy đủ thay vì chỉ số tuần
+            const weekValue = this.value;
+            
+            // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
+            updateStatusVisibility(weekValue);
+            
+            // Lấy dữ liệu cho tuần mới
+            getAPICaLamViec(weekValue).then(data => {
+                window.fullShiftsList = data; // Đảm bảo lưu dữ liệu vào biến toàn cục
+                thaoTacCaLamViec(data);
+                
+                // Cập nhật bảng thống kê với tuần mới
+                updateRoleStatistics(data);
+            });
+        });
+    }
     
     // Thêm sự kiện click cho các nút điều hướng ngày
     const dayNavLinks = document.querySelectorAll('.pagination .page-link');
@@ -147,9 +118,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeAssignmentTab();
 });
 
-async function getAPICaLamViec(week) {
+async function getAPICaLamViec(weekValue) {
     try {
-        const response = await fetch(`/api/ca-lam-viec?week=${week}`)
+        // Sử dụng chuỗi tuần đầy đủ (YYYY-Www) thay vì chỉ số tuần
+        const response = await fetch(`/api/ca-lam-viec?week=${weekValue}`)
         const data = await response.json();
         if(data.status){
             return data.list
@@ -164,6 +136,155 @@ async function getAPICaLamViec(week) {
         showToastDanger('Đã xảy ra lỗi khi tải dữ liệu ca làm việc.');
         return [];
     }
+}
+
+// Hàm lấy ngày bắt đầu chấm công từ API
+async function getFirstRecordDate() {
+    try {
+        const response = await fetch('/api/lay-ngay-bat-dau-ca');
+        const data = await response.json();
+        
+        if (data.status && data.hasRecords) {
+            // Nếu có dữ liệu, trả về ngày đầu tiên có dữ liệu
+            return { 
+                date: new Date(data.firstRecordDate),
+                hasRecords: true 
+            };
+        }
+        
+        // Nếu không có dữ liệu, chỉ trả về flag hasRecords = false
+        return { 
+            hasRecords: false 
+        };
+    } catch (error) {
+        console.error('Lỗi khi lấy ngày bắt đầu:', error);
+        
+        // Có lỗi cũng coi như không có dữ liệu
+        return { 
+            hasRecords: false 
+        };
+    }
+}
+
+// Hàm cập nhật tùy chọn tuần dựa trên ngày bắt đầu
+async function updateWeekOptions() {
+    // Lấy ngày bắt đầu có chấm công từ API
+    const result = await getFirstRecordDate();
+    
+    // Lấy thông tin tuần hiện tại
+    const now = new Date();
+    const currentWeek = getWeekNumber(now);
+    
+    // Tính tuần sau (tuần kết thúc)
+    const nextWeek = {
+        year: currentWeek.year,
+        week: currentWeek.week + 1
+    };
+    
+    // Điều chỉnh nếu tuần sau nằm ở năm kế tiếp
+    if (nextWeek.week > 52) {
+        nextWeek.week = 1;
+        nextWeek.year += 1;
+    };
+    
+    // Format chuỗi cho tuần mặc định (tuần sau)
+    const defaultWeekValue = `${nextWeek.year}-W${nextWeek.week.toString().padStart(2, '0')}`;
+    
+    // Lấy phần tử select
+    const weekSelect = document.getElementById('week-select');
+    if (!weekSelect) {
+        console.error('Không tìm thấy phần tử week-select');
+        return defaultWeekValue;
+    }
+    
+    // Xóa tất cả option hiện tại
+    weekSelect.innerHTML = '';
+    
+    // Nếu không có dữ liệu, chỉ hiển thị tuần sau làm tùy chọn duy nhất
+    if (!result.hasRecords) {
+        // Tính ngày đầu và cuối của tuần sau
+        const firstDayOfWeek = getFirstDayOfWeek(nextWeek.year, nextWeek.week);
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+        
+        // Format ngày
+        const startDateFormatted = formatDateToVN(firstDayOfWeek);
+        const endDateFormatted = formatDateToVN(lastDayOfWeek);
+        
+        // Tạo option cho tuần sau
+        const option = document.createElement('option');
+        option.value = defaultWeekValue;
+        option.textContent = `Tuần ${nextWeek.week}: ${startDateFormatted} -> ${endDateFormatted}`;
+        option.selected = true;
+        weekSelect.appendChild(option);
+        
+        // Kích hoạt sự kiện change để cập nhật dữ liệu
+        const event = new Event('change');
+        weekSelect.dispatchEvent(event);
+        
+        return defaultWeekValue;
+    }
+    
+    // Nếu có dữ liệu, hiển thị từ tuần đầu tiên có dữ liệu đến tuần sau
+    const firstRecordDate = result.date;
+    const firstRecordWeek = getWeekNumber(firstRecordDate);
+    
+    // Thêm options từ tuần bắt đầu đến tuần sau
+    for (let year = firstRecordWeek.year; year <= nextWeek.year; year++) {
+        // Xác định tuần bắt đầu và kết thúc cho năm này
+        const startWeek = (year === firstRecordWeek.year) ? firstRecordWeek.week : 1;
+        const endWeek = (year === nextWeek.year) ? nextWeek.week : 52;
+        
+        for (let week = startWeek; week <= endWeek; week++) {
+            // Tính ngày đầu và cuối của tuần
+            const firstDayOfWeek = getFirstDayOfWeek(year, week);
+            const lastDayOfWeek = new Date(firstDayOfWeek);
+            lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+            
+            // Format ngày
+            const startDateFormatted = formatDateToVN(firstDayOfWeek);
+            const endDateFormatted = formatDateToVN(lastDayOfWeek);
+            
+            // Tạo option
+            const option = document.createElement('option');
+            option.value = `${year}-W${week.toString().padStart(2, '0')}`;
+            option.textContent = `Tuần ${week}: ${startDateFormatted} -> ${endDateFormatted}`;
+            
+            // Chọn mặc định là tuần sau
+            const weekValue = `${year}-W${week.toString().padStart(2, '0')}`;
+            if (weekValue === defaultWeekValue) {
+                option.selected = true;
+            }
+            
+            weekSelect.appendChild(option);
+        }
+    }
+    
+    // Kích hoạt sự kiện change để cập nhật dữ liệu
+    const event = new Event('change');
+    weekSelect.dispatchEvent(event);
+    
+    return defaultWeekValue;
+}
+
+// Hàm tính số tuần trong năm theo chuẩn ISO 8601
+function getWeekNumber(date) {
+    const target = new Date(date);
+    target.setHours(0, 0, 0, 0);
+    
+    // Thứ 5 trong tuần hiện tại
+    target.setDate(target.getDate() + 4 - (target.getDay() || 7));
+    
+    // Ngày đầu năm
+    const yearStart = new Date(target.getFullYear(), 0, 1);
+    
+    // Số tuần
+    const weekNumber = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+    
+    return {
+        year: target.getFullYear(),
+        week: weekNumber
+    };
 }
 
 // Sửa lại hàm thaoTacCaLamViec
@@ -592,8 +713,8 @@ async function saveUpdates() {
                 // Cập nhật lại danh sách
                 const weekSelect = document.getElementById('week-select');
                 if (weekSelect) {
-                    const weekNumber = parseInt(weekSelect.value.split('-W')[1]);
-                    const updatedData = await getAPICaLamViec(weekNumber);
+                    const weekValue = weekSelect.value;
+                    const updatedData = await getAPICaLamViec(weekValue);
                     thaoTacCaLamViec(updatedData);
                 }
             } else {
@@ -639,8 +760,8 @@ function cancelUpdates() {
     // Tải lại danh sách từ server để khôi phục trạng thái ban đầu
     const weekSelect = document.getElementById('week-select');
     if (weekSelect) {
-        const weekNumber = parseInt(weekSelect.value.split('-W')[1]);
-        getAPICaLamViec(weekNumber).then(data => {
+        const weekValue = weekSelect.value;
+        getAPICaLamViec(weekValue).then(data => {
             thaoTacCaLamViec(data);
         });
     }

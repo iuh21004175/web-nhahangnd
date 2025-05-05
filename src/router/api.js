@@ -151,4 +151,5 @@ router.get('/don-hang-theo-ban', CtrlDonHang.layGhiDonHang);
 router.post('/them-don-hang', CtrlDonHang.themDonHang);
 router.get('/ca-lam-viec', CtrlXepLich.layCaLamViec);
 router.put('/ca-lam-viec', CtrlXepLich.capNhatCa);
+router.get('/lay-ngay-bat-dau-ca', CtrlXepLich.layNgayBatDauCa);
 module.exports = router;
