@@ -182,7 +182,29 @@ tr.highlight-row {
     font-weight: 500;
 }
 
-/* Responsive improvements */
+/* CSS cho accordion */
+.accordion-button {
+    padding: 0.75rem 1.25rem;
+}
+
+.accordion-button::after {
+    margin-left: 0.5rem;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(13, 110, 253, 0.25);
+}
+
+.accordion-button .list-inline {
+    padding-right: 1.5rem;
+}
+
+/* Điều chỉnh hiển thị trên màn hình nhỏ */
 @media (max-width: 768px) {
     .card-header .btn {
         font-size: 0.8rem;
@@ -191,5 +213,13 @@ tr.highlight-row {
     #weeklyScheduleTable th,
     #weeklyScheduleTable td {
         font-size: 0.85rem;
+    }
+    
+    .accordion-button .list-inline {
+        flex-wrap: wrap;
+    }
+    
+    .accordion-button .list-inline-item {
+        margin-bottom: 0.25rem;
     }
 }

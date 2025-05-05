@@ -55,7 +55,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Lấy dữ liệu cho tuần mới
         getAPICaLamViec(weekNumber).then(data => {
+            window.fullShiftsList = data; // Đảm bảo lưu dữ liệu vào biến toàn cục
             thaoTacCaLamViec(data);
+            
+            // Cập nhật bảng thống kê với tuần mới
+            updateRoleStatistics(data);
         });
     });
     
@@ -104,6 +108,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Sử dụng lại danh sách đầy đủ đã lưu trước đó
             if (window.fullShiftsList) {
                 thaoTacCaLamViec(window.fullShiftsList);
+                
+                // Gọi cập nhật bảng thống kê sau khi thay đổi chức vụ
+                updateRoleStatistics(window.fullShiftsList);
             }
         });
     }
@@ -313,6 +320,9 @@ function thaoTacCaLamViec(list) {
             filterShiftsByDate(dateSpan.textContent);
         }
     }
+
+    // Cập nhật bảng thống kê theo chức vụ
+    updateRoleStatistics(list);
 }
 
 // Hàm xử lý select all checkbox
@@ -706,13 +716,8 @@ function formatDateToVN(date) {
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 }
 
-// Cập nhật hàm filterShiftsByDate để reset checkbox select-all khi lọc
+// Cập nhật hàm filterShiftsByDate
 function filterShiftsByDate(dateStr) {
-    // Lấy giá trị từ weekSelect
-    const weekValue = document.getElementById('week-select').value;
-    const year = weekValue.split('-')[0];
-    
-    // Phần còn lại giữ nguyên
     const [day, month] = dateStr.split('/');
     
     // Lọc danh sách ca làm việc hiện tại
@@ -727,7 +732,6 @@ function filterShiftsByDate(dateStr) {
     // Hiển thị/ẩn các hàng dựa trên ngày
     let hasVisibleRows = false;
     rows.forEach(row => {
-        // Sử dụng thuộc tính data-date của hàng thay vì tìm cột chứa ngày
         const rowDay = row.getAttribute('data-day');
         const rowMonth = row.getAttribute('data-month');
         
@@ -739,38 +743,14 @@ function filterShiftsByDate(dateStr) {
         }
     });
     
-    // Hiển thị thông báo nếu không có ca làm việc nào trong ngày đã chọn
-    if (!hasVisibleRows) {
-        const noDataRow = document.createElement('tr');
-        noDataRow.classList.add('no-data-row');
-        noDataRow.innerHTML = '<td colspan="5" class="text-center">Không có ca làm việc nào trong ngày đã chọn</td>';
-        
-        // Xóa thông báo cũ nếu có
-        const existingNoData = tableBody.querySelector('.no-data-row');
-        if (existingNoData) {
-            existingNoData.remove();
-        }
-        
-        tableBody.appendChild(noDataRow);
-    } else {
-        // Xóa thông báo nếu có ca làm việc
-        const existingNoData = tableBody.querySelector('.no-data-row');
-        if (existingNoData) {
-            existingNoData.remove();
-        }
-    }
-    
-    // Bỏ chọn checkbox "Chọn tất cả" khi lọc theo ngày
-    const selectAllCheckbox = document.getElementById('select-all');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.checked = false;
-    }
-    
-    // Cập nhật trạng thái nút duyệt hàng loạt
-    handleCheckboxChange();
-    
     // Cập nhật số lượng trạng thái
     updateStatusCounts();
+    
+    // Cập nhật bảng thống kê theo chức vụ sau khi lọc - QUAN TRỌNG
+    if (window.fullShiftsList) {
+        // Cập nhật bảng thống kê với ngày đã chọn
+        updateRoleStatistics(window.fullShiftsList);
+    }
 }
 
 // Cập nhật số lượng các trạng thái
@@ -1071,554 +1051,189 @@ function bulkApproveShifts() {
 
 /*** PHẦN PHÂN CÔNG CA LÀM VIỆC ***/
 
-// Biến lưu trữ tuần hiện tại
-let currentAssignmentWeek = null;
-
-// Hàm khởi tạo cho tab Phân công
+// Hàm khởi tạo cho tab Phân công - đã đơn giản hóa
 function initializeAssignmentTab() {
-    // Tạo options cho select tuần
-    const assignmentWeekFilter = document.getElementById('assignment-week-filter');
-    populateWeekOptions(assignmentWeekFilter);
+    // Hiển thị thông báo "Chức năng đang phát triển"
+    showTemporaryAssignmentMessage();
     
-    // Lấy tuần hiện tại và cập nhật thống kê
-    currentAssignmentWeek = assignmentWeekFilter.value;
-    updateAssignmentStats(currentAssignmentWeek);
-    
-    // Cập nhật lịch làm việc trong tuần
-    updateWeeklySchedule(currentAssignmentWeek);
-    
-    // Lấy danh sách nhân viên chưa đăng ký ca
-    fetchUnregisteredEmployees(currentAssignmentWeek);
-    
-    // Thêm event listeners
-    assignmentWeekFilter.addEventListener('change', function() {
-        currentAssignmentWeek = this.value;
-        updateAssignmentStats(currentAssignmentWeek);
-        updateWeeklySchedule(currentAssignmentWeek);
-        fetchUnregisteredEmployees(currentAssignmentWeek);
-    });
-    
-    // Nút cập nhật thống kê
-    document.getElementById('btn-refresh-stats').addEventListener('click', function() {
-        updateAssignmentStats(currentAssignmentWeek);
-        updateWeeklySchedule(currentAssignmentWeek);
-        fetchUnregisteredEmployees(currentAssignmentWeek);
-    });
-    
-    // Nút phân công ca
-    document.getElementById('btn-assign-shift').addEventListener('click', function() {
-        openAssignShiftModal();
-    });
-    
-    // Checkbox chọn tất cả nhân viên
-    document.getElementById('select-all-employees').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('#unregisteredEmployeesTable tbody .employee-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+    // Thêm event listener cho nút Refresh
+    const refreshBtn = document.getElementById('btn-refresh-stats');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            showToastPrimary('Tính năng đang được phát triển');
         });
-    });
-}
-
-// Hàm cập nhật thống kê ca làm việc theo ngày
-async function updateAssignmentStats(weekValue) {
-    try {
-        // Hiển thị trạng thái đang tải
-        const statsTable = document.getElementById('dailyStatsTable');
-        statsTable.querySelector('tbody').innerHTML = '<tr><td colspan="7" class="text-center">Đang tải dữ liệu...</td></tr>';
-        
-        // Lấy thông tin tuần
-        const { year, week } = parseWeekValue(weekValue);
-        const weekDays = getWeekDays(year, week);
-        
-        // Gọi API để lấy thống kê
-        const response = await fetch(`/api/ca-lam-viec/stats?week=${week}&year=${year}`);
-        const data = await response.json();
-        
-        if (data.status) {
-            // Cập nhật thông tin phạm vi ngày
-            document.getElementById('stats-date-range').textContent = 
-                `Từ ${formatDateToVN(weekDays[0])} đến ${formatDateToVN(weekDays[6])}`;
-            
-            // Render bảng thống kê
-            renderDailyStats(weekDays, data.stats);
-        } else {
-            showToastDanger(data.error || 'Không thể tải thống kê ca làm việc');
-        }
-    } catch (error) {
-        console.error('Error loading assignment stats:', error);
-        showToastDanger('Đã xảy ra lỗi khi tải thống kê ca làm việc');
+    }
+    
+    // Thêm event listener cho nút Phân công
+    const assignBtn = document.getElementById('btn-assign-shift');
+    if (assignBtn) {
+        assignBtn.addEventListener('click', function() {
+            showToastPrimary('Tính năng đang được phát triển');
+        });
     }
 }
 
-// Hàm hiển thị thống kê ca làm việc theo ngày
-function renderDailyStats(weekDays, stats) {
-    const tbody = document.getElementById('dailyStatsTable').querySelector('tbody');
-    tbody.innerHTML = '';
+// Hiển thị thông báo tạm thời cho tab phân công
+function showTemporaryAssignmentMessage() {
+    // Thông báo trong bảng thống kê
+    const statsTable = document.getElementById('dailyStatsTable');
+    if (statsTable && statsTable.querySelector('tbody')) {
+        statsTable.querySelector('tbody').innerHTML = '<tr><td colspan="7" class="text-center">Tính năng đang được phát triển</td></tr>';
+    }
     
-    const dayNames = ['Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy', 'Chủ nhật'];
+    // Thông báo trong bảng lịch trong tuần
+    const weeklyTable = document.getElementById('weeklyScheduleTable');
+    if (weeklyTable && weeklyTable.querySelector('tbody')) {
+        weeklyTable.querySelector('tbody').innerHTML = '<tr><td colspan="8" class="text-center">Tính năng đang được phát triển</td></tr>';
+    }
     
-    weekDays.forEach((date, index) => {
-        const dateStr = formatDateAPI(date);
-        const dayStat = stats[dateStr] || {
-            morning: 0,
-            afternoon: 0,
-            total: 0,
-            approved: 0,
-            pending: 0,
-            rejected: 0
-        };
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${dayNames[index]}</strong><br>${formatDateToVN(date)}</td>
-            <td class="text-center">${dayStat.morning || 0}</td>
-            <td class="text-center">${dayStat.afternoon || 0}</td>
-            <td class="text-center">${dayStat.total || 0}</td>
-            <td class="text-center text-success">${dayStat.approved || 0}</td>
-            <td class="text-center text-warning">${dayStat.pending || 0}</td>
-            <td class="text-center text-danger">${dayStat.rejected || 0}</td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-// Hàm cập nhật lịch làm việc trong tuần
-async function updateWeeklySchedule(weekValue) {
-    try {
-        // Hiển thị trạng thái đang tải
-        const scheduleTable = document.getElementById('weeklyScheduleTable');
-        scheduleTable.querySelector('tbody').innerHTML = '<tr><td colspan="8" class="text-center">Đang tải lịch làm việc...</td></tr>';
-        
-        // Lấy thông tin tuần
-        const { year, week } = parseWeekValue(weekValue);
-        const weekDays = getWeekDays(year, week);
-        
-        // Cập nhật ngày hiển thị trong header
-        const dayIds = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        dayIds.forEach((id, index) => {
-            document.getElementById(`${id}-schedule`).textContent = formatDateShort(weekDays[index]);
-        });
-        
-        // Gọi API để lấy lịch làm việc
-        const response = await fetch(`/api/ca-lam-viec/weekly?week=${week}&year=${year}`);
-        const data = await response.json();
-        
-        if (data.status) {
-            // Nhóm dữ liệu theo nhân viên
-            const employeeSchedules = groupScheduleByEmployee(data.schedules, weekDays);
-            renderWeeklySchedule(employeeSchedules, weekDays);
-        } else {
-            scheduleTable.querySelector('tbody').innerHTML = '<tr><td colspan="8" class="text-center">Không có dữ liệu lịch làm việc</td></tr>';
-        }
-    } catch (error) {
-        console.error('Error loading weekly schedule:', error);
-        showToastDanger('Đã xảy ra lỗi khi tải lịch làm việc');
+    // Thông báo trong bảng nhân viên chưa đăng ký
+    const employeesTable = document.getElementById('unregisteredEmployeesTable');
+    if (employeesTable && employeesTable.querySelector('tbody')) {
+        employeesTable.querySelector('tbody').innerHTML = '<tr><td colspan="7" class="text-center">Tính năng đang được phát triển</td></tr>';
+    }
+    
+    // Hiển thị thông tin phạm vi ngày
+    const dateRange = document.getElementById('stats-date-range');
+    if (dateRange) {
+        dateRange.textContent = 'Tính năng đang phát triển';
     }
 }
 
-// Hàm nhóm lịch làm việc theo nhân viên
-function groupScheduleByEmployee(schedules, weekDays) {
-    const employeeMap = new Map();
-    
-    schedules.forEach(shift => {
-        if (!employeeMap.has(shift.NhanVien.id)) {
-            employeeMap.set(shift.NhanVien.id, {
-                id: shift.NhanVien.id,
-                name: shift.NhanVien.ten,
-                role: shift.NhanVien.chucVu,
-                shifts: Array(7).fill(null).map(() => ({ morning: null, afternoon: null }))
-            });
-        }
-        
-        const employee = employeeMap.get(shift.NhanVien.id);
-        const shiftDate = new Date(shift.ngay);
-        
-        // Tìm index của ngày trong tuần
-        const dayIndex = weekDays.findIndex(day => 
-            day.getDate() === shiftDate.getDate() && 
-            day.getMonth() === shiftDate.getMonth() && 
-            day.getFullYear() === shiftDate.getFullYear()
-        );
-        
-        if (dayIndex !== -1) {
-            if (shift.caLamViec === 0) {
-                employee.shifts[dayIndex].morning = shift;
-            } else {
-                employee.shifts[dayIndex].afternoon = shift;
-            }
-        }
-    });
-    
-    return Array.from(employeeMap.values());
-}
-
-// Hàm hiển thị lịch làm việc trong tuần
-function renderWeeklySchedule(employeeSchedules, weekDays) {
-    const tbody = document.getElementById('weeklyScheduleTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    if (employeeSchedules.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Không có dữ liệu lịch làm việc</td></tr>';
+// Hàm cập nhật bảng thống kê theo chức vụ, ngày, và tuần được chọn
+function updateRoleStatistics(list) {
+    // Kiểm tra nếu list rỗng
+    if (!list || list.length === 0) {
+        clearRoleStats();
         return;
     }
     
-    employeeSchedules.forEach(employee => {
-        const row = document.createElement('tr');
-        
-        // Tên nhân viên và chức vụ
-        const roleName = employee.role === 0 ? 'Phục vụ' : employee.role === 1 ? 'Đầu bếp' : 'Thu ngân';
-        row.innerHTML = `<td><strong>${employee.name}</strong><br><small class="text-muted">${roleName}</small></td>`;
-        
-        // Thêm ô cho mỗi ngày trong tuần
-        employee.shifts.forEach(dayShifts => {
-            const cell = document.createElement('td');
-            
-            // Ca sáng
-            if (dayShifts.morning) {
-                const morningDiv = createShiftDiv(dayShifts.morning, 'morning');
-                cell.appendChild(morningDiv);
-            }
-            
-            // Ca chiều
-            if (dayShifts.afternoon) {
-                const afternoonDiv = createShiftDiv(dayShifts.afternoon, 'afternoon');
-                cell.appendChild(afternoonDiv);
-            }
-            
-            // Nếu không có ca nào
-            if (!dayShifts.morning && !dayShifts.afternoon) {
-                cell.innerHTML = '<div class="text-center text-muted">-</div>';
-            }
-            
-            row.appendChild(cell);
-        });
-        
-        tbody.appendChild(row);
-    });
-}
-
-// Hàm tạo div hiển thị thông tin ca làm việc
-function createShiftDiv(shift, shiftType) {
-    const div = document.createElement('div');
-    div.className = `shift-info ${shiftType} status-${getStatusClass(shift.trangThai)}`;
+    // Lấy ngày được chọn từ tab điều hướng ngày
+    const activeTab = document.querySelector('.pagination .page-item.active');
+    let selectedDate = null;
     
-    let shiftName = shiftType === 'morning' ? 'Ca sáng' : 'Ca chiều';
-    let shiftTime = shiftType === 'morning' ? '6:00-14:00' : '14:00-22:00';
-    
-    div.innerHTML = `
-        <div class="shift-time">${shiftName}</div>
-        <div class="shift-status">${getStatusLabel(shift.trangThai)}</div>
-    `;
-    
-    return div;
-}
-
-// Hàm lấy class tương ứng với trạng thái
-function getStatusClass(status) {
-    switch(status) {
-        case 0: return 'pending';
-        case 1: return 'approved';
-        case 2: return 'timekeeping';
-        case 3: return 'confirmed';
-        case 4: return 'rejected';
-        default: return 'pending';
-    }
-}
-
-// Hàm lấy nhãn tương ứng với trạng thái
-function getStatusLabel(status) {
-    switch(status) {
-        case 0: return 'Chờ duyệt';
-        case 1: return 'Đã duyệt';
-        case 2: return 'Chấm công';
-        case 3: return 'Đã chấm';
-        case 4: return 'Đã từ chối';
-        default: return 'Chờ duyệt';
-    }
-}
-
-// Hàm lấy danh sách nhân viên chưa đăng ký ca
-async function fetchUnregisteredEmployees(weekValue) {
-    try {
-        // Hiển thị trạng thái đang tải
-        const employeeTable = document.getElementById('unregisteredEmployeesTable');
-        employeeTable.querySelector('tbody').innerHTML = '<tr><td colspan="7" class="text-center">Đang tải dữ liệu...</td></tr>';
-        
-        // Lấy thông tin tuần
-        const { year, week } = parseWeekValue(weekValue);
-        
-        // Lọc theo chức vụ nếu có
-        const roleFilter = document.getElementById('assignment-role-filter').value;
-        const roleParam = roleFilter !== 'all' ? `&role=${roleFilter}` : '';
-        
-        // Gọi API để lấy danh sách nhân viên chưa đăng ký ca
-        const response = await fetch(`/api/nhan-vien/unregistered?week=${week}&year=${year}${roleParam}`);
-        const data = await response.json();
-        
-        if (data.status) {
-            renderUnregisteredEmployees(data.employees);
-        } else {
-            employeeTable.querySelector('tbody').innerHTML = '<tr><td colspan="7" class="text-center">Không có dữ liệu nhân viên</td></tr>';
-            showToastDanger(data.error || 'Không thể tải danh sách nhân viên');
+    if (activeTab) {
+        const dateSpan = activeTab.querySelector('span');
+        if (dateSpan && dateSpan.textContent) {
+            const [day, month] = dateSpan.textContent.split('/');
+            selectedDate = { day, month };
         }
-    } catch (error) {
-        console.error('Error loading unregistered employees:', error);
-        showToastDanger('Đã xảy ra lỗi khi tải danh sách nhân viên');
-    }
-}
-
-// Hàm hiển thị danh sách nhân viên chưa đăng ký ca
-function renderUnregisteredEmployees(employees) {
-    const tbody = document.getElementById('unregisteredEmployeesTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    if (employees.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không có nhân viên nào cần phân công</td></tr>';
-        return;
     }
     
-    employees.forEach(employee => {
-        const row = document.createElement('tr');
-        
-        // Định dạng ngày đăng ký cuối
-        const lastRegistration = employee.lastRegistration 
-            ? new Date(employee.lastRegistration).toLocaleDateString('vi-VN')
-            : 'Chưa có';
-        
-        // Map chức vụ
-        const roleMap = {
-            0: 'Phục vụ',
-            1: 'Đầu bếp',
-            2: 'Thu ngân'
-        };
-        
-        row.innerHTML = `
-            <td><input type="checkbox" class="employee-checkbox" data-id="${employee.id}" data-name="${employee.ten}"></td>
-            <td>${employee.maNV || '-'}</td>
-            <td>${employee.ten}</td>
-            <td>${roleMap[employee.chucVu] || 'Không xác định'}</td>
-            <td class="text-center">${employee.totalShifts || 0}</td>
-            <td>${lastRegistration}</td>
-            <td>
-                <button class="btn btn-sm btn-primary assign-btn" data-id="${employee.id}" data-name="${employee.ten}">
-                    <i class="fas fa-calendar-plus"></i> Phân công
-                </button>
-            </td>
-        `;
-        
-        tbody.appendChild(row);
-    });
+    // Hiển thị thông báo debug về ngày được chọn
+    console.log('Ngày được chọn:', selectedDate);
     
-    // Gắn sự kiện cho các nút phân công
-    document.querySelectorAll('.assign-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const employeeId = this.getAttribute('data-id');
-            const employeeName = this.getAttribute('data-name');
-            openAssignShiftModal([{ id: employeeId, name: employeeName }]);
-        });
-    });
-}
-
-// Hàm mở modal phân công ca làm việc
-function openAssignShiftModal(preSelectedEmployees = null) {
-    // Lấy danh sách nhân viên được chọn
-    let selectedEmployees = preSelectedEmployees;
-    
-    if (!selectedEmployees) {
-        selectedEmployees = [];
-        document.querySelectorAll('#unregisteredEmployeesTable .employee-checkbox:checked').forEach(checkbox => {
-            selectedEmployees.push({
-                id: checkbox.getAttribute('data-id'),
-                name: checkbox.getAttribute('data-name')
-            });
-        });
-    }
-    
-    // Kiểm tra xem có nhân viên nào được chọn không
-    if (selectedEmployees.length === 0) {
-        showToastDanger('Vui lòng chọn ít nhất một nhân viên để phân công');
-        return;
-    }
-    
-    // Hiển thị danh sách nhân viên được chọn
-    const selectedEmployeesContainer = document.getElementById('selected-employees');
-    selectedEmployeesContainer.innerHTML = '';
-    
-    selectedEmployees.forEach(employee => {
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-primary me-2 mb-2';
-        badge.innerHTML = `${employee.name} <i class="fas fa-check ms-1"></i>`;
-        badge.setAttribute('data-id', employee.id);
-        selectedEmployeesContainer.appendChild(badge);
-    });
-    
-    // Cập nhật hiển thị ngày
-    updateAssignModalDayDisplay();
-    
-    // Reset lựa chọn ca làm việc
-    document.getElementById('shift-morning').checked = false;
-    document.getElementById('shift-afternoon').checked = false;
-    document.getElementById('assign-note').value = '';
-    
-    // Hiển thị modal
-    const modal = new bootstrap.Modal(document.getElementById('assignShiftModal'));
-    modal.show();
-    
-    // Gắn sự kiện cho dropdown chọn ngày
-    document.getElementById('assign-day').addEventListener('change', updateAssignModalDayDisplay);
-    
-    // Gắn sự kiện cho nút xác nhận phân công
-    document.getElementById('btn-confirm-assign').onclick = function() {
-        confirmAssignShift(selectedEmployees);
-    };
-}
-
-// Hàm cập nhật hiển thị ngày trong modal phân công
-function updateAssignModalDayDisplay() {
-    const daySelect = document.getElementById('assign-day');
-    const selectedDay = daySelect.value;
-    const { year, week } = parseWeekValue(currentAssignmentWeek);
-    const weekDays = getWeekDays(year, week);
-    
-    // Map giá trị select vào index của mảng weekDays
-    const dayIndexMap = {
-        'monday': 0,
-        'tuesday': 1,
-        'wednesday': 2,
-        'thursday': 3,
-        'friday': 4,
-        'saturday': 5,
-        'sunday': 6
+    // Khởi tạo biến đếm cho từng chức vụ và ca
+    const stats = {
+        waiter: { morning: { count: 0 }, afternoon: { count: 0 } },
+        chef: { morning: { count: 0 }, afternoon: { count: 0 } }
     };
     
-    const selectedDate = weekDays[dayIndexMap[selectedDay]];
-    document.getElementById('day-display').textContent = formatDateToVN(selectedDate);
-}
-
-// Hàm xác nhận phân công ca làm việc
-async function confirmAssignShift(employees) {
-    // Kiểm tra lựa chọn ca làm việc
-    const morningShift = document.getElementById('shift-morning').checked;
-    const afternoonShift = document.getElementById('shift-afternoon').checked;
+    // Lọc theo chức vụ nếu đã chọn
+    const roleFilter = document.getElementById('duyetChucVu-select');
+    let filteredList = [...list]; // Tạo bản sao của danh sách để không ảnh hưởng đến danh sách gốc
     
-    if (!morningShift && !afternoonShift) {
-        showToastDanger('Vui lòng chọn ít nhất một ca làm việc');
-        return;
+    if (roleFilter && roleFilter.value !== 'all') {
+        const roleValue = parseInt(roleFilter.value);
+        filteredList = filteredList.filter(reg => reg.NhanVien.chucVu === roleValue);
     }
     
-    // Lấy ngày được chọn
-    const daySelect = document.getElementById('assign-day').value;
-    const { year, week } = parseWeekValue(currentAssignmentWeek);
-    const weekDays = getWeekDays(year, week);
-    
-    // Map giá trị select vào index của mảng weekDays
-    const dayIndexMap = {
-        'monday': 0,
-        'tuesday': 1,
-        'wednesday': 2,
-        'thursday': 3,
-        'friday': 4,
-        'saturday': 5,
-        'sunday': 6
-    };
-    
-    const selectedDate = weekDays[dayIndexMap[daySelect]];
-    const formattedDate = formatDateAPI(selectedDate);
-    
-    // Lấy ghi chú
-    const note = document.getElementById('assign-note').value.trim();
-    
-    // Tạo danh sách ca cần phân công
-    const shiftsToAssign = [];
-    
-    employees.forEach(employee => {
-        if (morningShift) {
-            shiftsToAssign.push({
-                employeeId: employee.id,
-                date: formattedDate,
-                shiftType: 0, // Ca sáng
-                week: week,
-                note: note,
-                status: 1 // Tự động duyệt
-            });
+    // Tính toán số liệu thống kê
+    filteredList.forEach(shift => {
+        // Kiểm tra nếu shift không có NhanVien
+        if (!shift.NhanVien) {
+            console.warn('Shift không có thông tin NhanVien:', shift);
+            return;
         }
         
-        if (afternoonShift) {
-            shiftsToAssign.push({
-                employeeId: employee.id,
-                date: formattedDate,
-                shiftType: 1, // Ca chiều
-                week: week,
-                note: note,
-                status: 1 // Tự động duyệt
-            });
+        // Bỏ qua nếu không đúng ngày được chọn
+        if (selectedDate) {
+            const shiftDate = new Date(shift.ngay);
+            const shiftDay = shiftDate.getDate().toString().padStart(2, '0');
+            const shiftMonth = (shiftDate.getMonth() + 1).toString().padStart(2, '0');
+            
+            if (shiftDay !== selectedDate.day || shiftMonth !== selectedDate.month) {
+                return;
+            }
+        }
+        
+        // Phân loại theo chức vụ và ca làm việc
+        const role = shift.NhanVien.chucVu;
+        
+        if (role === 0) { // Phục vụ
+            if (shift.caLamViec === 0) { // Ca sáng
+                stats.waiter.morning.count++;
+            } else { // Ca chiều
+                stats.waiter.afternoon.count++;
+            }
+        } else if (role === 1) { // Đầu bếp
+            if (shift.caLamViec === 0) { // Ca sáng
+                stats.chef.morning.count++;
+            } else { // Ca chiều
+                stats.chef.afternoon.count++;
+            }
         }
     });
     
-    try {
-        // Gửi yêu cầu phân công lên server
-        const response = await fetch('/api/ca-lam-viec/assign', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ shifts: shiftsToAssign })
-        });
-        
-        const result = await response.json();
-        
-        // Đóng modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('assignShiftModal'));
-        modal.hide();
-        
-        if (result.status) {
-            showToastSuccess('Phân công ca làm việc thành công');
-            
-            // Cập nhật lại thống kê và lịch làm việc
-            setTimeout(() => {
-                updateAssignmentStats(currentAssignmentWeek);
-                updateWeeklySchedule(currentAssignmentWeek);
-                fetchUnregisteredEmployees(currentAssignmentWeek);
-            }, 1000);
-        } else {
-            showToastDanger(result.error || 'Phân công ca làm việc thất bại');
+    console.log('Thống kê ca làm việc:', stats);
+    
+    // Cập nhật hiển thị cho Phục vụ
+    document.getElementById('waiter-morning-count').textContent = stats.waiter.morning.count;
+    document.getElementById('waiter-afternoon-count').textContent = stats.waiter.afternoon.count;
+    document.getElementById('waiter-total').textContent = 
+        stats.waiter.morning.count + stats.waiter.afternoon.count;
+    
+    // Cập nhật hiển thị cho Đầu bếp
+    document.getElementById('chef-morning-count').textContent = stats.chef.morning.count;
+    document.getElementById('chef-afternoon-count').textContent = stats.chef.afternoon.count;
+    document.getElementById('chef-total').textContent = 
+        stats.chef.morning.count + stats.chef.afternoon.count;
+    
+    // Cập nhật tổng cộng
+    const totalMorningCount = stats.waiter.morning.count + stats.chef.morning.count;
+    const totalAfternoonCount = stats.waiter.afternoon.count + stats.chef.afternoon.count;
+    
+    document.getElementById('total-morning-count').textContent = totalMorningCount;
+    document.getElementById('total-afternoon-count').textContent = totalAfternoonCount;
+    document.getElementById('grand-total').textContent = totalMorningCount + totalAfternoonCount;
+    
+    // Thêm thông tin ngày vào header của bảng thống kê
+    updateRoleStatsHeader(selectedDate);
+}
+
+// Thêm hàm mới để xóa tất cả số liệu thống kê
+function clearRoleStats() {
+    document.getElementById('waiter-morning-count').textContent = '0';
+    document.getElementById('waiter-afternoon-count').textContent = '0';
+    document.getElementById('waiter-total').textContent = '0';
+    document.getElementById('chef-morning-count').textContent = '0';
+    document.getElementById('chef-afternoon-count').textContent = '0';
+    document.getElementById('chef-total').textContent = '0';
+    document.getElementById('total-morning-count').textContent = '0';
+    document.getElementById('total-afternoon-count').textContent = '0';
+    document.getElementById('grand-total').textContent = '0';
+}
+
+// Thêm hàm cập nhật header cho bảng thống kê
+function updateRoleStatsHeader(selectedDate) {
+    const headerInfo = document.getElementById('role-stats-date');
+    if (!headerInfo) return;
+    
+    if (selectedDate) {
+        // Lấy tên thứ trong tuần
+        const activeTab = document.querySelector('.pagination .page-item.active');
+        let dayName = '';
+        if (activeTab) {
+            const linkText = activeTab.querySelector('a').innerText.split('\n')[0];
+            dayName = linkText;
         }
-    } catch (error) {
-        console.error('Error assigning shifts:', error);
-        showToastDanger('Đã xảy ra lỗi khi phân công ca làm việc');
+        
+        // Hiển thị thông tin ngày
+        headerInfo.textContent = `Thống kê ngày: ${dayName} (${selectedDate.day}/${selectedDate.month})`;
+        headerInfo.style.display = '';
+    } else {
+        // Hiển thị thông báo nếu không có ngày được chọn
+        headerInfo.textContent = 'Vui lòng chọn một ngày để xem thống kê';
+        headerInfo.style.display = '';
     }
-}
-
-// Các hàm tiện ích
-function parseWeekValue(weekValue) {
-    // Phân tích giá trị tuần (ví dụ: "2023-W01")
-    const [year, weekPart] = weekValue.split('-');
-    const week = parseInt(weekPart.substring(1));
-    return { year: parseInt(year), week };
-}
-
-function getWeekDays(year, week) {
-    // Tính ngày đầu tiên (thứ Hai) của tuần
-    const firstDay = getFirstDayOfWeek(year, week);
-    
-    // Tạo mảng 7 ngày bắt đầu từ thứ Hai
-    const weekDays = [];
-    for (let i = 0; i < 7; i++) {
-        const day = new Date(firstDay);
-        day.setDate(firstDay.getDate() + i);
-        weekDays.push(day);
-    }
-    
-    return weekDays;
-}
-
-function formatDateShort(date) {
-    // Định dạng ngày: DD/MM
-    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-}
-
-function formatDateAPI(date) {
-    // Định dạng ngày cho API: YYYY-MM-DD
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 }
