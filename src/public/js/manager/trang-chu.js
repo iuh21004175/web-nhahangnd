@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log("Trang đã được tải xong");
     
     // Khởi tạo dữ liệu
@@ -8,7 +8,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Giả lập dữ liệu cho các thành phần khác
     loadSampleData();
+
+    const userInfo = await getAPIThongTinNhanVien();
+    if (userInfo && userInfo.length > 0) {
+        const username = document.getElementById('user-name');
+        if (username) {
+            username.textContent = userInfo[0].ten;
+        }
+    }
+
+    
+    thaoTacThongTinNhanVien(userInfo[0]);;
 });
+
+function thaoTacThongTinNhanVien(nhanVien){
+    const thongTin = document.querySelector('.thong-tin-nhan-vien');
+    thongTin.innerHTML = '';
+    const chucVu = nhanVien?.chucVu === 0 ? 'Phục vụ' : nhanVien?.chucVu === 1 ? 'Đầu bếp' : 'Chức vụ không xác định';
+    const html = `
+                                <div class="col-md-6">
+                                    <p><strong>Mã nhân viên:</strong> <span id="staff-id">NV${nhanVien?.id || ''}</span></p>
+                                    <p><strong>Họ và tên:</strong> <span id="staff-name">${nhanVien?.ten || ''}</span></p>
+                                    <p><strong>Chức vụ:</strong> <span id="staff-position">${chucVu}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Ngày vào làm:</strong> <span id="join-date">${nhanVien?.ngayBatDau || ''}</span></p>
+                                    <p><strong>Số điện thoại:</strong> <span id="staff-phone">${nhanVien?.soDienThoai || ''}</span></p>
+                                    <p><strong>Địa chỉ:</strong> <span id="staff-email">${nhanVien?.diaChi || ''}</span></p>
+                                </div>
+                                
+    `;
+
+    thongTin.innerHTML = html;
+}
+
+
+async function getAPIThongTinNhanVien() {
+    try {
+        const response = await fetch('/api/lay-thong-tin-nhan-vien', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        if (data.status) {
+            return data.obj; // sửa ở đây
+        } else {
+            console.error('Lỗi server:', data.error);
+            return {};
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối:', error);
+        return {};
+    }
+}
 
 /**
  * Cập nhật thông tin ngày hiện tại

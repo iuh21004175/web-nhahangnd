@@ -72,17 +72,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Chuyển phút thành giờ
                         const totalHoursForDay = totalMinutes / 60;
 
-                        // Cộng dồn tổng số giờ
-                        totalHours += totalHoursForDay;
-
                         // Làm tròn đến 2 chữ số thập phân
                         const totalHoursRounded = Math.round(totalHoursForDay * 100) / 100;
 
                         // Dummy hệ số và ghi chú (có thể thay bằng logic thực)
-                        const heSo = item.heSo || 'x1'; // bạn có thể truyền từ backend
+                        const heSo = item.heSoLuong || 1; // sử dụng hệ số lương từ backend, mặc định là 1 nếu không có
                         const ghiChu = item.ghiChu || ''; // có thể là ngày lễ chẳng hạn
 
-                        return `
+                        // Tính tổng giờ làm có tính hệ số
+                        totalHours += totalHoursForDay * heSo;
+
+                        return ` 
                             <tr>
                                 <td>${weekday}, ${day}/${month}</td>
                                 <td><span class="time-badge">${start}</span></td>
@@ -102,14 +102,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Hiển thị tổng số giờ làm
                     totalWorkingHours.textContent = `${Math.round(totalHours * 100) / 100} giờ`;
-                
+
                     // Lương theo giờ
-                    const basicSalary = 30000;
+                    const basicSalary = 30000; // Đơn giá theo giờ
                     const salary = basicSalary * totalHours;
 
                     // Hiển thị tổng lương
                     totalSalary.textContent = `${salary.toLocaleString()}₫`;
-
                 }
             } else {
                 resultTbody.innerHTML = `<tr><td colspan="6">Lỗi: ${data.error}</td></tr>`;
@@ -119,5 +118,4 @@ document.addEventListener('DOMContentLoaded', function () {
             resultTbody.innerHTML = `<tr><td colspan="6">Lỗi khi tải dữ liệu.</td></tr>`;
         }
     }
-    
 });

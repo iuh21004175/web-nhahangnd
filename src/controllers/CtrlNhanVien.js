@@ -188,4 +188,31 @@ module.exports = {
         }
         
     },
+    layThongTinNhanVien: async (req, res) => {
+        const tenDangNhap = res.locals.taiKhoan.tenDangNhap;
+
+        try {
+            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap } });
+      
+            if (!taiKhoan) {
+            console.log('Tài khoản không tồn tại');
+            return res.json({ status: false, error: 'Tài khoản không tồn tại' });
+            }
+      
+            const id = taiKhoan.idNhanVien;
+
+            const nhanVien = await NhanVien.findAll({
+                where: {
+                    id  
+                },
+                attributes: ['id' ,'ten', 'chucVu', 'ngayBatDau', 'ngaySinh', 'soDienThoai', 'diaChi']
+            })
+            return res.json({status: true, obj: nhanVien});
+        }
+        catch (error) {
+            console.error('Lỗi server:', error);
+            res.status(500).json({ error: 'Lỗi server' });
+        }
+        
+    }
 }

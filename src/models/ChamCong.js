@@ -43,7 +43,14 @@ const ChamCong = sequelize.define('ChamCong', {
         field: 'trang_thai',
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    heSoLuong: {
+        field: 'he_so_luong',
+        type: DataTypes.DECIMAL(3, 2),
+        allowNull: false,
+        defaultValue: 1.00
+    },
+    
 }, {
     tableName: 'cham_cong',
     timestamps: true,
