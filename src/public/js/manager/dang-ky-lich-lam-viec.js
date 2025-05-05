@@ -39,7 +39,7 @@ function getFirstMondayOfYear(year) {
   const daysToSunday = (7 - now.getDay()) % 7;
   const sunday = new Date(now);
   sunday.setDate(now.getDate() + daysToSunday);
-  sunday.setHours(23, 59, 59, 999); // Chủ Nhật 23h59p59s
+  sunday.setHours(0, 0, 0, 0);  // Chủ Nhật 23h59p59s
 
   // Tạo thông báo hạn đăng ký
   const deadlineNotice = document.createElement('div');

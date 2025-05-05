@@ -1,0 +1,78 @@
+.filters-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: end;
+}
+
+.month-select {
+    max-width: 200px;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.attendance-table th,
+.attendance-table td {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.attendance-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.attendance-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.time-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: #e7f1ff;
+    color: #0d6efd;
+    font-size: 0.875rem;
+}
+
+.total-hours {
+    font-weight: bold;
+    color: #198754;
+}
+
+.salary-summary {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    border: 1px solid #dee2e6;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background: white;
+    text-align: center;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.summary-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #0d6efd;
+}

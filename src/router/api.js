@@ -15,7 +15,7 @@ const CtrlThongKe = require('../controllers/CtrlThongKe');
 const CtrlDangKyLich = require('../controllers/CtrlDangKyLich');
 const CtrlXepLich = require('../controllers/CtrlXepLich');
 const sepayController = require('../controllers/sepay.controller');
-
+const CtrlChamCong = require('../controllers/CtrlChamCong');
 
 // Lưu vào bộ nhớ RAM (để upload lên Cloudinary)
 const storageMemory = multer.memoryStorage();
@@ -151,5 +151,6 @@ router.get('/don-hang-theo-ban', CtrlDonHang.layGhiDonHang);
 router.post('/them-don-hang', CtrlDonHang.themDonHang);
 router.get('/ca-lam-viec', CtrlXepLich.layCaLamViec);
 router.put('/ca-lam-viec', CtrlXepLich.capNhatCa);
+router.get('/luong', CtrlTaiKhoan.kiemTraTruyCap, CtrlChamCong.layLuong);
 router.get('/lay-ngay-bat-dau-ca', CtrlXepLich.layNgayBatDauCa);
 module.exports = router;

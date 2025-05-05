@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const listLoaiMon = await getAPIDanhMucMonAn();
     const listMonAn = await getAPIMonAn();
-    const idBan = new URLSearchParams(window.location.search).get('id');
+    const idBan = new URLSearchParams(window.location.search).get('idBan');
     const ban = await getAPIBan(idBan);
     const donHang = await getAPIDonHang(idBan);
 
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
-        const idBan = new URLSearchParams(window.location.search).get('id');
+        const idBan = new URLSearchParams(window.location.search).get('idBan');
         if (!idBan) {
             alert('Không tìm thấy ID bàn!');
             return;
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            id: idBan,
+                            idBan: idBan,
                             newStatus: 1
                         })
                     });
@@ -117,28 +117,53 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById('checkout').addEventListener('click', async function(e) {
         e.preventDefault();
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-        const trangThai = 2;
-        if (paymentMethod === '0') { // Nếu chọn thanh toán qua tiền mặt
+    
+        const orderItems = document.querySelectorAll('.order-item');
+        const chiTietDonHang = [];
+        let tongTien = 0;
+    
+        orderItems.forEach(item => {
+            const idMonAn = item.dataset.id;
+            const soLuong = parseInt(item.querySelector('.so-luong').value) || 0;
+            const giaText = item.querySelector('.price').textContent.trim();
+            const gia = parseInt(giaText.replace(/[^\d]/g, '')) || 0;
+    
+            if (soLuong > 0 && gia > 0) {
+                chiTietDonHang.push({
+                    idMonAn,
+                    soLuong,
+                    gia,
+                    ghiChu: ''
+                });
+                tongTien += gia * soLuong;
+            }
+        });
+    
+        if (chiTietDonHang.length === 0) {
+            alert('Không có món hợp lệ để ghi đơn!');
+            return;
+        }
+    
+        if (paymentMethod === '0') { // Thanh toán tiền mặt
             try {
-                // Ghi đơn hàng
                 const orderResponse = await fetch(`/api/ghi-don-hang?idBan=${idBan}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        idDonHang: donHang?.id || null, // Nếu donHang có id thì truyền vào, nếu không thì truyền null
-                        hinhThuc: 0, // Thanh toán tiền mặt
+                        idDonHang: donHang?.id || null,
+                        hinhThuc: 0,
                         thanhToan: paymentMethod,
-                        trangThai, // Đã thanh toán
+                        trangThai: 2,
                         tongTien,
                         chiTietDonHang
                     })
                 });
-                
-                const orderData = await orderResponse.json(); // Chờ dữ liệu trả về từ API ghi đơn hàng
+    
+                const orderData = await orderResponse.json();
                 console.log('Dữ liệu trả về từ API ghi đơn hàng:', orderData); 
-                // Nếu đơn hàng ghi thành công, cập nhật trạng thái bàn
+    
                 if (orderData.status) {
                     const tableStatusResponse = await fetch('/api/cap-nhat-trang-thai-ban', {
                         method: 'PUT',
@@ -146,19 +171,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            id: idBan,
+                            idBan: idBan,
                             newStatus: 0
                         })
                     });
     
                     const tableStatusData = await tableStatusResponse.json();
                     if (tableStatusData.status) {
-                        window.location.href = `/manager/danh-sach-ban`; // Điều hướng về danh sách bàn
+                        alert('Thanh toán đơn hàng thành công!');
+                        window.location.href = `/manager/danh-sach-ban`;
                     } else {
-                        alert('Cập nhật trạng thái bàn thất bại!');
+                        alert('Thanh toán đơn hàng thất bại!');
                     }
                 } else {
-                    alert('Tạo đơn hàng thất bại! Vui lòng thử lại.');
+                    alert('Thanh toán đơn hàng thất bại! Vui lòng thử lại.');
                 }
     
             } catch (error) {
@@ -166,13 +192,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 alert('Có lỗi xảy ra, vui lòng thử lại sau.');
             }
     
-        } else if (paymentMethod === '1') { // Nếu chọn thanh toán chuyển khoản
-            // Thực hiện logic thanh toán chuyển khoản ở đây
+        } else if (paymentMethod === '1') {
             alert('Thanh toán chuyển khoản đang được xử lý...');
-            // Bạn có thể thêm code để xử lý thanh toán chuyển khoản
+            // Xử lý thanh toán chuyển khoản tại đây
         }
-    });
-    
+    });  
 });
 
 
@@ -336,9 +360,14 @@ function themVaoGioHang(id, name, price, img) {
     // Thêm sự kiện cho nút tăng/giảm số lượng
     orderItem.querySelector('.btn-tang').addEventListener('click', function () {
         const input = orderItem.querySelector('.so-luong');
-        input.value = parseInt(input.value) + 1;
-        updateTotal(); // Cập nhật lại tổng giá trị
+        let currentValue = parseInt(input.value) || 0;
+    
+        if (currentValue < 20) {
+            input.value = currentValue + 1;
+            updateTotal(); // Cập nhật lại tổng giá trị
+        }
     });
+    
 
     orderItem.querySelector('.btn-giam').addEventListener('click', function () {
         const input = orderItem.querySelector('.so-luong');
@@ -393,7 +422,7 @@ async function getAPIBan(idBan = null) {
 
         // Nếu có idBan, truyền thêm vào query string
         if (idBan) {
-            url += `?id=${idBan}`;
+            url += `?idBan=${idBan}`;
         }
 
         const res = await fetch(url);
