@@ -1,6 +1,7 @@
 const NhanVien = require('../models/NhanVien');
 const TaiKhoan = require('../models/TaiKhoan');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
 function boDauTiengViet(str) {

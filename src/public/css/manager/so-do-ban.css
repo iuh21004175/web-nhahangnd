@@ -280,7 +280,7 @@
     flex-grow: 1;
     padding: 0 0.75rem; /* Chỉ giữ padding ngang, bỏ padding dọc */
     background-color: #f8f9fa;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .content-header {
@@ -452,4 +452,24 @@
 
 .text-danger {
     color: #dc3545;
+}
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-weight: normal;
+    padding: 0.5em 0.8em;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+.modal-dialog {
+    max-width: 500px;
 } 

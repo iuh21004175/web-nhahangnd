@@ -143,16 +143,16 @@ router.get('/thong-ke-ti-le-theo-danh-muc-mon-an', CtrlThongKe.thongKeTheoDanhMu
 router.get('/thong-ke-top-5-mon-ban-chay', CtrlThongKe.top5MonBanChay)
 router.get('/thong-ke-chi-tiet-doanh-thu', CtrlThongKe.thongKeChiTietDoanhThu)
 router.post('/xuat-bao-cao', CtrlThongKe.xuatBaoCao)
-router.post('/ghi-don-hang', CtrlTaiKhoan.kiemTraTruyCap, CtrlDonHang.ghiDonHang);
-router.post('/them-lich-lam-viec',CtrlTaiKhoan.kiemTraTruyCap, CtrlDangKyLich.dangKyLich);
-router.get('/lich-lam-viec',CtrlTaiKhoan.kiemTraTruyCap, CtrlDangKyLich.indexXemLich);
-router.get('/xem-lich',CtrlTaiKhoan.kiemTraTruyCap, CtrlDangKyLich.layLich);
+router.post('/ghi-don-hang', CtrlDonHang.ghiDonHang);
+router.post('/them-lich-lam-viec', CtrlDangKyLich.dangKyLich);
+router.get('/lich-lam-viec', CtrlDangKyLich.xemLichLamViec);
+router.get('/xem-lich', CtrlDangKyLich.layLich);
 router.put('/cap-nhat-trang-thai-ban', CtrlBan.updateTrangThaiBan);
 router.get('/don-hang-theo-ban', CtrlDonHang.layGhiDonHang);
 router.post('/them-don-hang', CtrlDonHang.themDonHang);
 router.get('/ca-lam-viec', CtrlXepLich.layCaLamViec);
 router.put('/ca-lam-viec', CtrlXepLich.capNhatCa);
-router.get('/luong', CtrlTaiKhoan.kiemTraTruyCap, CtrlChamCong.layLuong);
+router.get('/luong', CtrlChamCong.layLuong);
 router.get('/lay-ngay-bat-dau-ca', CtrlXepLich.layNgayBatDauCa);
 router.get('/lay-danh-sach-nhan-chua-co-ca', CtrlXepLich.layNhanVienChuaCoCa);
 router.get('/lay-thong-tin-nhan-vien', CtrlNhanVien.layThongTinNhanVien);

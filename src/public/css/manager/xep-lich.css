@@ -225,6 +225,8 @@ tr.highlight-row {
 /* Styles for the selected employees badges */
 #selected-employees {
     min-height: 40px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 #day-display {
@@ -352,4 +354,103 @@ tr.highlight-row {
 #assignShiftModal .table th, 
 #assignShiftModal .table td {
     vertical-align: middle;
+}
+
+/* CSS cho dropdown tìm kiếm nhân viên */
+.search-employee-wrapper {
+    position: relative;
+}
+
+.employee-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1050;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    display: none;
+}
+
+.employee-search-dropdown .dropdown-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.employee-search-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.employee-search-dropdown .dropdown-item:hover:not(.disabled) {
+    background-color: #f8f9fa;
+}
+
+.employee-search-dropdown .dropdown-item.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.employee-card {
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.employee-card:hover {
+    background-color: #e9ecef;
+}
+
+.employee-card .btn-close {
+    opacity: 0.5;
+}
+
+.employee-card:hover .btn-close {
+    opacity: 1;
+}
+
+#selected-employee-info {
+    transition: all 0.3s ease;
+}
+
+#selected-employee-info .card {
+    border-left: 4px solid #0d6efd;
+}
+
+/* Thêm vào file CSS của bạn */
+.employee-avatar-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-avatar {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border: 2px solid #eaeaea;
+}
+
+.default-avatar {
+    font-size: 3rem;
+}
+
+.employee-card .employee-avatar-container {
+    width: 40px;
+    height: 40px;
+}
+
+.employee-card .employee-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.employee-card .default-avatar {
+    font-size: 2rem;
 }

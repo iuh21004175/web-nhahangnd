@@ -54,6 +54,11 @@
                             <table class="table table-hover" id="unregisteredEmployeesTable">
                                 <thead class="table-light">
                                     <tr>
+                                        <th colspan="4">
+                                            Danh sách nhân viên chưa có ca
+                                        </th>
+                                    </tr>
+                                    <tr>
                                         <th>Mã NV</th>
                                         <th>Tên nhân viên</th>
                                         <th>Chức vụ</th>
@@ -421,7 +426,7 @@
         <form id="edit-he-so-form" class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="editHeSoModalLabel">Chỉnh sửa hệ số lương</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="cleanupModalBackdrop()"></button>
             </div>
             <div class="modal-body">
             <!-- Trường ẩn để giữ lại ngày -->
@@ -459,7 +464,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Xác nhận duyệt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn duyệt ca làm việc này?</p>
@@ -479,7 +484,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Xác nhận từ chối</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn từ chối ca làm việc này?</p>
@@ -503,7 +508,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Xác nhận chấm công</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <p>Xác nhận nhân viên đã hoàn thành ca làm việc này?</p>
@@ -531,7 +536,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Xác nhận lưu thay đổi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn lưu các thay đổi?</p>
@@ -555,7 +560,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Chi tiết ca làm việc - <span id="employee-name">Nguyễn Văn A</span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
@@ -582,87 +587,145 @@
     </div>
 
     <!-- Modal phân công ca làm việc -->
-    <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-labelledby="assignModalLabel">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="assignModalLabel">Phân công ca làm việc</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="cleanupModalBackdrop()"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-8">
-                            <label for="search-employee" class="form-label">Tìm kiếm nhân viên</label>
-                            <div class="input-group mb-3">
+                            <div class="search-employee-wrapper position-relative">
                                 <input type="text" class="form-control" id="search-employee" placeholder="Nhập tên nhân viên...">
-                                <button class="btn btn-outline-secondary" type="button" id="btn-search-employee">
-                                    <i class="fas fa-search"></i> Tìm
-                                </button>
+                                <div id="employee-search-dropdown" class="employee-search-dropdown shadow">
+                                    <!-- Kết quả tìm kiếm sẽ hiển thị ở đây -->
+                                    <div class="p-2 text-muted small">Nhập ít nhất 2 ký tự để tìm kiếm</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nhân viên được chọn</label>
-                        <div id="selected-employees" class="d-flex flex-wrap gap-2 border rounded p-2 min-height-50">
-                            <em class="text-muted">Chưa có nhân viên nào được chọn</em>
+                    <!-- Phần hiển thị thông tin nhân viên được chọn - đặt sau phần tìm kiếm -->
+                    <div id="selected-employee-info" class="mb-3">
+                        <div class="card">
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2">Thông tin nhân viên được chọn</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3 employee-avatar-container">
+                                        <i class="fas fa-user-circle fa-3x text-secondary default-avatar"></i>
+                                        <img src="" class="employee-avatar rounded-circle d-none" alt="Avatar" id="selected-employee-avatar">
+                                    </div>
+                                    <div>
+                                        <h5 id="selected-employee-name">Chưa có nhân viên được chọn</h5>
+                                        <div>
+                                            <span class="badge bg-primary me-2" id="selected-employee-id">Mã: --</span>
+                                            <span class="badge bg-secondary" id="selected-employee-role">--</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger ms-auto" id="remove-selected-employee" style="display: none;">
+                                        <i class="fas fa-times"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
+                    <div id="selected-employee-info" class="mb-3" style="display: none;">
+                        <div class="card">
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2">Thông tin nhân viên được chọn</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="fas fa-user-circle fa-3x text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <h5 id="selected-employee-name">Nguyễn Văn A</h5>
+                                        <div>
+                                            <span class="badge bg-primary me-2" id="selected-employee-id">Mã: NV001</span>
+                                            <span class="badge bg-secondary" id="selected-employee-role">Phục vụ</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger ms-auto" id="remove-selected-employee">
+                                        <i class="fas fa-times"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Chọn ca làm việc</label>
                         <div class="table-responsive">
                             <table class="table table-bordered text-center">
                                 <thead>
                                     <tr>
-                                        <th width="20%">Ngày</th>
-                                        <th width="40%">Ca sáng<br><small>(06:00 - 14:00)</small></th>
-                                        <th width="40%">Ca chiều<br><small>(14:00 - 22:00)</small></th>
+                                        <th style="width: 120px;">Ca làm việc</th>
+                                        <!-- Các ngày trong tuần sẽ được render bằng JS -->
+                                        <th>Thứ hai<br><small>01/01/2025</small></th>
+                                        <th>Thứ ba<br><small>02/01/2025</small></th>
+                                        <th>Thứ tư<br><small>03/01/2025</small></th>
+                                        <th>Thứ năm<br><small>04/01/2025</small></th>
+                                        <th>Thứ sáu<br><small>05/01/2025</small></th>
+                                        <th class="table-secondary">Thứ bảy<br><small>06/01/2025</small></th>
+                                        <th class="table-secondary">Chủ nhật<br><small>07/01/2025</small></th>
                                     </tr>
                                 </thead>
                                 <tbody id="assignmentTableBody">
-                                    <!-- Dữ liệu sẽ được render bằng JS -->
+                                    <tr>
+                                        <th>Ca sáng<br><small>(06:00 - 14:00)</small></th>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-01" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-02" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-03" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-04" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-05" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-06" data-shift="0">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-07" data-shift="0">
+                                        </div></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Ca chiều<br><small>(14:00 - 22:00)</small></th>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-01" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-02" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-03" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-04" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-05" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-06" data-shift="1">
+                                        </div></td>
+                                        <td><div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" data-date="2025-01-07" data-shift="1">
+                                        </div></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="assign-note" class="form-label">Ghi chú (nếu có)</label>
-                        <textarea class="form-control" id="assign-note" rows="2"></textarea>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> Ca làm việc được phân công bởi quản lý sẽ tự động được duyệt.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-primary" id="btn-confirm-assign">Xác nhận phân công</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal tìm kiếm nhân viên -->
-    <div class="modal fade" id="searchEmployeeModal" tabindex="-1" aria-labelledby="searchEmployeeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="searchEmployeeModalLabel">Tìm kiếm nhân viên</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="search-employee-input" class="form-label">Tìm kiếm</label>
-                        <input type="text" class="form-control" id="search-employee-input" placeholder="Nhập tên hoặc ID nhân viên...">
-                    </div>
-                    <div id="employee-search-results" class="list-group mt-3" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>

@@ -76,3 +76,46 @@ textarea.form-control {
         margin-bottom: 0.5rem;
     }
 }
+
+/* Card styles */
+.card {
+    border: none;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Table styles */
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Button size trong bảng */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Modal styles */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+} 

@@ -9,14 +9,11 @@ const sequelize = require('../config/database');
 
 
 module.exports = {
-    indexDanhMuc: (req, res) => {
-        res.render('manager/danh-muc-mon-an');
+    index: (req, res) => {
+        res.render('manager/thuc-don');
     },
     indexThucDonKhachHang: (req, res) => {
         res.render('customer/thuc-don');
-    },
-    indexMonAn: (req, res) => {
-        res.render('manager/mon-an');
     },
     layDanhMucMonAn: async (req, res) => {
         try{

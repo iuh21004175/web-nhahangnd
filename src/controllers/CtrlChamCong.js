@@ -10,11 +10,20 @@ module.exports = {
         res.render('manager/xem-luong');
     },
     layLuong: async (req, res) => {
-        const tenDangNhap = res.locals.taiKhoan.tenDangNhap;
+        const token = req.cookies.AuthTokenManager;
+        if (!token) {
+            return res.status(401).json({ error: 'Chưa đăng nhập' });
+        }
+        // Giải mã token để lấy thông tin tài khoản
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ error: 'Token không hợp lệ' });
+        }
+
         const { thang, nam } = req.query;
     
         try {
-            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap } });
+            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap: decoded.tenDangNhap } });
             
             if (!taiKhoan) {
                 console.log('Không tìm thấy tài khoản');

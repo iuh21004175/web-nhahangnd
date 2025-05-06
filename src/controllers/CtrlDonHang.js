@@ -104,12 +104,17 @@ module.exports = {
                 return res.status(400).json({ status: false, error: 'Thiếu ID bàn' });
             }
     
-            const tenDangNhap = res.locals?.taiKhoan?.tenDangNhap;
-            if (!tenDangNhap) {
-                return res.status(401).json({ status: false, error: 'Bạn chưa đăng nhập' });
+            const token = req.cookies.AuthTokenManager;
+            if (!token) {
+                return res.status(401).json({ error: 'Chưa đăng nhập' });
+            }
+            // Giải mã token để lấy thông tin tài khoản
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            if (!decoded) {
+                return res.status(401).json({ error: 'Token không hợp lệ' });
             }
     
-            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap } });
+            const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap: decoded.tenDangNhap } });
             if (!taiKhoan) {
                 return res.status(404).json({ status: false, error: 'Tài khoản không tồn tại' });
             }

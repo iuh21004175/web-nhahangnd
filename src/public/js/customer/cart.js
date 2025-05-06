@@ -1,12 +1,15 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const cartToggleBtn = document.querySelector('.cart-toggle');
     const cartSidebar = document.getElementById('cartSidebar')
-    const userId = await getAPIIDKhachHang();
+    let userId = null;
+    const khachHang = await getAPIThongTinKhachHang();
     const loginModal = document.getElementById('loginModal');
     // Load ban đầu
     renderCart();
     updateCartBadge();
-
+    if (khachHang) {
+        userId = khachHang.id;
+    }
     if (cartToggleBtn) {
         cartToggleBtn.addEventListener('click', function () {
             renderCart();
@@ -141,12 +144,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 });
-async function getAPIIDKhachHang() {
+async function getAPIThongTinKhachHang() {
     try {
-        const response = await fetch('/api/lay-id-khach-hang');
+        const response = await fetch('/api/lay-thong-tin-khach-hang');
         const data = await response.json();
         if (data.status) {
-            return data.id;
+            return data.khachHang;
         } else {
             console.error('Lỗi khi lấy ID khách hàng:', data.error);
             return null;

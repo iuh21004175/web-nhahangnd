@@ -177,6 +177,111 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     });
+
+    // Thêm đoạn code này vào phần khởi tạo (trong DOMContentLoaded)
+    document.getElementById('assignShiftModal').addEventListener('hidden.bs.modal', function() {
+        // Xóa backdrop nếu còn
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Xóa class modal-open trên body
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        
+        // Đảm bảo input tìm kiếm không bị disabled
+        const searchInput = document.getElementById('search-employee');
+        if (searchInput) {
+            searchInput.disabled = false;
+            searchInput.value = '';
+        }
+        
+        // Reset form
+        resetAssignmentForm();
+    });
+
+    // Thêm sự kiện cho input tìm kiếm
+    const searchInput = document.getElementById('search-employee');
+    const searchDropdown = document.getElementById('employee-search-dropdown');
+    
+    if (searchInput && searchDropdown) {
+        // Biến lưu trữ timeout cho debounce
+        let searchTimeout;
+        
+        // Sự kiện input
+        searchInput.addEventListener('input', function() {
+            const keyword = this.value.trim();
+            
+            // Xóa timeout hiện tại nếu có
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Ẩn dropdown nếu không có từ khóa
+            if (keyword.length < 2) {
+                searchDropdown.style.display = 'none';
+                return;
+            }
+            
+            // Đặt timeout để tránh tìm kiếm quá nhiều
+            searchTimeout = setTimeout(() => {
+                // Tìm kiếm nhân viên
+                const results = searchEmployeesInList(keyword);
+                
+                // Hiển thị kết quả
+                displaySearchResults(results);
+            }, 300);
+        });
+        
+        // Sự kiện focus vào input
+        searchInput.addEventListener('focus', function() {
+            const keyword = this.value.trim();
+            
+            if (keyword.length >= 2) {
+                // Tìm kiếm và hiển thị kết quả
+                const results = searchEmployeesInList(keyword);
+                displaySearchResults(results);
+            }
+        });
+        
+        // Sự kiện click ngoài dropdown để ẩn
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    // Thêm đoạn này vào phần khởi tạo (khi DOM đã tải xong)
+    const removeSelectedBtn = document.getElementById('remove-selected-employee');
+    if (removeSelectedBtn) {
+        removeSelectedBtn.addEventListener('click', function() {
+            // Xóa nhân viên khỏi danh sách đã chọn
+            const selectedEmployeeName = document.getElementById('selected-employee-name');
+            const name = selectedEmployeeName.textContent;
+            const employee = selectedEmployeesForAssignment.find(e => e.name === name);
+            
+            if (employee) {
+                removeEmployeeFromAssignment(employee.id);
+            }
+            
+            // Đặt lại các trường thông tin nhân viên
+            selectedEmployeeName.textContent = 'Chưa có nhân viên được chọn';
+            document.getElementById('selected-employee-id').textContent = 'Mã: --';
+            document.getElementById('selected-employee-role').textContent = '--';
+            document.getElementById('selected-employee-role').className = 'badge bg-secondary';
+            
+            // Ẩn nút xóa
+            removeSelectedBtn.style.display = 'none';
+            
+            // Kích hoạt lại ô tìm kiếm
+            const searchInput = document.getElementById('search-employee');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.disabled = false;
+                searchInput.focus();
+            }
+        });
+    }
 });
 function thaoTacHeSoLuong(danhSach) {
     const tbody = document.querySelector('#salary-table tbody');
@@ -1637,6 +1742,11 @@ function attachAssignButtonEvents() {
         btn.addEventListener('click', function() {
             const employeeId = this.getAttribute('data-id');
             const employeeName = this.getAttribute('data-name');
+            
+            // Reset form trước khi mở modal
+            resetAssignmentForm();
+            
+            // Mở modal với ID và tên nhân viên
             openAssignmentModal(employeeId, employeeName);
         });
     });
@@ -1657,10 +1767,37 @@ if (roleFilter) {
 // Biến lưu trữ nhân viên được chọn để phân công
 let selectedEmployeesForAssignment = [];
 
+// Hàm thêm nhân viên vào danh sách phân công
+function addEmployeeToAssignmentList(employee) {
+    // Kiểm tra nếu nhân viên đã có trong danh sách
+    if (selectedEmployeesForAssignment.some(e => e.id === employee.id)) {
+        return; // Không thêm nếu đã có
+    }
+    
+    // Chuẩn hóa dữ liệu nhân viên
+    const employeeData = {
+        id: employee.id,
+        name: employee.name || employee.ten,
+        ten: employee.ten || employee.name,
+        role: employee.role !== undefined ? employee.role : employee.chucVu,
+        chucVu: employee.chucVu !== undefined ? employee.chucVu : employee.role,
+        avatarUrl: employee.avatarUrl || employee.hinhAnh
+    };
+    
+    // Thêm vào danh sách
+    selectedEmployeesForAssignment.push(employeeData);
+    
+    // Cập nhật giao diện
+    updateSelectedEmployeesUI();
+}
+
 // Hàm mở modal phân công ca - được gọi khi nhấn nút "Phân công ca" hoặc nút "+" bên cạnh nhân viên
 function openAssignmentModal(employeeId = null, employeeName = null) {
     // Reset dữ liệu 
     resetAssignmentForm();
+    
+    // Tải danh sách nhân viên
+    loadAllEmployees();
     
     // Kiểm tra xem có phải tuần sau không
     const weekFilter = document.getElementById('assignment-week-filter');
@@ -1682,11 +1819,27 @@ function openAssignmentModal(employeeId = null, employeeName = null) {
         document.getElementById('btn-confirm-assign').disabled = false;
     }
     
-    // Nếu được gọi từ nút bên cạnh nhân viên, thêm nhân viên đó vào danh sách
+    // Nếu được gọi từ nút bên cạnh nhân viên, hiển thị thông tin nhân viên đó
     if (employeeId && employeeName) {
-        addEmployeeToAssignmentList({
-            id: employeeId,
-            name: employeeName
+        // Tìm thông tin nhân viên trong danh sách đã tải
+        getEmployeeDetails(employeeId).then(employee => {
+            if (employee) {
+                // Hiển thị thông tin nhân viên trong phần selected-employee-info
+                displaySelectedEmployee(employee);
+                
+                // Lưu nhân viên vào danh sách đã chọn
+                addEmployeeToAssignmentList(employee);
+                
+                // Vô hiệu hóa input tìm kiếm vì đã có nhân viên được chọn
+                const searchInput = document.getElementById('search-employee');
+                if (searchInput) {
+                    searchInput.value = employee.ten || employee.name;
+                    searchInput.disabled = true;
+                }
+                
+                // Đánh dấu ca làm việc của nhân viên này
+                markExistingShifts(employeeId);
+            }
         });
     }
     
@@ -1719,26 +1872,72 @@ function checkIfFutureWeek(weekValue) {
     }
 }
 
-// Hàm reset form phân công
+// Sửa lại hàm resetAssignmentForm để xóa các nhãn trạng thái nếu có
 function resetAssignmentForm() {
     // Xóa danh sách nhân viên đã chọn
     selectedEmployeesForAssignment = [];
+    
+    // Reset và kích hoạt lại ô tìm kiếm
+    const searchInput = document.getElementById('search-employee');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.disabled = false; // Đảm bảo input luôn được enable
+    }
+    
+    // Reset avatar về icon mặc định
+    const avatarImg = document.getElementById('selected-employee-avatar');
+    const defaultAvatar = document.querySelector('#selected-employee-info .default-avatar');
+    
+    if (avatarImg) {
+        avatarImg.src = '';
+        avatarImg.classList.add('d-none');
+    }
+    
+    if (defaultAvatar) {
+        defaultAvatar.classList.remove('d-none');
+    }
+    
+    // Xóa danh sách nhân viên đã chọn trong container
     const selectedEmployeesContainer = document.getElementById('selected-employees');
     if (selectedEmployeesContainer) {
         selectedEmployeesContainer.innerHTML = '';
     }
     
-    // Xóa tìm kiếm
-    const searchInput = document.getElementById('search-employee');
-    if (searchInput) {
-        searchInput.value = '';
-    }
-    
-    // Bỏ chọn tất cả checkbox
+    // Bỏ chọn tất cả checkbox và đảm bảo không bị disabled
     const checkboxes = document.querySelectorAll('#assignmentTableBody input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
+        checkbox.disabled = false; // Đảm bảo không bị disabled
     });
+    
+    // Xóa tất cả nhãn trạng thái đã thêm (nếu có)
+    const statusLabels = document.querySelectorAll('#assignmentTableBody .badge');
+    statusLabels.forEach(label => {
+        label.remove();
+    });
+    
+    // Bỏ chọn thông tin nhân viên
+    const selectedEmployeeName = document.getElementById('selected-employee-name');
+    const selectedEmployeeId = document.getElementById('selected-employee-id');
+    const selectedEmployeeRole = document.getElementById('selected-employee-role');
+    const removeSelectedBtn = document.getElementById('remove-selected-employee');
+    
+    if (selectedEmployeeName) {
+        selectedEmployeeName.textContent = 'Chưa có nhân viên được chọn';
+    }
+    
+    if (selectedEmployeeId) {
+        selectedEmployeeId.textContent = 'Mã: --';
+    }
+    
+    if (selectedEmployeeRole) {
+        selectedEmployeeRole.textContent = '--';
+        selectedEmployeeRole.className = 'badge bg-secondary';
+    }
+    
+    if (removeSelectedBtn) {
+        removeSelectedBtn.style.display = 'none';
+    }
     
     // Xóa ghi chú
     const noteInput = document.getElementById('assign-note');
@@ -1753,6 +1952,72 @@ function resetAssignmentForm() {
     }
 }
 
+// Hàm hiển thị thông tin nhân viên được chọn
+function displaySelectedEmployee(employee) {
+    const selectedEmployeeInfo = document.getElementById('selected-employee-info');
+    const selectedEmployeeName = document.getElementById('selected-employee-name');
+    const selectedEmployeeId = document.getElementById('selected-employee-id');
+    const selectedEmployeeRole = document.getElementById('selected-employee-role');
+    const removeSelectedBtn = document.getElementById('remove-selected-employee');
+    const avatarImg = document.getElementById('selected-employee-avatar');
+    
+    if (selectedEmployeeInfo && selectedEmployeeName && selectedEmployeeId && selectedEmployeeRole) {
+        // Hiển thị khối thông tin nhân viên
+        selectedEmployeeInfo.style.display = 'block';
+        
+        // Hiển thị tên nhân viên
+        selectedEmployeeName.textContent = employee.name || employee.ten;
+        
+        // Hiển thị mã nhân viên
+        selectedEmployeeId.textContent = `Mã: ${employee.id}`;
+        
+        // Hiển thị chức vụ nhân viên
+        let roleName = 'Không xác định';
+        let roleClass = 'bg-secondary';
+        
+        const roleValue = employee.role !== undefined ? employee.role : employee.chucVu;
+        
+        switch (parseInt(roleValue)) {
+            case 0:
+                roleName = 'Phục vụ';
+                roleClass = 'bg-primary';
+                break;
+            case 1:
+                roleName = 'Đầu bếp';
+                roleClass = 'bg-success';
+                break;
+        }
+        
+        selectedEmployeeRole.textContent = roleName;
+        selectedEmployeeRole.className = `badge ${roleClass}`;
+        
+        // Hiển thị avatar nếu có
+        if (avatarImg) {
+            const avatarSrc = employee.avatarUrl || employee.hinhAnh;
+            
+            if (avatarSrc) {
+                avatarImg.src = avatarSrc;
+                avatarImg.classList.remove('d-none');
+                
+                // Ẩn icon mặc định
+                const defaultAvatar = selectedEmployeeInfo.querySelector('.default-avatar');
+                if (defaultAvatar) defaultAvatar.classList.add('d-none');
+            } else {
+                // Không có avatar, hiển thị icon mặc định
+                avatarImg.classList.add('d-none');
+                
+                const defaultAvatar = selectedEmployeeInfo.querySelector('.default-avatar');
+                if (defaultAvatar) defaultAvatar.classList.remove('d-none');
+            }
+        }
+        
+        // Hiển thị nút xóa
+        if (removeSelectedBtn) {
+            removeSelectedBtn.style.display = 'block';
+        }
+    }
+}
+
 // Hàm thêm nhân viên vào danh sách phân công
 function addEmployeeToAssignmentList(employee) {
     // Kiểm tra nếu nhân viên đã có trong danh sách
@@ -1760,56 +2025,28 @@ function addEmployeeToAssignmentList(employee) {
         return; // Không thêm nếu đã có
     }
     
+    // Chuẩn hóa dữ liệu nhân viên
+    const employeeData = {
+        id: employee.id,
+        name: employee.name || employee.ten,
+        ten: employee.ten || employee.name,
+        role: employee.role !== undefined ? employee.role : employee.chucVu,
+        chucVu: employee.chucVu !== undefined ? employee.chucVu : employee.role,
+        avatarUrl: employee.avatarUrl || employee.hinhAnh
+    };
+    
     // Thêm vào danh sách
-    selectedEmployeesForAssignment.push(employee);
+    selectedEmployeesForAssignment.push(employeeData);
     
     // Cập nhật giao diện
     updateSelectedEmployeesUI();
 }
 
-// Hàm cập nhật giao diện danh sách nhân viên được chọn
-function updateSelectedEmployeesUI() {
-    const container = document.getElementById('selected-employees');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    if (selectedEmployeesForAssignment.length === 0) {
-        container.innerHTML = '<em class="text-muted">Chưa có nhân viên nào được chọn</em>';
-        return;
-    }
-    
-    selectedEmployeesForAssignment.forEach(employee => {
-        const employeeTag = document.createElement('div');
-        employeeTag.className = 'employee-tag';
-        employeeTag.innerHTML = `
-            ${employee.name}
-            <button type="button" class="btn-close btn-close-white ms-2" 
-                    data-id="${employee.id}" aria-label="Xóa"></button>
-        `;
-        
-        // Thêm sự kiện xóa nhân viên
-        const closeBtn = employeeTag.querySelector('.btn-close');
-        closeBtn.addEventListener('click', function() {
-            removeEmployeeFromAssignment(employee.id);
-        });
-        
-        container.appendChild(employeeTag);
-    });
-}
-
-// Hàm xóa nhân viên khỏi danh sách phân công
-function removeEmployeeFromAssignment(employeeId) {
-    selectedEmployeesForAssignment = selectedEmployeesForAssignment.filter(e => e.id !== employeeId);
-    updateSelectedEmployeesUI();
-}
-
 // Hàm cập nhật bảng lịch làm việc trong modal
 function updateAssignmentCalendar() {
+    // Xóa nội dung cũ
     const tableBody = document.getElementById('assignmentTableBody');
     if (!tableBody) return;
-    
-    // Xóa nội dung cũ
     tableBody.innerHTML = '';
     
     // Lấy tuần được chọn
@@ -1823,7 +2060,8 @@ function updateAssignmentCalendar() {
     // Tính ngày đầu tiên (thứ Hai) của tuần
     const firstDayOfWeek = getFirstDayOfWeek(parseInt(year), weekNumber);
     
-    // Tạo hàng cho từng ngày trong tuần
+    // Tạo mảng các ngày trong tuần
+    const weekDays = [];
     for (let i = 0; i < 7; i++) {
         const currentDate = new Date(firstDayOfWeek);
         currentDate.setDate(firstDayOfWeek.getDate() + i);
@@ -1838,38 +2076,89 @@ function updateAssignmentCalendar() {
         // Format ngày để gửi API
         const apiDateFormat = `${currentDate.getFullYear()}-${month}-${day}`;
         
-        // Tạo hàng mới
-        const row = document.createElement('tr');
-        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-            row.className = 'table-secondary'; // Highlight cuối tuần
+        weekDays.push({
+            date: currentDate,
+            dayName: dayName,
+            formattedDate: formattedDate,
+            apiDateFormat: apiDateFormat,
+            isWeekend: currentDate.getDay() === 0 || currentDate.getDay() === 6
+        });
+    }
+    
+    // Tạo hàng cho ca sáng
+    const morningRow = document.createElement('tr');
+    morningRow.innerHTML = '<th>Ca sáng<br><small>(06:00 - 14:00)</small></th>';
+    
+    // Tạo hàng cho ca chiều
+    const afternoonRow = document.createElement('tr');
+    afternoonRow.innerHTML = '<th>Ca chiều<br><small>(14:00 - 22:00)</small></th>';
+    
+    // Thêm checkbox cho từng ngày
+    weekDays.forEach((day, index) => {
+        // Tạo ô cho ca sáng
+        const morningCell = document.createElement('td');
+        if (day.isWeekend) {
+            morningCell.className = 'table-secondary';
         }
         
-        row.innerHTML = `
-            <td>
-                <strong>${dayName}</strong><br>
-                <small>${formattedDate}</small>
-            </td>
-            <td class="text-center">
-                <div class="form-check d-inline-block">
-                    <input class="form-check-input" type="checkbox" id="morning-${i}" 
-                           data-date="${apiDateFormat}" data-shift="0">
-                    <label class="form-check-label" for="morning-${i}">
-                        Ca sáng
-                    </label>
-                </div>
-            </td>
-            <td class="text-center">
-                <div class="form-check d-inline-block">
-                    <input class="form-check-input" type="checkbox" id="afternoon-${i}" 
-                           data-date="${apiDateFormat}" data-shift="1">
-                    <label class="form-check-label" for="afternoon-${i}">
-                        Ca chiều
-                    </label>
-                </div>
-            </td>
+        morningCell.innerHTML = `
+            <div class="form-check d-flex justify-content-center">
+                <input class="form-check-input" type="checkbox" 
+                       id="morning-${index}" 
+                       data-date="${day.apiDateFormat}" 
+                       data-shift="0">
+            </div>
         `;
         
-        tableBody.appendChild(row);
+        // Tạo ô cho ca chiều
+        const afternoonCell = document.createElement('td');
+        if (day.isWeekend) {
+            afternoonCell.className = 'table-secondary';
+        }
+        
+        afternoonCell.innerHTML = `
+            <div class="form-check d-flex justify-content-center">
+                <input class="form-check-input" type="checkbox" 
+                       id="afternoon-${index}" 
+                       data-date="${day.apiDateFormat}" 
+                       data-shift="1">
+            </div>
+        `;
+        
+        // Thêm các ô vào hàng tương ứng
+        morningRow.appendChild(morningCell);
+        afternoonRow.appendChild(afternoonCell);
+    });
+    
+    // Thêm các hàng vào bảng
+    tableBody.appendChild(morningRow);
+    tableBody.appendChild(afternoonRow);
+    
+    // Tạo header cho bảng (các ngày trong tuần)
+    const tableHeader = document.querySelector('#assignShiftModal table thead tr');
+    if (tableHeader) {
+        // Xóa header cũ trừ cột đầu tiên (Ca làm việc)
+        while (tableHeader.children.length > 1) {
+            tableHeader.removeChild(tableHeader.lastChild);
+        }
+        
+        // Thêm header mới cho từng ngày
+        weekDays.forEach(day => {
+            const th = document.createElement('th');
+            if (day.isWeekend) {
+                th.className = 'table-secondary';
+            }
+            th.innerHTML = `${day.dayName}<br><small>${day.formattedDate}</small>`;
+            tableHeader.appendChild(th);
+        });
+    }
+    
+    // Sau khi tạo xong bảng, cần kiểm tra và đánh dấu các ca đã đăng ký cho tất cả nhân viên được chọn
+    if (selectedEmployeesForAssignment.length > 0) {
+        // Đánh dấu ca làm việc cho nhân viên được chọn
+        selectedEmployeesForAssignment.forEach(employee => {
+            markExistingShifts(employee.id);
+        });
     }
 }
 
@@ -1914,50 +2203,85 @@ async function searchEmployees(keyword) {
 
 // Hàm hiển thị kết quả tìm kiếm
 function displaySearchResults(employees) {
-    const resultsContainer = document.getElementById('employee-search-results');
-    resultsContainer.innerHTML = '';
+    const searchDropdown = document.getElementById('employee-search-dropdown');
     
     if (!employees || employees.length === 0) {
-        resultsContainer.innerHTML = '<div class="list-group-item">Không tìm thấy nhân viên nào</div>';
+        searchDropdown.innerHTML = '<div class="p-2 text-muted small">Không tìm thấy nhân viên phù hợp</div>';
         return;
     }
     
+    let resultsHTML = '';
+    
     employees.forEach(employee => {
         // Xác định chức vụ
-        let role = '';
+        let roleName = '';
+        let roleClass = '';
+        
         switch (employee.chucVu) {
-            case 0: role = 'Phục vụ'; break;
-            case 1: role = 'Đầu bếp'; break;
-            default: role = 'Không xác định';
+            case 0: 
+                roleName = 'Phục vụ'; 
+                roleClass = 'bg-primary';
+                break;
+            case 1: 
+                roleName = 'Đầu bếp'; 
+                roleClass = 'bg-success';
+                break;
+            default: 
+                roleName = 'Không xác định';
+                roleClass = 'bg-secondary';
         }
         
-        const item = document.createElement('a');
-        item.href = '#';
-        item.className = 'list-group-item list-group-item-action employee-result-item';
-        item.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>${employee.ten}</strong>
-                    <small class="d-block text-muted">ID: ${employee.id}</small>
+        // Kiểm tra có avatar không
+        const avatarHtml = employee.hinhAnh 
+            ? `<img src="${employee.hinhAnh}" class="dropdown-avatar rounded-circle me-2" width="32" height="32" alt="${employee.ten}">`
+            : `<i class="fas fa-user-circle text-secondary me-2"></i>`;
+        
+        // Kiểm tra xem nhân viên đã được chọn chưa
+        const isSelected = selectedEmployeesForAssignment.some(e => e.id === employee.id);
+        
+        resultsHTML += `
+            <div class="dropdown-item ${isSelected ? 'disabled bg-light' : ''}" 
+                 data-id="${employee.id}" 
+                 data-name="${employee.ten}" 
+                 data-role="${employee.chucVu}"
+                 data-avatar="${employee.hinhAnh || ''}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        ${avatarHtml}
+                        <div>
+                            <div class="fw-bold">${employee.ten}</div>
+                            <div class="small text-muted">Mã: ${employee.id}</div>
+                        </div>
+                    </div>
+                    <span class="badge ${roleClass} text-white">${roleName}</span>
                 </div>
-                <span class="badge bg-secondary">${role}</span>
+                ${isSelected ? '<small class="text-success"><i class="fas fa-check me-1"></i>Đã chọn</small>' : ''}
             </div>
         `;
-        
-        // Thêm sự kiện chọn nhân viên
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            addEmployeeToAssignmentList({
-                id: employee.id,
-                name: employee.ten
+    });
+    
+    searchDropdown.innerHTML = resultsHTML;
+    searchDropdown.style.display = 'block';
+    
+    // Thêm sự kiện click cho các kết quả tìm kiếm
+    document.querySelectorAll('#employee-search-dropdown .dropdown-item:not(.disabled)').forEach(item => {
+        item.addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-id');
+            const employeeName = this.getAttribute('data-name');
+            const employeeRole = parseInt(this.getAttribute('data-role'));
+            const avatarUrl = this.getAttribute('data-avatar');
+            
+            // Thêm nhân viên vào danh sách đã chọn
+            selectEmployee({
+                id: employeeId,
+                name: employeeName,
+                role: employeeRole,
+                avatarUrl: avatarUrl && avatarUrl !== 'null' ? avatarUrl : null
             });
             
-            // Đóng modal tìm kiếm
-            const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchEmployeeModal'));
-            searchModal.hide();
+            // Ẩn dropdown sau khi chọn
+            searchDropdown.style.display = 'none';
         });
-        
-        resultsContainer.appendChild(item);
     });
 }
 
@@ -1976,72 +2300,72 @@ async function confirmAssignment() {
         return;
     }
     
-    // Tạo danh sách ca làm việc được gán
-    const assignments = [];
-    
     // Lấy thông tin tuần
     const weekFilter = document.getElementById('assignment-week-filter');
-    const [year, weekPart] = weekFilter.value.split('-W');
-    const weekNumber = parseInt(weekPart);
-    
-    // Lấy ghi chú
-    const note = document.getElementById('assign-note').value;
-    
-    // Tạo đối tượng phân công cho mỗi nhân viên và mỗi ca
-    selectedShifts.forEach(shift => {
-        const date = shift.getAttribute('data-date');
-        const shiftType = parseInt(shift.getAttribute('data-shift'));
-        
-        selectedEmployeesForAssignment.forEach(employee => {
-            assignments.push({
-                idNhanVien: employee.id,
-                ngay: date,
-                tuan: weekNumber,
-                caLamViec: shiftType,
-                trangThai: 1, // Đã duyệt
-                ghiChu: note
-            });
-        });
-    });
-    
-    console.log('Danh sách phân công:', assignments);
-    
+    console.log('Tuần được chọn:', weekFilter.value);
     // Hiển thị thông báo đang xử lý
     showToastPrimary('Đang phân công ca làm việc...');
     
-    // Đóng modal
-    const assignModal = bootstrap.Modal.getInstance(document.getElementById('assignShiftModal'));
-    assignModal.hide();
-    
     try {
-        // Gửi yêu cầu API
-        const response = await fetch('/api/them-ca-lam-viec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                assignments: assignments
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.status) {
-            showToastSuccess('Phân công ca làm việc thành công');
+        // Xử lý cho từng nhân viên
+        for (const employee of selectedEmployeesForAssignment) {
+            // Tạo danh sách ca làm việc cho nhân viên hiện tại
+            const shifts = [];
             
-            // Cập nhật lại danh sách nhân viên chưa có ca
-            updateAssignmentTabData(weekFilter.value);
-        } else {
-            showToastDanger(result.message || 'Phân công ca làm việc thất bại');
+            // Lặp qua tất cả ca đã chọn
+            selectedShifts.forEach(shift => {
+                const date = shift.getAttribute('data-date');
+                const shiftType = parseInt(shift.getAttribute('data-shift'));
+                
+                // Thêm ca làm việc vào danh sách
+                shifts.push({
+                    ngay: date,
+                    caLamViec: shiftType,
+                });
+            });
+            
+            // Gửi yêu cầu API cho nhân viên hiện tại
+            const response = await fetch('/api/them-lich-lam-viec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    idNhanVien: employee.id, // Thêm ID nhân viên vào request
+                    week: weekFilter.value, // Thêm thông tin tuần
+                    shifts: shifts // Danh sách ca làm việc
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.status) {
+                // Nếu có lỗi với nhân viên nào đó, hiển thị thông báo
+                showToastDanger(`Lỗi khi phân công cho nhân viên ${employee.name}: ${result.error || 'Lỗi không xác định'}`);
+                console.error('Lỗi phân công:', result);
+                // Tiếp tục với nhân viên tiếp theo
+            }
         }
-    } catch (error) {
-        // Mô phỏng thành công
-        console.error('Lỗi phân công ca làm việc:', error);
+        
+        // Đóng modal sau khi gửi tất cả yêu cầu
+        const modalElement = document.getElementById('assignShiftModal');
+        const assignModal = bootstrap.Modal.getInstance(modalElement);
+        if (assignModal) {
+            assignModal.hide();
+        }
+        
+        // Dọn dẹp backdrop modal (nếu còn)
+        cleanupModalBackdrop();
+        
+        // Hiển thị thông báo thành công sau khi hoàn thành tất cả yêu cầu
         showToastSuccess('Phân công ca làm việc thành công');
         
         // Cập nhật lại danh sách nhân viên chưa có ca
         updateAssignmentTabData(weekFilter.value);
+        
+    } catch (error) {
+        console.error('Lỗi khi phân công ca làm việc:', error);
+        showToastDanger('Đã xảy ra lỗi khi phân công ca làm việc');
     }
 }
 
@@ -2112,3 +2436,441 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 });
+
+// Thêm hàm này
+function cleanupModalBackdrop() {
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+    }, 300); // Đợi modal animate xong
+}
+
+// Biến lưu trữ danh sách nhân viên
+let allEmployees = [];
+
+// Hàm tải danh sách nhân viên khi mở modal
+async function loadAllEmployees() {
+    if (allEmployees.length > 0) return; // Nếu đã tải rồi thì không tải lại
+    
+    try {
+        const response = await fetch('/api/nhan-vien');
+        const data = await response.json();
+        
+        if (data.status) {
+            // Thêm xử lý và kiểm tra thông tin avatar
+            allEmployees = (data.list || []).map(employee => {
+                // Nếu API trả về đường dẫn avatar, sử dụng nó
+                // Nếu không, để avatarUrl là undefined
+                if (employee.hinhAnh) {
+                    employee.hinhAnh = employee.hinhAnh;
+                }
+                return employee;
+            });
+            console.log('Đã tải danh sách nhân viên:', allEmployees.length);
+        } else {
+            console.error('Lỗi khi tải danh sách nhân viên:', data.message);
+            showToastDanger('Không thể tải danh sách nhân viên');
+        }
+    } catch (error) {
+        console.error('Lỗi khi gọi API nhân viên:', error);
+        showToastDanger('Đã xảy ra lỗi khi tải danh sách nhân viên');
+    }
+}
+
+// Hàm tìm kiếm nhân viên dựa trên từ khóa
+function searchEmployeesInList(keyword) {
+    if (!keyword || keyword.length < 2) return [];
+    
+    const normalizedKeyword = keyword.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    return allEmployees.filter(employee => {
+        // Chuẩn hóa tên nhân viên để dễ tìm kiếm (bỏ dấu, chuyển thành chữ thường)
+        const normalizedName = employee.ten.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return normalizedName.includes(normalizedKeyword);
+    });
+}
+
+// Hàm hiển thị danh sách nhân viên tìm được
+function displaySearchResults(employees) {
+    const searchDropdown = document.getElementById('employee-search-dropdown');
+    
+    if (!employees || employees.length === 0) {
+        searchDropdown.innerHTML = '<div class="p-2 text-muted small">Không tìm thấy nhân viên phù hợp</div>';
+        return;
+    }
+    
+    let resultsHTML = '';
+    
+    employees.forEach(employee => {
+        // Xác định chức vụ
+        let roleName = '';
+        let roleClass = '';
+        
+        switch (employee.chucVu) {
+            case 0: 
+                roleName = 'Phục vụ'; 
+                roleClass = 'bg-primary';
+                break;
+            case 1: 
+                roleName = 'Đầu bếp'; 
+                roleClass = 'bg-success';
+                break;
+            default: 
+                roleName = 'Không xác định';
+                roleClass = 'bg-secondary';
+        }
+        
+        // Kiểm tra có avatar không
+        const avatarHtml = employee.hinhAnh 
+            ? `<img src="${employee.hinhAnh}" class="dropdown-avatar rounded-circle me-2" width="32" height="32" alt="${employee.ten}">`
+            : `<i class="fas fa-user-circle text-secondary me-2"></i>`;
+        
+        // Kiểm tra xem nhân viên đã được chọn chưa
+        const isSelected = selectedEmployeesForAssignment.some(e => e.id === employee.id);
+        
+        resultsHTML += `
+            <div class="dropdown-item ${isSelected ? 'disabled bg-light' : ''}" 
+                 data-id="${employee.id}" 
+                 data-name="${employee.ten}" 
+                 data-role="${employee.chucVu}"
+                 data-avatar="${employee.hinhAnh || ''}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        ${avatarHtml}
+                        <div>
+                            <div class="fw-bold">${employee.ten}</div>
+                            <div class="small text-muted">Mã: ${employee.id}</div>
+                        </div>
+                    </div>
+                    <span class="badge ${roleClass} text-white">${roleName}</span>
+                </div>
+                ${isSelected ? '<small class="text-success"><i class="fas fa-check me-1"></i>Đã chọn</small>' : ''}
+            </div>
+        `;
+    });
+    
+    searchDropdown.innerHTML = resultsHTML;
+    searchDropdown.style.display = 'block';
+    
+    // Thêm sự kiện click cho các kết quả tìm kiếm
+    document.querySelectorAll('#employee-search-dropdown .dropdown-item:not(.disabled)').forEach(item => {
+        item.addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-id');
+            const employeeName = this.getAttribute('data-name');
+            const employeeRole = parseInt(this.getAttribute('data-role'));
+            const avatarUrl = this.getAttribute('data-avatar');
+            
+            // Thêm nhân viên vào danh sách đã chọn
+            selectEmployee({
+                id: employeeId,
+                name: employeeName,
+                role: employeeRole,
+                avatarUrl: avatarUrl && avatarUrl !== 'null' ? avatarUrl : null
+            });
+            
+            // Ẩn dropdown sau khi chọn
+            searchDropdown.style.display = 'none';
+        });
+    });
+}
+
+// Hàm chọn nhân viên - cập nhật để kiểm tra ca đã đăng ký
+function selectEmployee(employee) {
+    // Reset các checkbox nếu đã có nhân viên trước đó
+    if (selectedEmployeesForAssignment.length > 0) {
+        const checkboxes = document.querySelectorAll('#assignmentTableBody input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+    
+    // Hiển thị thông tin nhân viên bên ngoài dropdown
+    const selectedEmployeeInfo = document.getElementById('selected-employee-info');
+    const selectedEmployeeName = document.getElementById('selected-employee-name');
+    const selectedEmployeeId = document.getElementById('selected-employee-id');
+    const selectedEmployeeRole = document.getElementById('selected-employee-role');
+    const removeSelectedBtn = document.getElementById('remove-selected-employee');
+    const avatarImg = document.getElementById('selected-employee-avatar');
+    
+    if (selectedEmployeeName && selectedEmployeeId && selectedEmployeeRole) {
+        // Hiển thị tên nhân viên
+        selectedEmployeeName.textContent = employee.name;
+        
+        // Hiển thị mã nhân viên
+        selectedEmployeeId.textContent = `Mã: ${employee.id}`;
+        
+        // Hiển thị chức vụ nhân viên
+        let roleName = 'Không xác định';
+        let roleClass = 'bg-secondary';
+        
+        switch (employee.role) {
+            case 0:
+                roleName = 'Phục vụ';
+                roleClass = 'bg-primary';
+                break;
+            case 1:
+                roleName = 'Đầu bếp';
+                roleClass = 'bg-success';
+                break;
+        }
+        
+        selectedEmployeeRole.textContent = roleName;
+        selectedEmployeeRole.className = `badge ${roleClass}`;
+        
+        // Kiểm tra và hiển thị avatar nếu có
+        if (avatarImg) {
+            // Kiểm tra dữ liệu avatar từ cả hai nguồn
+            const avatarSrc = employee.avatarUrl || employee.hinhAnh;
+            
+            if (avatarSrc) {
+                avatarImg.src = avatarSrc;
+                avatarImg.classList.remove('d-none');
+                
+                // Ẩn icon mặc định
+                const defaultAvatar = selectedEmployeeInfo.querySelector('.default-avatar');
+                if (defaultAvatar) defaultAvatar.classList.add('d-none');
+            } else {
+                // Không có avatar, hiển thị icon mặc định
+                avatarImg.classList.add('d-none');
+                
+                const defaultAvatar = selectedEmployeeInfo.querySelector('.default-avatar');
+                if (defaultAvatar) defaultAvatar.classList.remove('d-none');
+            }
+        }
+        
+        // Hiển thị nút xóa
+        if (removeSelectedBtn) {
+            removeSelectedBtn.style.display = 'block';
+        }
+    }
+    
+    // Thêm vào danh sách nếu chưa có
+    if (!selectedEmployeesForAssignment.some(e => e.id === employee.id)) {
+        selectedEmployeesForAssignment.push({
+            id: employee.id,
+            name: employee.name,
+            role: employee.role,
+            avatarUrl: employee.avatarUrl || employee.hinhAnh
+        });
+        
+        // Cập nhật UI danh sách nhân viên
+        updateSelectedEmployeesUI();
+        
+        // Vô hiệu hóa ô tìm kiếm sau khi đã chọn nhân viên
+        const searchInput = document.getElementById('search-employee');
+        if (searchInput) {
+            searchInput.value = employee.name;
+            searchInput.disabled = true;
+        }
+        
+        // Ẩn dropdown
+        const searchDropdown = document.getElementById('employee-search-dropdown');
+        if (searchDropdown) {
+            searchDropdown.style.display = 'none';
+        }
+        
+        // Kiểm tra và đánh dấu ca làm việc đã có
+        markExistingShifts(employee.id);
+    }
+}
+
+// Hàm kiểm tra và đánh dấu ca làm việc đã có của nhân viên
+async function markExistingShifts(employeeId) {
+    try {
+        // Hiển thị thông báo đang tải
+        showToastPrimary('Đang kiểm tra lịch làm việc của nhân viên...');
+        
+        // Lấy tuần đang chọn từ bộ lọc
+        const weekFilter = document.getElementById('assignment-week-filter');
+        const weekValue = weekFilter.value;
+        
+        // Gọi API để lấy lịch làm việc của nhân viên
+        const response = await fetch(`/api/lich-lam-viec?idNhanVien=${employeeId}&week=${weekValue}`);
+        const data = await response.json();
+        
+        if (data.status && data.list && data.list.length > 0) {
+            console.log('Lịch làm việc của nhân viên:', data.list);
+            
+            // Lặp qua tất cả ca làm việc đã đăng ký
+            data.list.forEach(shift => {
+                // Format ngày từ YYYY-MM-DD để so sánh với data-date của checkbox
+                const dateStr = new Date(shift.ngay).toISOString().split('T')[0];
+                const shiftType = shift.caLamViec; // 0: sáng, 1: chiều
+                
+                // Tìm checkbox tương ứng
+                const checkbox = document.querySelector(`#assignmentTableBody input[type="checkbox"][data-date="${dateStr}"][data-shift="${shiftType}"]`);
+                
+                if (checkbox) {
+                    // Chỉ đánh dấu (check) mà không vô hiệu hóa (disable)
+                    checkbox.checked = true;
+                }
+            });
+            
+            // Hiển thị thông báo hoàn thành
+            showToastSuccess('Đã tải lịch làm việc của nhân viên');
+        } else {
+            console.log('Nhân viên chưa đăng ký ca nào cho tuần này');
+        }
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra lịch làm việc:', error);
+        showToastDanger('Đã xảy ra lỗi khi tải lịch làm việc của nhân viên');
+    }
+}
+
+// Hàm lấy thông tin chi tiết của nhân viên theo ID
+async function getEmployeeDetails(employeeId) {
+    // Trước tiên, kiểm tra trong danh sách đã tải
+    if (allEmployees && allEmployees.length > 0) {
+        const foundEmployee = allEmployees.find(emp => emp.id === employeeId);
+        if (foundEmployee) {
+            return {
+                id: foundEmployee.id,
+                name: foundEmployee.ten,
+                ten: foundEmployee.ten,
+                role: foundEmployee.chucVu,
+                chucVu: foundEmployee.chucVu,
+                avatarUrl: foundEmployee.hinhAnh || foundEmployee.avatarUrl
+            };
+        }
+    }
+    
+    // Nếu chưa có trong danh sách đã tải, gọi API để lấy
+    try {
+        // Sử dụng query parameter để lấy thông tin một nhân viên cụ thể
+        const response = await fetch(`/api/nhan-vien?id=${employeeId}`);
+        const data = await response.json();
+        
+        if (data.status && data.obj) {
+            // Cập nhật vào allEmployees để lần sau không cần gọi API nữa
+            if (allEmployees && !allEmployees.some(emp => emp.id === data.obj.id)) {
+                allEmployees.push(data.obj);
+            }
+            
+            return {
+                id: data.obj.id,
+                name: data.obj.ten,
+                ten: data.obj.ten,
+                role: data.obj.chucVu,
+                chucVu: data.obj.chucVu,
+                avatarUrl: data.obj.hinhAnh || data.obj.avatarUrl
+            };
+        } else {
+            console.warn(`Không tìm thấy nhân viên có ID ${employeeId}`);
+            return {
+                id: employeeId,
+                name: employeeName || 'Nhân viên không xác định',
+                ten: employeeName || 'Nhân viên không xác định',
+                role: 0, // Mặc định là phục vụ
+                chucVu: 0
+            };
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy thông tin chi tiết nhân viên:', error);
+        
+        // Trả về dữ liệu tối thiểu từ tham số nếu có lỗi
+        return {
+            id: employeeId,
+            name: employeeName || 'Nhân viên không xác định',
+            ten: employeeName || 'Nhân viên không xác định',
+            role: 0, // Mặc định là phục vụ
+            chucVu: 0
+        };
+    }
+}
+
+// Hàm cập nhật giao diện danh sách nhân viên được chọn
+function updateSelectedEmployeesUI() {
+    const container = document.getElementById('selected-employees');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (selectedEmployeesForAssignment.length === 0) {
+        container.innerHTML = '<div class="p-2 text-muted">Chưa có nhân viên nào được chọn</div>';
+        return;
+    }
+    
+    // Tạo card cho mỗi nhân viên đã chọn
+    selectedEmployeesForAssignment.forEach(employee => {
+        // Xác định tên chức vụ
+        let roleName = '';
+        let roleClass = '';
+        
+        switch (employee.role) {
+            case 0: 
+                roleName = 'Phục vụ'; 
+                roleClass = 'bg-primary';
+                break;
+            case 1: 
+                roleName = 'Đầu bếp'; 
+                roleClass = 'bg-success';
+                break;
+            default: 
+                roleName = 'Không xác định';
+                roleClass = 'bg-secondary';
+        }
+        
+        // Kiểm tra có avatar không
+        const avatarHtml = employee.avatarUrl 
+            ? `<img src="${employee.avatarUrl}" class="employee-avatar rounded-circle" alt="${employee.name}">`
+            : `<i class="fas fa-user-circle fa-2x text-secondary default-avatar"></i>`;
+        
+        const card = document.createElement('div');
+        card.className = 'employee-card mb-2';
+        card.innerHTML = `
+            <div class="d-flex align-items-center p-2 border rounded">
+                <div class="me-2 employee-avatar-container">
+                    ${avatarHtml}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold">${employee.name}</div>
+                    <div>
+                        <span class="badge bg-secondary">Mã: ${employee.id}</span>
+                        <span class="badge ${roleClass}">${roleName}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" aria-label="Xóa" data-id="${employee.id}"></button>
+            </div>
+        `;
+        
+        // Thêm sự kiện xóa nhân viên
+        const removeBtn = card.querySelector('.btn-close');
+        removeBtn.addEventListener('click', function() {
+            removeEmployeeFromAssignment(employee.id);
+        });
+        
+        container.appendChild(card);
+    });
+}
+
+// Hàm xóa nhân viên khỏi danh sách được chọn
+function removeEmployeeFromAssignment(employeeId) {
+    // Tìm vị trí của nhân viên trong danh sách
+    const index = selectedEmployeesForAssignment.findIndex(emp => emp.id === employeeId);
+    
+    if (index !== -1) {
+        // Xóa nhân viên khỏi danh sách
+        selectedEmployeesForAssignment.splice(index, 1);
+        
+        // Cập nhật lại giao diện
+        updateSelectedEmployeesUI();
+        
+        // Nếu không còn nhân viên nào được chọn, kích hoạt lại input tìm kiếm
+        if (selectedEmployeesForAssignment.length === 0) {
+            const searchInput = document.getElementById('search-employee');
+            if (searchInput) {
+                searchInput.disabled = false;
+                searchInput.value = '';
+                searchInput.focus();
+            }
+            
+            // Ẩn thông tin nhân viên đã chọn
+            const selectedEmployeeInfo = document.getElementById('selected-employee-info');
+            if (selectedEmployeeInfo) {
+                selectedEmployeeInfo.style.display = 'none';
+            }
+        }
+    }
+}

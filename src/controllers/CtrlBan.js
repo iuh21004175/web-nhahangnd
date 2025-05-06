@@ -2,11 +2,8 @@ const KhuVuc = require('../models/KhuVuc');
 const Ban = require('../models/Ban'); 
 const sequelize = require('../config/database');
 module.exports = {
-    indexKhuVuc: async (req, res) => {
-        res.render('manager/khu-vuc')
-    },
-    indexBan: async (req, res) => {
-        res.render('manager/ban')
+    index: async (req, res) => {
+        res.render('manager/so-do-ban')
     },
     indexBanNhanVien: async (req, res) => {
         res.render('manager/danh-sach-ban')

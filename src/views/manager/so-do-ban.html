@@ -1,0 +1,297 @@
+<%- include('../layouts/manager.html', {
+    title: 'Quản lý sơ đồ bàn',
+    styles: `
+        <link rel="stylesheet" href="/css/manager/so-do-ban.css">
+    `,
+    scripts: `
+        <script src="/js/manager/so-do-ban.js"></script>
+    `,
+    body: `
+        <div class="container-fluid">
+            <!-- Tabs navigation -->
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tables-tab" data-bs-toggle="tab" data-bs-target="#tables" type="button" role="tab" aria-controls="tables" aria-selected="true">
+                        <i class="fas fa-chair me-2"></i>Bàn
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="areas-tab" data-bs-toggle="tab" data-bs-target="#areas" type="button" role="tab" aria-controls="areas" aria-selected="false">
+                        <i class="fas fa-map-marker-alt me-2"></i>Khu vực
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tabs content -->
+            <div class="tab-content" id="myTabContent">
+                <!-- Bàn tab -->
+                <div class="tab-pane fade show active" id="tables" role="tabpanel" aria-labelledby="tables-tab">
+                    <div class="table-management">
+                        <!-- Sidebar khu vực -->
+                        <div class="area-sidebar">
+                            <div class="area-list">
+                                <div class="list-group list-khuVuc">
+                                    <button class="list-group-item list-group-item-action active" data-id="all">
+                                        <i class="fas fa-border-all me-2"></i>Tất cả
+                                        <span class="badge bg-secondary rounded-pill ms-2 soBanTatCa">20</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nội dung chính -->
+                        <div class="content-wrapper">
+                            <!-- Header -->
+                            <div class="content-header">
+                                <div class="table-filters mt-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <select class="form-select" id="statusFilter">
+                                                <option value="all">Tất cả trạng thái</option>
+                                                <option value="0">Trống</option>
+                                                <option value="1">Đang sử dụng</option>
+                                                <option value="2">Bảo trì</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" id="capacityFilter">
+                                                <option value="all">Tất cả sức chứa</option>
+                                                <option value="2">2 người</option>
+                                                <option value="4">4 người</option>
+                                                <option value="6">6 người</option>
+                                                <option value="8">8 người</option>
+                                                <option value="10">10 người</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTableModal">
+                                                <i class="fas fa-plus me-2"></i>Thêm bàn
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thêm legend trạng thái -->
+                            <div class="status-legend mt-3">
+                                <div class="legend-item">
+                                    <span class="legend-color bg-success"></span>
+                                    <span class="legend-text">Trống</span>
+                                    <span class="badge bg-secondary ms-2" id="emptyCount">0</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color bg-danger"></span>
+                                    <span class="legend-text">Đang sử dụng</span>
+                                    <span class="badge bg-secondary ms-2" id="occupiedCount">0</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color bg-warning"></span>
+                                    <span class="legend-text">Bảo trì</span>
+                                    <span class="badge bg-secondary ms-2" id="maintenanceCount">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Danh sách bàn -->
+                            <div class="table-responsive" style="max-height: 400px;">
+                                <div class="table-grid mt-4 table-danhSach">
+                                    <!-- Danh sách bàn được tạo động bằng JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal thêm bàn mới -->
+                    <div class="modal fade" id="addTableModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Thêm bàn mới</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form id="addTableForm">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="status" value="empty">
+                                        
+                                        <!-- Thông báo lỗi -->
+                                        <div class="alert alert-danger d-none" id="addTableError">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <span id="addTableErrorMessage"></span>
+                                        </div>
+
+                                        <!-- Tên bàn -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="addTableName" name="tableName" required>
+                                        </div>
+
+                                        <!-- Khu vực -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Khu vực <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="areaId" id="addAreaId" required>
+                                                <option value="">Chọn khu vực</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Sức chứa -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Sức chứa <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="addCapacity" name="capacity" required>
+                                                <option value="2">2 người</option>
+                                                <option value="4">4 người</option>
+                                                <option value="6">6 người</option>
+                                                <option value="8">8 người</option>
+                                                <option value="10">10 người</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-success">Thêm</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal chỉnh sửa bàn -->
+                    <div class="modal fade" id="editTableModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Chỉnh sửa bàn</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form id="editTableForm">
+                                    <div class="modal-body">
+                                        <input type="hidden" id="editTableId" name="tableId">
+                                         <!-- Thông báo lỗi -->
+                                         <div class="alert alert-danger d-none" id="editTableError">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <span id="editTableErrorMessage"></span>
+                                        </div>
+                                        <!-- Tên bàn -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="editTableName" name="tableName" required>
+                                        </div>
+
+                                        <!-- Khu vực -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Khu vực <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="editAreaId" name="areaId" required>
+                                                <option value="">Chọn khu vực</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Sức chứa -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Sức chứa <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="editCapacity" name="capacity" required>
+                                                <option value="2">2 người</option>
+                                                <option value="4">4 người</option>
+                                                <option value="6">6 người</option>
+                                                <option value="8">8 người</option>
+                                                <option value="10">10 người</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="editStatus" name="status" required>
+                                                <option value="0">Trống</option>
+                                                <option value="2">Bảo trì</option>
+                                            </select>    
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Khu vực tab -->
+                <div class="tab-pane fade" id="areas" role="tabpanel" aria-labelledby="areas-tab">
+                    <div class="area-container">
+                        <!-- Bảng danh sách khu vực -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="mb-0">Danh sách khu vực</h4>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAreaModal">
+                                        <i class="fas fa-plus me-2"></i>Thêm khu vực
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-danhSach">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 80px">STT</th>
+                                                <th>Tên khu vực</th>
+                                                <th style="width: 120px">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Dữ liệu sẽ được thêm bằng JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal thêm khu vực -->
+                        <div class="modal fade" id="addAreaModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Thêm khu vực mới</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form id="addAreaForm">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Tên khu vực</label>
+                                                <input type="text" class="form-control txt-themKhuVuc" name="areaName" required>
+                                            </div>
+                                        
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-success">Thêm</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal chỉnh sửa khu vực -->
+                        <div class="modal fade" id="editAreaModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Chỉnh sửa khu vực</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form id="editAreaForm">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="areaId">
+                                            <div class="mb-3">
+                                                <label class="form-label">Tên khu vực</label>
+                                                <input type="text" class="form-control txt-suaKhuVuc" name="areaName" required>
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+}) %>
