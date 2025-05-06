@@ -1,0 +1,140 @@
+<%- include('../layouts/customer.html', {
+    title: 'Chi tiết món ăn',
+    styles: '<link rel="stylesheet" href="/css/customer/chi-tiet-mon.css">',
+    scripts: `<script src="/js/customer/chi-tiet-mon-an.js"></script>`,
+    body: `
+      <section class="product-detail py-5">
+        <div class="container">
+          <div class="row thongTinMonAn">
+            <!-- Hình ảnh món ăn -->
+            <div class="col-md-6 mb-4">
+              <div class="product-image">
+                <!-- (Hình sẽ được xử lý trong JS nếu cần) -->
+              </div>
+            </div>
+  
+            <!-- Thông tin món ăn -->
+            <div class="col-md-6">
+              <div class="product-info p-4 shadow-sm rounded">
+                <h1 class="mb-3">Bò Lúc Lắc</h1>
+                
+              </div>
+  
+              <div class="price-box mb-4">
+                <span class="text-primary fw-bold fs-3">189.000₫</span>
+              </div>
+  
+              <div class="description mb-4">
+                <h5>Mô tả:</h5>
+                <p class="text-muted">Thịt bò được cắt hạt lựu, xào với hành tây và ớt chuông, phục vụ kèm cơm nóng và xà lách. Thịt mềm, đậm đà với nước sốt đặc biệt của nhà hàng.</p>
+              </div>
+  
+              <div class="d-flex align-items-center gap-3">
+                <div class="input-group" style="width: 150px;">
+                  <button class="btn btn-outline-secondary btn-giam" type="button">-</button>
+                  <input type="number" class="form-control text-center so-luong" value="1" min="1" max="20">
+                  <button class="btn btn-outline-secondary btn-tang" type="button">+</button>
+                </div>
+                <button class="btn btn-primary btn-lg btn-them">
+                  <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
+                </button>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Món ăn liên quan -->
+          <div class="related-products mt-5">
+            <h3 class="text-center mb-4">Món ăn liên quan</h3>
+            <div class="row g-4">
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <img src="/images/mon-an/ca-hoi-nuong.jpg" class="card-img-top" alt="Cá Hồi Nướng">
+                  <div class="card-body">
+                    <h5 class="card-title">Cá Hồi Nướng</h5>
+                    <p class="card-text text-primary fw-bold">220.000₫</p>
+                    <a href="/chi-tiet-mon-an?id=2" class="btn btn-outline-primary">Xem chi tiết</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <img src="/images/mon-an/ga-nuong.jpg" class="card-img-top" alt="Gà Nướng Muối Ớt">
+                  <div class="card-body">
+                    <h5 class="card-title">Gà Nướng Muối Ớt</h5>
+                    <p class="card-text text-primary fw-bold">165.000₫</p>
+                    <a href="/chi-tiet-mon-an?id=3" class="btn btn-outline-primary">Xem chi tiết</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <img src="/images/mon-an/tom-su-hap.jpg" class="card-img-top" alt="Tôm Sú Hấp">
+                  <div class="card-body">
+                    <h5 class="card-title">Tôm Sú Hấp</h5>
+                    <p class="card-text text-primary fw-bold">250.000₫</p>
+                    <a href="/chi-tiet-mon-an?id=4" class="btn btn-outline-primary">Xem chi tiết</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Khu vực quét QR -->
+          <hr class="my-5">
+          <div class="text-center">
+            <h3>Quét QR để xem thông tin món ăn</h3>
+            <div id="reader" style="width: 300px; margin: 0 auto;"></div>
+            <div id="info" class="mt-4">
+              <h4 id="tenMonQR"></h4>
+              <p id="giaMonQR" class="text-primary fw-bold"></p>
+              <img id="hinhAnhQR" src="" alt="" style="width: 200px;">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal fade" id="monAnModal" tabindex="-1" aria-labelledby="monAnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalTenMon">Tên món</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <img id="modalHinh" src="" class="img-fluid mb-3" alt="Hình món ăn">
+              <p><strong>Giá:</strong> <span id="modalGia"></span></p>
+              <p><strong>Mô tả:</strong> <span id="modalMoTa"></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+  
+      <!-- Script thư viện QR và xử lý
+      <script src="https://unpkg.com/html5-qrcode"></script>
+      <script>
+        function hienThiThongTin(data) {
+          try {
+            const mon = JSON.parse(data);
+            document.getElementById('tenMonQR').innerText = mon.ten;
+            document.getElementById('giaMonQR').innerText = 'Giá: ' + parseInt(mon.gia).toLocaleString() + '₫';
+            document.getElementById('hinhAnhQR').src = mon.hinhAnh;
+          } catch (e) {
+            alert("QR không hợp lệ!");
+          }
+        }
+  
+        document.addEventListener('DOMContentLoaded', function () {
+          new Html5Qrcode("reader").start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            qrCodeMessage => {
+              hienThiThongTin(qrCodeMessage);
+            },
+            errorMessage => {}
+          );
+        });
+      </script> -->
+    `
+  }) %>
+  

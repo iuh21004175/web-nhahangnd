@@ -6,7 +6,7 @@ const ChiTietDonHang = require('../models/ChiTietDonHang')
 const {Readable} = require('stream');
 const cloudinary = require('../config/cloudinary');
 const sequelize = require('../config/database');
-
+const QRCode = require('qrcode');
 
 module.exports = {
     indexDanhMuc: (req, res) => {
@@ -236,5 +236,48 @@ module.exports = {
             console.error('Error:', error);
             return res.json({ status: false, error: 'Lỗi server', error });
         }
-    }
+    },
+    layThongTinMonAn: async (req, res) => {
+        const idMon = req.query.idMon;
+    
+        try {
+            const monAn = await MonAn.findOne({
+                where: { id: idMon }
+            });
+    
+            if (monAn) {
+                return res.json({ status: true, data: monAn });
+            } else {
+                return res.json({ status: false, error: 'Không tìm thấy món ăn' });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            return res.json({ status: false, error: 'Lỗi server', error });
+        }
+    },
+    taoMaQR: async (req, res) => {
+        const monAnId = req.params.idMon;
+        try {
+          // Kiểm tra món ăn có tồn tại không
+          const monAn = await MonAn.findByPk(monAnId);
+    
+          if (!monAn) {
+            return res.status(404).json({ error: 'Món ăn không tồn tại' });
+          }
+    
+          // Tạo URL dẫn tới trang chi tiết món ăn
+          const baseUrl = 'https://2f8d-2402-800-63b9-b060-c911-cc64-7bd4-862a.ngrok-free.app'; // 🔁 Đổi thành domain thật hoặc dùng req.get('host') nếu cần
+          const qrContent = `${baseUrl}/chi-tiet-mon-an?idMon=${monAnId}`;
+          console.log('Nội dung QR:', qrContent);
+    
+          // Tạo mã QR từ URL
+          const qrCodeBase64 = await QRCode.toDataURL(qrContent);
+          console.log('QR Code Base64:', qrCodeBase64);
+    
+          res.json({ qrCode: qrCodeBase64 });
+        } catch (error) {
+          console.error('Lỗi khi tạo mã QR:', error);
+          res.status(500).json({ error: 'Lỗi khi tạo mã QR' });
+        }
+      }
 }

@@ -17,7 +17,9 @@ const apiRouter = require('./router/api');
 const authorize = require('./services/googleApiAuth'); // Import hàm authorize từ googleApiAuth.js
 const cron = require('node-cron');
 const KhachHang = require('./models/KhachHang');
+const CtrlThucDon = require('./controllers/CtrlThucDon');
 
+app.get('/generate-qrcode/:idMon', CtrlThucDon.taoMaQR);
 // Sử dụng cookie
 app.use(cookieParser());
 // Cấu hình session

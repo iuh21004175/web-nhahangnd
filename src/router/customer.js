@@ -7,7 +7,7 @@ const CtrlDonHang = require('../controllers/CtrlDonHang');
 const jwt = require('jsonwebtoken');
 
 router.use((req, res, next) => {
-    const excludedRoutes = ['/', '/thuc-don', '/gioi-thieu'];
+    const excludedRoutes = ['/', '/thuc-don', '/gioi-thieu', '/chi-tiet-mon-an'];
     if (excludedRoutes.includes(req.path)) {
         // Nếu là / thì kiểm tra xem có cookie không
         const token = req.cookies.AuthTokenCustomer;
@@ -52,4 +52,5 @@ router.get('/don-hang', CtrlTrangChu.indexDonHang);
 router.get('/thanh-toan', CtrlTrangChu.indexThanhToan);
 router.get('/thanh-toan-online', CtrlTrangChu.indexThanhToanOnline);
 router.get('/thong-tin-ca-nhan', CtrlTrangChu.indexThongTinCaNhan)
+router.get('/chi-tiet-mon-an', CtrlTrangChu.indexChiTietSanPham)
 module.exports = router;
