@@ -10,6 +10,8 @@ const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
 const { Op } = require("sequelize");
 const NhanVien = require('../models/NhanVien');
+
+
 module.exports = {
     indexDanhMuc: (req, res) => {
         res.render('manager/danh-muc-nguyen-lieu');
@@ -561,4 +563,5 @@ module.exports = {
             return res.json({ status: false, error: 'Lỗi server', error });
         }
     }
+
 }

@@ -10,11 +10,12 @@ function thaoTacThucDon(list) {
     danhSachMonAn.innerHTML = '';
     list.forEach(function(monAn) {
         const card = `
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4" data-id-mon="${monAn.idMonAn}">
             <div class="menu-item-card shadow-sm">
-                <div class="menu-item-image">
-                    <img src="${monAn.MonAn.hinhAnh}" alt="Món ăn" class="img-fluid">
+                <div class="menu-item-image table-card" data-id-mon="${monAn.idMonAn}">
+                    <img class="image" src="${monAn.MonAn.hinhAnh}" alt="Món ăn" class="img-fluid">
                     <div class="menu-item-badge">Bán chạy</div>
+                    <img class="qr-image" data-id="${monAn.idMonAn}" src="" alt="QR Code" style="max-width: 100px;" />
                 </div>
                 <div class="menu-item-info p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -61,6 +62,36 @@ function thaoTacThucDon(list) {
                 if (value > 1) input.value = value - 1;
             });
         });
+
+        const monCard = document.querySelectorAll('.table-card');
+        monCard.forEach(card => {
+            card.addEventListener('click', function() {
+                const idMon = this.dataset.idMon;
+                window.location.href = `/chi-tiet-mon-an?idMon=${idMon}`;
+            });
+        });
+        async function hienThiTatCaQRCode() {
+            const qrImages = document.querySelectorAll('.qr-image');
+        
+            qrImages.forEach(async (img) => {
+                const idMonAn = img.getAttribute('data-id');
+                try {
+                    const res = await fetch(`/generate-qrcode/${idMonAn}`);
+                    const data = await res.json();
+        
+                    if (data.qrCode) {
+                        img.src = data.qrCode;
+                    } else {
+                        console.error(`Không tạo được QR cho món ID ${idMonAn}:`, data.error);
+                    }
+                } catch (error) {
+                    console.error(`Lỗi khi tạo QR cho món ID ${idMonAn}:`, error);
+                }
+            });
+        }
+        
+        hienThiTatCaQRCode();
+
     });
 
     document.querySelectorAll('.btn-them').forEach(function(btnThem) {

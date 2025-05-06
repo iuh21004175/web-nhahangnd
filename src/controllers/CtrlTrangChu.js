@@ -17,4 +17,7 @@ module.exports = {
     indexThongTinCaNhan: (req, res)=>{
         res.render('customer/thong-tin-ca-nhan')
     },
+    indexChiTietSanPham: (req, res)=>{
+        res.render('customer/chi-tiet-mon-an')
+    },
 }

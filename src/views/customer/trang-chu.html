@@ -1,7 +1,8 @@
 <%- include('../layouts/customer.html', {
     title: 'Trang chủ',
     styles: '<link rel="stylesheet" href="/css/customer/trang-chu.css">',
-    scripts: '<script src="/js/customer/trang-chu.js"></script>',
+    scripts: `
+    <script src="/js/customer/trang-chu.js"></script>`,
     body: `
         <!-- Hero Section với Video Background -->
         
@@ -170,7 +171,7 @@
         
 
         <!-- Thư viện ảnh -->
-        <section class="gallery-section py-6 bg-light">
+        <!-- <section class="gallery-section py-6 bg-light">
             <div class="container">
                 <div class="text-center mb-5" data-aos="fade-up">
                     <h2 class="section-title">Khám Phá Nhà Hàng</h2>
@@ -188,11 +189,11 @@
                             </div>
                         </a>
                     </div>
-                    <!-- Thêm các ảnh gallery khác tương tự -->
+                    
                 </div>
-                
+                 -->
                 <!-- Modal Thư viện ảnh -->
-                <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+                <!-- <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header border-0">
@@ -205,10 +206,10 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <!-- Instagram Feed Section -->
-        <section class="instagram-section py-5">
+        <!-- <section class="instagram-section py-5">
             <div class="container-fluid px-0">
                 <div class="text-center mb-5" data-aos="fade-up">
                     <h2 class="section-title">Instagram</h2>
@@ -223,9 +224,9 @@
                             <a href="#" class="insta-icon"><i class="fab fa-instagram"></i></a>
                         </div>
                     </div>
-                    <!-- Thêm 5 ảnh instagram khác tương tự -->
+                
                 </div>
             </div>
-        </section>
+        </section> -->
     `
 }) %>
