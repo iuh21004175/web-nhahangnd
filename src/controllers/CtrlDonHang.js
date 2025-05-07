@@ -436,7 +436,7 @@ module.exports = {
             const donHang = await DonHang.findOne({   
                 where: {
                     idBan,
-                    trangThai: 7  // Tìm trạng thái "chờ thanh toán"
+                    trangThai: [3, 4, 7]
                 },
                 include: [
                     {
@@ -458,6 +458,31 @@ module.exports = {
     
             const plainDonHang = donHang.toJSON();  // Chuyển dữ liệu sang JSON
             console.log(plainDonHang);
+            return res.json({ status: true, obj: plainDonHang });
+        } catch (error) {
+            console.error('Lỗi server:', error);
+            return res.status(500).json({ status: false, error: 'Lỗi server' });
+        }
+    },
+    layGiaDonHang: async (req, res) => {
+        const id = req.query.id;
+    
+        if (!id) {
+            return res.status(400).json({ status: false, message: 'Thiếu tham số id' });
+        }
+    
+        try {
+            const donHang = await DonHang.findOne({
+                where: { id }
+            });
+    
+            if (!donHang) {
+                return res.status(404).json({ status: false, message: 'Không tìm thấy đơn hàng' });
+            }
+    
+            const plainDonHang = donHang.toJSON(); 
+            console.log('Đơn hàng:', plainDonHang);
+    
             return res.json({ status: true, obj: plainDonHang });
         } catch (error) {
             console.error('Lỗi server:', error);

@@ -15,15 +15,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 });
                 const data = await response.json();
                 if (data.status) {
-                    alert('✅ Đơn hàng đã được hủy.');
+                    alert('Đơn hàng đã được hủy.');
                     // Làm mới danh sách đơn hàng sau khi hủy
                     let listDonHang = await getAPIXemDonHang();
                     thaoTacDonHang(listDonHang);
                 } else {
-                    alert('❌ Hủy đơn hàng thất bại: ' + (data.message || 'Lỗi không xác định.'));
+                    alert('Hủy đơn hàng thất bại: ' + (data.message || 'Lỗi không xác định.'));
                 }
             }
         }
+       
     });
     
 
@@ -55,7 +56,7 @@ function thaoTacDonHang(list) {
         danhSachDonHang.innerHTML = `
             <div class="col-12 text-center">
                 <h5>Không có đơn hàng nào.</h5>
-                <a href="/menu" class="btn btn-primary mt-3">Xem menu</a>
+                <a href="/thuc-don" class="btn btn-primary mt-3">Xem menu</a>
             </div>
         `;
         return;
@@ -96,12 +97,19 @@ function thaoTacDonHang(list) {
 
         let buttonHTML = '';
         if (donHang.trangThai === 1 || donHang.trangThai === 2) {
+            // Đặt hàng thành công hoặc đã thanh toán → nút Hủy (màu đỏ)
             buttonHTML = `<button class="btn btn-danger col-3 text-center btn-cancel-order" data-id="${donHang.id}">Hủy</button>`;
-        } else if (donHang.trangThai === 6 || donHang.trangThai === 0) {
-            buttonHTML = `<button class="btn btn-success col-3 text-center" data-bs-toggle="modal" data-bs-target="#exampleModal">Đặt lại</button>`;
+        } else if (donHang.trangThai === 6) {
+            // Đã giao → nút xanh lá
+            buttonHTML = `<button class="btn btn-success col-3 text-center" data-bs-toggle="modal" data-bs-target="#exampleModal">Đã giao</button>`;
+        } else if (donHang.trangThai === 0) {
+            // Đã hủy → nút xám
+            buttonHTML = `<button class="btn btn-secondary col-3 text-center" data-bs-toggle="modal" data-bs-target="#exampleModal">Đã hủy</button>`;
         } else {
+            // Các trạng thái khác → đang thực hiện (màu vàng)
             buttonHTML = `<button class="btn btn-warning col-3 text-center" data-bs-toggle="modal" data-bs-target="#exampleModal">Đang thực hiện</button>`;
         }
+        
 
 
         const html = `

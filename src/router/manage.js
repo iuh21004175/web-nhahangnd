@@ -32,6 +32,7 @@ router.get('/so-do-ban', CtrlBan.index);
 router.get('/cham-cong', CtrlChamCong.index);
 router.get('/xep-lich', CtrlXepLich.index);
 router.get('/trang-chu', CtrlTrangChu.index);
+router.get('/thanh-toan-online', CtrlTrangChu.indexThanhToanOnline);
 router.get('/don-hang', CtrlDonHang.index);
 router.get('/dang-xuat', CtrlTaiKhoan.dangXuat);
 router.get('/ho-tro-truc-tuyen', CtrlHoTroTrucTuyen.index);

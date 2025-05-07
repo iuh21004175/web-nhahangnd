@@ -239,7 +239,11 @@ module.exports = {
     
         try {
             const monAn = await MonAn.findOne({
-                where: { id: idMon }
+                where: { id: idMon },
+                include: {
+                    model: DanhMucMonAn,
+                    attributes: ['tenDanhMuc']
+                }
             });
     
             if (monAn) {
@@ -263,7 +267,7 @@ module.exports = {
           }
     
           // Tạo URL dẫn tới trang chi tiết món ăn
-          const baseUrl = 'https://2f8d-2402-800-63b9-b060-c911-cc64-7bd4-862a.ngrok-free.app'; // 🔁 Đổi thành domain thật hoặc dùng req.get('host') nếu cần
+          const baseUrl = 'https://nhahangcnmiuh.io.vn/'; //Đổi thành domain thật 
           const qrContent = `${baseUrl}/chi-tiet-mon-an?idMon=${monAnId}`;
           console.log('Nội dung QR:', qrContent);
     

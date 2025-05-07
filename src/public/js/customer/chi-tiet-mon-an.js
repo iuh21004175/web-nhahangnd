@@ -37,6 +37,11 @@ function renderChiTietMonAn(monAn) {
                 <h5>Mô tả:</h5>
                 <p class="text-muted">${monAn.moTa || 'Không có mô tả'}</p>
             </div>
+            <div class="description mb-4">
+  <h5 class="d-inline">Loại món: </h5>
+  <p class="text-muted d-inline">${monAn.DanhMucMonAn.tenDanhMuc || 'Không có mô tả'}</p>
+</div>
+
 
             <div class="d-flex align-items-center gap-3">
                 <div class="input-group" style="width: 150px;">
