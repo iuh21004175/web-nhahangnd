@@ -4,19 +4,6 @@
     scripts: '<script src="/js/manager/don-hang-cho-quan-ly.js"></script>',
     body: `
     <div class="">
-        <!-- Page Title and Actions -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title">Quản lý đơn hàng</h3>
-            <div class="d-flex">
-                <button class="btn btn-outline-secondary me-2" id="btnExportExcel">
-                    <i class="fas fa-file-excel me-2"></i>Xuất Excel
-                </button>
-                <button class="btn btn-outline-secondary" id="btnPrintOrders">
-                    <i class="fas fa-print me-2"></i>In
-                </button>
-            </div>
-        </div>
-    
         <!-- Filter Section -->
         <div class="card mb-4">
             <div class="card-body">
@@ -35,20 +22,22 @@
                             <label class="form-label">Trạng thái</label>
                             <select class="form-select" id="statusFilter">
                                 <option value="">Tất cả trạng thái</option>
-                                <option value="0">Chờ xác nhận</option>
-                                <option value="1">Đã xác nhận</option>
-                                <option value="2">Đang chuẩn bị</option>
-                                <option value="3">Đang giao hàng</option>
-                                <option value="4">Đã giao hàng</option>
-                                <option value="5">Đã hủy</option>
+                                <option value="0">Đã hủy</option>
+                                <option value="1">Đặt thành công</option>
+                                <option value="2">Đã thanh toán</option>
+                                <option value="3">Đang chế biến</option>
+                                <option value="4">Đã chế biến</option>
+                                <option value="5">Đang giao hàng</option>
+                                <option value="6">Đã giao hàng</option>
+                                <option value="7">Chờ thanh toán</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Thanh toán</label>
                             <select class="form-select" id="paymentFilter">
                                 <option value="">Tất cả</option>
-                                <option value="0">Chưa thanh toán</option>
-                                <option value="1">Đã thanh toán</option>
+                                <option value="0">Tiền mặt</option>
+                                <option value="1">Chuyển khoản</option>
                             </select>
                         </div>
                         
@@ -61,12 +50,11 @@
                             <input type="date" class="form-control" id="toDateFilter">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">Loại đơn</label>
+                            <label class="form-label">Hình thức</label>
                             <select class="form-select" id="orderTypeFilter">
                                 <option value="">Tất cả</option>
                                 <option value="0">Tại quán</option>
-                                <option value="1">Giao hàng</option>
-                                <option value="2">Mang về</option>
+                                <option value="1">Trực tuyến</option>
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
@@ -85,7 +73,14 @@
         <!-- Orders Table -->
         <div class="card">
             <div class="card-body">
-                <div class="table-responsive">
+                <!-- Page Title and Actions -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="page-title m-0">Danh sách đơn hàng</h4>
+                    <div class="d-flex">
+                        
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 380px;">
                     <table class="table table-hover table-striped">
                         <thead class="table-light">
                             <tr>
@@ -129,17 +124,16 @@
                             <h6 class="fw-bold">Thông tin khách hàng</h6>
                             <ul class="list-unstyled">
                                 <li><strong>Tên:</strong> <span id="customerName"></span></li>
-                                <li><strong>SĐT:</strong> <span id="customerPhone"></span></li>
-                                <li><strong>Địa chỉ:</strong> <span id="customerAddress"></span></li>
+                                <li><strong>Số điện thoại: </strong> <span id="customerPhone"></span></li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <h6 class="fw-bold">Thông tin đơn hàng</h6>
                             <ul class="list-unstyled">
-                                <li><strong>Mã đơn:</strong> #<span id="detailOrderId"></span></li>
-                                <li><strong>Ngày đặt:</strong> <span id="orderDate"></span></li>
-                                <li><strong>Loại đơn:</strong> <span id="orderType"></span></li>
+                                <li><strong>Ngày ghi đơn:</strong> <span id="orderDate"></span></li>
+                                <li><strong>Hình thức:</strong> <span id="orderType"></span></li>
                                 <li><strong>Phương thức thanh toán:</strong> <span id="paymentMethod"></span></li>
+                                <li><strong>Địa chỉ giao Hàng: </strong> <span id="addressOrder"></span></li>
                             </ul>
                         </div>
                     </div>
@@ -164,11 +158,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-end"><strong>Phí giao hàng:</strong></td>
-                                    <td id="deliveryFee"></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3" class="text-end"><strong>Giảm giá:</strong></td>
-                                    <td id="discount"></td>
+                                    <td id="deliveryFee">20.000</td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-end"><strong>Tổng thanh toán:</strong></td>
@@ -177,43 +167,20 @@
                             </tfoot>
                         </table>
                     </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6 class="fw-bold">Lịch sử trạng thái</h6>
-                            <div id="orderStatusHistory" class="status-timeline">
-                                <!-- Status history sẽ được render bằng JavaScript -->
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-bold">Ghi chú</h6>
-                            <div class="p-3 bg-light rounded" id="orderNote">
-                                <!-- Order note sẽ được render bằng JavaScript -->
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <div class="d-flex justify-content-between w-100">
                         <div>
-                            <button type="button" class="btn btn-outline-danger" id="btnCancelOrder">
-                                <i class="fas fa-times me-2"></i>Hủy đơn hàng
-                            </button>
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="fas fa-times me-2"></i>Đóng
-                            </button>
-                            <button type="button" class="btn btn-primary" id="btnUpdateStatus">
-                                <i class="fas fa-check me-2"></i><span id="nextStatusText">Cập nhật trạng thái</span>
-                            </button>
-                            <button type="button" class="btn btn-success" id="btnPrintOrder">
-                                <i class="fas fa-print me-2"></i>In đơn hàng
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>`
+    </div>
+    `
 }) %>

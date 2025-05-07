@@ -12,7 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('btnBlack').innerHTML = 'Về trang chủ';
         });
     });
-    setInterval(updateCountdown, 1000);
+    
+    // Khởi tạo biến secondsLeft ở mức global
+    window.secondsLeft = 300; // 5 phút
+    
+    // Bắt đầu đếm ngược
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    
     let cart = JSON.parse(localStorage.getItem('gioHang')) || [];
     if (cart.length > 0) {
         let tongGia = 0;
@@ -44,22 +50,26 @@ document.addEventListener('DOMContentLoaded', function () {
             const newQRUrl = `https://qr.sepay.vn/img?bank=TPBank&acc=10001198354&template=compact&amount=${amountParam}&des=${orderDescription}`;
             qrImg.src = newQRUrl;
         }
+        
+        // Hiển thị thời gian ban đầu
+        updateCountdown();
     }
-    
 });
+
 function updateCountdown() {
-    let secondsLeft = 300;
     const countdownEl = document.getElementById('countdown');
     if (countdownEl) {
-      const minutes = Math.floor(secondsLeft / 60);
-      const seconds = secondsLeft % 60;
-      countdownEl.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        const minutes = Math.floor(window.secondsLeft / 60);
+        const seconds = window.secondsLeft % 60;
+        countdownEl.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
-    secondsLeft--;
+    // Giảm thời gian còn lại
+    window.secondsLeft--;
 
-    if (secondsLeft < 0) {
-      //alert('Đã hết thời gian chờ thanh toán. Bạn sẽ được chuyển về trang chủ.');
-      window.location.href = '/';
+    if (window.secondsLeft < 0) {
+        clearInterval(window.countdownInterval);
+        alert('Đã hết thời gian chờ thanh toán. Bạn sẽ được chuyển về trang chủ.');
+        window.location.href = '/';
     }
 }

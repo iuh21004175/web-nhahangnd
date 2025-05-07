@@ -4,22 +4,21 @@
     scripts: '<script src="/js/manager/cham-cong.js"></script>',
     body: `
     <div class="attendance-management">
-        <!-- Header -->
-        <div class="content-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Chấm công nhân viên</h4>
-                <div class="header-date">
-                    <i class="far fa-calendar-alt me-2"></i>
-                    <span id="currentDate"></span>
-                </div>
-            </div>
-        </div>
-
         <!-- Bảng chấm công -->
         <div class="card mt-3">
             <div class="card-body">
+                <!-- Header -->
+                <div class="content-header mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Chấm công nhân viên</h4>
+                        <div class="header-date">
+                            <i class="far fa-calendar-alt me-2"></i>
+                            <span id="currentDate"></span>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover table-danhSach">
                         <thead>
                             <tr>
                                 <th>STT</th>
@@ -33,54 +32,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>NV001</td>
-                                <td>Nguyễn Văn A</td>
-                                <td>Ca sáng (08:00 - 16:00)</td>
-                                <td id="timeIn-1">--:--</td>
-                                <td id="timeOut-1">--:--</td>
-                                <td>
-                                    <span class="badge bg-warning">Chưa check-in</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-success check-in-btn" 
-                                            data-employee-id="1"
-                                            onclick="checkIn(1)">
-                                        <i class="fas fa-sign-in-alt me-1"></i>Check-in
-                                    </button>
-                                    <button class="btn btn-sm btn-danger check-out-btn" 
-                                            data-employee-id="1"
-                                            onclick="checkOut(1)" 
-                                            disabled>
-                                        <i class="fas fa-sign-out-alt me-1"></i>Check-out
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>NV002</td>
-                                <td>Trần Thị B</td>
-                                <td>Ca chiều (14:00 - 22:00)</td>
-                                <td id="timeIn-2">14:05</td>
-                                <td id="timeOut-2">--:--</td>
-                                <td>
-                                    <span class="badge bg-primary">Đang làm việc</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-success check-in-btn" 
-                                            data-employee-id="2"
-                                            onclick="checkIn(2)" 
-                                            disabled>
-                                        <i class="fas fa-sign-in-alt me-1"></i>Check-in
-                                    </button>
-                                    <button class="btn btn-sm btn-danger check-out-btn" 
-                                            data-employee-id="2"
-                                            onclick="checkOut(2)">
-                                        <i class="fas fa-sign-out-alt me-1"></i>Check-out
-                                    </button>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>

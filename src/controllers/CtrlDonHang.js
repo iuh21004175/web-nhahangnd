@@ -4,7 +4,8 @@ const MonAn = require('../models/MonAn');
 const TaiKhoan = require('../models/TaiKhoan');
 const moment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
-
+const KhachHang = require('../models/KhachHang');
+const { Op } = require('sequelize');
 module.exports = {
     index: (req, res) => {
         if(res.locals.taiKhoan.vaiTro === 'Quản lý'){
@@ -231,16 +232,16 @@ module.exports = {
         }
     },
     layDonHang: async (req, res) => {
+        const token = req.cookies.AuthTokenCustomer;
+        if (!token) {
+            return res.redirect('/')
+        }
+        // Giải mã token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded || !decoded.id) {
+            return res.status(401).json({ status: false, error: 'Chưa đăng nhập hoặc token hết hạn' });
+        }
         try {
-            const token = req.cookies.AuthTokenCustomer;
-            if (!token) {
-                return res.redirect('/')
-            }
-            // Giải mã token
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            if (!decoded || !decoded.id) {
-                return res.status(401).json({ status: false, error: 'Chưa đăng nhập hoặc token hết hạn' });
-            }
             const donHang = await DonHang.findAll({
                 where: {
                     idKhachHang: decoded.id,
@@ -265,6 +266,141 @@ module.exports = {
         } catch (error) {
             console.error('Error:', error);
             return res.json({ status: false, error: 'Lỗi server' });
+        }
+    },
+    layDonHangQuanLy: async (req, res) => {
+        try {
+            const { batDau, ketThuc, khachHang, trangThai, thanhToan, hinhThuc, id } = req.query;
+            
+            console.log('Query params:', { batDau, ketThuc, khachHang, trangThai, thanhToan, hinhThuc, id });
+            
+            // Xây dựng điều kiện tìm kiếm cho đơn hàng
+            const whereCondition = {};
+            
+            // Lọc theo ID đơn hàng (chỉ khi id có giá trị và không phải chuỗi rỗng)
+            if (id.trim() !== '') {
+                whereCondition.id = id;
+            }
+            
+            // Lọc theo khoảng thời gian
+            if ((batDau && batDau.trim() !== '') || (ketThuc && ketThuc.trim() !== '')) {
+                whereCondition.thoiGianGhi = {};
+                
+                if (batDau && batDau.trim() !== '') {
+                    const batDauDate = new Date(batDau);
+                    batDauDate.setHours(0, 0, 0, 0);
+                    whereCondition.thoiGianGhi[Op.gte] = batDauDate;
+                }
+                
+                if (ketThuc && ketThuc.trim() !== '') {
+                    const ketThucDate = new Date(ketThuc);
+                    ketThucDate.setHours(23, 59, 59, 999);
+                    whereCondition.thoiGianGhi[Op.lte] = ketThucDate;
+                }
+            }
+            
+            // Lọc theo trạng thái đơn hàng
+            if (trangThai && trangThai.trim() !== '') {
+                whereCondition.trangThai = parseInt(trangThai);
+            }
+            
+            // Lọc theo phương thức thanh toán
+            if (thanhToan && thanhToan.trim() !== '') {
+                whereCondition.thanhToan = parseInt(thanhToan);
+            }
+            
+            // Lọc theo hình thức đặt hàng
+            if (hinhThuc && hinhThuc.trim() !== '') {
+                whereCondition.hinhThuc = parseInt(hinhThuc);
+            }
+            
+            // Chuẩn bị config cho include
+            const includeOptions = [
+                {
+                    model: ChiTietDonHang,
+                    include: [
+                        {
+                            model: MonAn,
+                            attributes: ['id', 'ten', 'hinhAnh']
+                        }
+                    ]
+                }
+            ];
+            
+            // Chỉ áp dụng điều kiện lọc khách hàng nếu có giá trị
+            if (khachHang && khachHang.trim() !== '') {
+                includeOptions.push({
+                    model: KhachHang,
+                    attributes: ['id', 'ten', 'soDienThoai'],
+                    where: {
+                        [Op.or]: [
+                            { ten: { [Op.like]: `%${khachHang}%` } },
+                            { soDienThoai: { [Op.like]: `%${khachHang}%` } }
+                        ]
+                    }
+                });
+            } else {
+                // Nếu không có điều kiện lọc khách hàng, vẫn include mà không lọc
+                includeOptions.push({
+                    model: KhachHang,
+                    attributes: ['id', 'ten', 'soDienThoai'],
+                    required: false // Quan trọng: không bắt buộc có quan hệ KhachHang
+                });
+            }
+            
+            console.log('Điều kiện lọc:', JSON.stringify(whereCondition, null, 2));
+            
+            // Thực hiện truy vấn với các điều kiện đã xây dựng
+            const donHangList = await DonHang.findAll({
+                where: whereCondition,
+                include: includeOptions,
+                order: [['thoiGianGhi', 'DESC']] // Sắp xếp theo thời gian mới nhất
+            });
+            
+            console.log(`Tìm thấy ${donHangList.length} đơn hàng`);
+            
+            // Tính toán thống kê
+            let totalAmount = 0;
+            let cancelledOrders = 0;
+            let completedOrders = 0;
+            let processingOrders = 0;
+            
+            donHangList.forEach(order => {
+                // Đơn hàng hoàn thành (trạng thái 4)
+                if (order.trangThai === 4) {
+                    completedOrders++;
+                    totalAmount += parseFloat(order.tongTien || 0);
+                }
+                // Đơn hàng đã hủy (trạng thái 5)
+                else if (order.trangThai === 5) {
+                    cancelledOrders++;
+                }
+                // Đơn hàng đang xử lý (trạng thái 0, 1, 2, 3)
+                else if ([0, 1, 2, 3].includes(order.trangThai)) {
+                    processingOrders++;
+                }
+            });
+            
+            // Trả về kết quả
+            return res.json({
+                status: true,
+                list: donHangList,
+                summary: {
+                    totalOrders: donHangList.length,
+                    completedOrders,
+                    cancelledOrders,
+                    processingOrders,
+                    totalAmount
+                }
+            });
+            
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách đơn hàng:', error);
+            return res.status(500).json({
+                status: false,
+                message: 'Đã xảy ra lỗi khi tải danh sách đơn hàng',
+                error: error.message
+            });
         }
     },
     huyDonHang: async (req, res) => {
@@ -327,6 +463,57 @@ module.exports = {
             console.error('Lỗi server:', error);
             return res.status(500).json({ status: false, error: 'Lỗi server' });
         }
-    }    
-    
+    },
+    layChiTietDonHang: async (req, res) => {
+        try {
+            const { id } = req.query;
+            
+            if (!id) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Thiếu thông tin ID đơn hàng'
+                });
+            }
+            
+            // Tìm đơn hàng với thông tin chi tiết
+            const donHang = await DonHang.findOne({
+                where: { id },
+                include: [
+                    {
+                        model: KhachHang,
+                        attributes: ['id', 'ten', 'soDienThoai', 'email', 'diaChi']
+                    },
+                    {
+                        model: ChiTietDonHang,
+                        include: [
+                            {
+                                model: MonAn,
+                                attributes: ['id', 'ten', 'gia', 'hinhAnh']
+                            }
+                        ]
+                    }
+                ]
+            });
+            
+            if (!donHang) {
+                return res.status(404).json({
+                    status: false,
+                    message: 'Không tìm thấy đơn hàng'
+                });
+            }
+            
+            return res.json({
+                status: true,
+                order: donHang
+            });
+            
+        } catch (error) {
+            console.error('Lỗi khi lấy chi tiết đơn hàng:', error);
+            return res.status(500).json({
+                status: false,
+                message: 'Đã xảy ra lỗi khi tải chi tiết đơn hàng',
+                error: error.message
+            });
+        }
+    }
 };

@@ -5,99 +5,135 @@ const { Op } = require('sequelize');
 module.exports = {
     index: (req, res) => {
         res.render('manager/xep-lich');
-        },
-        layCaLamViec: async (req, res) => {
-            if (req.query.week) {
-                try {
-                    const week = req.query.week;
-                    
-                    // Phân tách năm và số tuần từ chuỗi định dạng ISO "YYYY-Wnn"
-                    const [year, weekPart] = week.split('-W');
-                    const weekNumber = parseInt(weekPart);
-                    
-                    // Đảm bảo dữ liệu hợp lệ
-                    if (!year || isNaN(weekNumber) || weekNumber < 1 || weekNumber > 53) {
-                        return res.status(400).json({ 
-                            status: false, 
-                            message: 'Định dạng tuần không hợp lệ. Sử dụng định dạng YYYY-Wnn' 
-                        });
-                    }
-
-                    // Tính ngày bắt đầu và kết thúc của tuần theo chuẩn ISO 8601
-                    // Ngày 1: ngày đầu tiên của năm
-                    const firstDayOfYear = new Date(parseInt(year), 0, 1);
-                    
-                    // Tìm ngày thứ 5 đầu tiên của năm (hoặc ngày đầu tiên nếu năm bắt đầu bằng thứ 5)
-                    const firstThursday = new Date(parseInt(year), 0, 1 + ((11 - firstDayOfYear.getDay()) % 7));
-                    
-                    // Tính ngày thứ 2 của tuần ISO (tuần bắt đầu từ thứ 2)
-                    const targetMonday = new Date(firstThursday);
-                    targetMonday.setDate(firstThursday.getDate() - 3 + (weekNumber - 1) * 7);
-                    
-                    // Tính ngày chủ nhật của tuần ISO
-                    const targetSunday = new Date(targetMonday);
-                    targetSunday.setDate(targetMonday.getDate() + 6);
-                    
-                    // Format ngày cho Sequelize - cần chuyển sang múi giờ UTC để tránh sai lệch ngày
-                    const startDateUTC = new Date(Date.UTC(
-                        targetMonday.getFullYear(), 
-                        targetMonday.getMonth(), 
-                        targetMonday.getDate()
-                    ));
-                    const endDateUTC = new Date(Date.UTC(
-                        targetSunday.getFullYear(), 
-                        targetSunday.getMonth(), 
-                        targetSunday.getDate(), 
-                        23, 59, 59
-                    ));
-                    
-                    console.log(`Tuần ${weekNumber} năm ${year}: Từ ${startDateUTC.toISOString()} đến ${endDateUTC.toISOString()}`);
-                    
-                    // Truy vấn CSDL với ngày đã tính
-                    const caLamViec = await ChamCong.findAll({
-                        where: {
-                            ngay: {
-                                [Op.gte]: startDateUTC,
-                                [Op.lte]: endDateUTC
-                            }
-                        },
-                        include: [
-                            {
-                                model: NhanVien,
-                                attributes: ['id', 'ten', 'chucVu'],
-                            }
-                        ]
-                    });
-                    return res.json({ 
-                        status: true, 
-                        list: caLamViec,
-                        debug: {
-                            week: week,
-                            year: parseInt(year),
-                            weekNumber: weekNumber,
-                            startDate: startDateUTC.toISOString(),
-                            endDate: endDateUTC.toISOString(),
-                            recordCount: caLamViec.length
-                        }
-                    });
-                } catch (error) {
-                    console.error('Lỗi khi lấy ca làm việc:', error);
-                    return res.status(500).json({ 
+    },
+    layCaLamViec: async (req, res) => {
+        if (req.query.week) {
+            try {
+                const week = req.query.week;
+                
+                // Phân tách năm và số tuần từ chuỗi định dạng ISO "YYYY-Wnn"
+                const [year, weekPart] = week.split('-W');
+                const weekNumber = parseInt(weekPart);
+                
+                // Đảm bảo dữ liệu hợp lệ
+                if (!year || isNaN(weekNumber) || weekNumber < 1 || weekNumber > 53) {
+                    return res.status(400).json({ 
                         status: false, 
-                        message: 'Đã xảy ra lỗi khi lấy dữ liệu ca làm việc', 
-                        error: error.message 
+                        message: 'Định dạng tuần không hợp lệ. Sử dụng định dạng YYYY-Wnn' 
                     });
                 }
-            } else {
-                return res.status(400).json({ 
+
+                // Tính ngày bắt đầu và kết thúc của tuần theo chuẩn ISO 8601
+                // Ngày 1: ngày đầu tiên của năm
+                const firstDayOfYear = new Date(parseInt(year), 0, 1);
+                
+                // Tìm ngày thứ 5 đầu tiên của năm (hoặc ngày đầu tiên nếu năm bắt đầu bằng thứ 5)
+                const firstThursday = new Date(parseInt(year), 0, 1 + ((11 - firstDayOfYear.getDay()) % 7));
+                
+                // Tính ngày thứ 2 của tuần ISO (tuần bắt đầu từ thứ 2)
+                const targetMonday = new Date(firstThursday);
+                targetMonday.setDate(firstThursday.getDate() - 3 + (weekNumber - 1) * 7);
+                
+                // Tính ngày chủ nhật của tuần ISO
+                const targetSunday = new Date(targetMonday);
+                targetSunday.setDate(targetMonday.getDate() + 6);
+                
+                // Format ngày cho Sequelize - cần chuyển sang múi giờ UTC để tránh sai lệch ngày
+                const startDateUTC = new Date(Date.UTC(
+                    targetMonday.getFullYear(), 
+                    targetMonday.getMonth(), 
+                    targetMonday.getDate()
+                ));
+                const endDateUTC = new Date(Date.UTC(
+                    targetSunday.getFullYear(), 
+                    targetSunday.getMonth(), 
+                    targetSunday.getDate(), 
+                    23, 59, 59
+                ));
+                
+                console.log(`Tuần ${weekNumber} năm ${year}: Từ ${startDateUTC.toISOString()} đến ${endDateUTC.toISOString()}`);
+                
+                // Truy vấn CSDL với ngày đã tính
+                const caLamViec = await ChamCong.findAll({
+                    where: {
+                        ngay: {
+                            [Op.gte]: startDateUTC,
+                            [Op.lte]: endDateUTC
+                        }
+                    },
+                    include: [
+                        {
+                            model: NhanVien,
+                            attributes: ['id', 'ten', 'chucVu'],
+                        }
+                    ]
+                });
+                return res.json({ 
+                    status: true, 
+                    list: caLamViec,
+                    debug: {
+                        week: week,
+                        year: parseInt(year),
+                        weekNumber: weekNumber,
+                        startDate: startDateUTC.toISOString(),
+                        endDate: endDateUTC.toISOString(),
+                        recordCount: caLamViec.length
+                    }
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy ca làm việc:', error);
+                return res.status(500).json({ 
                     status: false, 
-                    message: 'Thiếu tham số week. Sử dụng định dạng YYYY-Wnn' 
+                    message: 'Đã xảy ra lỗi khi lấy dữ liệu ca làm việc', 
+                    error: error.message 
                 });
             }
-        },
-        capNhatCa: async (req, res) => {
+        } else {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'Thiếu tham số week. Sử dụng định dạng YYYY-Wnn' 
+            });
+        }
+    },
+    layCaChamCong: async (req, res) => {
+        if (req.query.day) {
+            try {
+                const day = req.query.day;
+                // Truy vấn CSDL với ngày đã tính
+                const caLamViec = await ChamCong.findAll({
+                    where: {
+                        ngay: day,
+                        trangThai: [1, 2, 3] // Chỉ lấy ca đã duyệt
+                    },
+                    include: [
+                        {
+                            model: NhanVien,
+                            attributes: ['id', 'ten', 'chucVu'],
+                        }
+                    ]
+                });
+                return res.json({ 
+                    status: true, 
+                    list: caLamViec,
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy ca làm việc:', error);
+                return res.status(500).json({ 
+                    status: false, 
+                    message: 'Đã xảy ra lỗi khi lấy dữ liệu ca làm việc', 
+                    error: error.message 
+                });
+            }
+        } else {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'Thiếu tham số week. Sử dụng định dạng YYYY-Wnn' 
+            });
+        }
+    },
+    capNhatCa: async (req, res) => {
         const { updates } = req.body;
-    
+        
         if (updates.length > 0) {
             try {
                 await Promise.all(updates.map(item => {
@@ -107,7 +143,7 @@ module.exports = {
                         { where: { id } }
                     );
                 }));
-    
+        
                 return res.json({ status: true, message: 'Cập nhật thành công' });
             } catch (error) {
                 console.error('Lỗi khi cập nhật:', error);
@@ -366,5 +402,119 @@ module.exports = {
                 error: error.message
             });
         }
+    },
+    // Hàm xử lý check-in
+    checkIn: async (req, res) => {
+        try {
+            const { id } = req.body;
+            
+            if (!id) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Thiếu thông tin id ca làm việc"
+                });
+            }
+            
+            // Tìm ca làm việc trong cơ sở dữ liệu
+            const caLamViec = await ChamCong.findByPk(id);
+            
+            if (!caLamViec) {
+                return res.status(404).json({
+                    status: false,
+                    message: "Không tìm thấy ca làm việc"
+                });
+            }
+            
+            // Kiểm tra trạng thái hiện tại
+            if (caLamViec.trangThai !== 1) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Ca làm việc này không ở trạng thái chờ check-in"
+                });
+            }
+            
+            // Cập nhật trạng thái và thời gian check-in
+            const now = new Date();
+            caLamViec.trangThai = 2; // Đánh dấu là đang làm việc
+            caLamViec.checkIn = now;
+            
+            await caLamViec.save();
+            
+            return res.json({
+                status: true,
+                message: "Check-in thành công",
+                data: {
+                    id: caLamViec.id,
+                    trangThai: caLamViec.trangThai,
+                    checkIn: caLamViec.checkIn
+                }
+            });
+            
+        } catch (error) {
+            console.error("Lỗi khi thực hiện check-in:", error);
+            return res.status(500).json({
+                status: false,
+                message: "Đã xảy ra lỗi khi thực hiện check-in",
+                error: error.message
+            });
+        }
+    },
+    
+    // Hàm xử lý check-out
+    checkOut: async (req, res) => {
+        try {
+            const { id } = req.body;
+            
+            if (!id) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Thiếu thông tin id ca làm việc"
+                });
+            }
+            
+            // Tìm ca làm việc trong cơ sở dữ liệu
+            const caLamViec = await ChamCong.findByPk(id);
+            
+            if (!caLamViec) {
+                return res.status(404).json({
+                    status: false,
+                    message: "Không tìm thấy ca làm việc"
+                });
+            }
+            
+            // Kiểm tra trạng thái hiện tại
+            if (caLamViec.trangThai !== 2) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Ca làm việc này không ở trạng thái đang làm việc"
+                });
+            }
+            
+            // Cập nhật trạng thái và thời gian check-out
+            const now = new Date();
+            caLamViec.trangThai = 3; // Đánh dấu là đã check-out
+            caLamViec.checkOut = now;
+          
+            await caLamViec.save();
+            
+            return res.json({
+                status: true,
+                message: "Check-out thành công",
+                data: {
+                    id: caLamViec.id,
+                    trangThai: caLamViec.trangThai,
+                    checkIn: caLamViec.checkIn,
+                    checkOut: caLamViec.checkOut,
+                }
+            });
+            
+        } catch (error) {
+            console.error("Lỗi khi thực hiện check-out:", error);
+            return res.status(500).json({
+                status: false,
+                message: "Đã xảy ra lỗi khi thực hiện check-out",
+                error: error.message
+            });
+        }
     }
-}
+};

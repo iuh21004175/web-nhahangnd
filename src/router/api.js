@@ -135,6 +135,8 @@ router.get('/lay-id-khach-hang', CtrlHoTroTrucTuyen.layIDKhachHang);
 router.get('/lay-thong-tin-khach-hang', CtrlKhachHang.layThongTinKhachHang);
 router.put('/cap-nhat-thong-tin-khach-hang', CtrlKhachHang.capNhatThongTinKhachHang);
 router.get('/lay-don-hang', CtrlDonHang.layDonHang);
+router.get('/don-hang-cho-quan-ly', CtrlDonHang.layDonHangQuanLy);
+router.get('/don-hang-chi-tiet', CtrlDonHang.layChiTietDonHang);
 router.put('/huy-don-hang/:id', CtrlDonHang.huyDonHang);
 router.get('/thoi-gian-bat-dau-co-don-hang', CtrlThongKe.getFirstOrderTime)
 router.get('/thong-ke-tong-quat', CtrlThongKe.thongKeTongQuat)
@@ -153,6 +155,9 @@ router.get('/don-hang-theo-ban', CtrlDonHang.layGhiDonHang);
 router.post('/them-don-hang', CtrlDonHang.themDonHang);
 router.get('/ca-lam-viec', CtrlXepLich.layCaLamViec);
 router.put('/ca-lam-viec', CtrlXepLich.capNhatCa);
+router.get('/ca-cham-cong', CtrlXepLich.layCaChamCong);
+router.post('/ca-cham-cong/check-in', CtrlXepLich.checkIn);
+router.post('/ca-cham-cong/check-out', CtrlXepLich.checkOut);
 router.get('/luong', CtrlChamCong.layLuong);
 router.get('/lay-ngay-bat-dau-ca', CtrlXepLich.layNgayBatDauCa);
 router.get('/lay-danh-sach-nhan-chua-co-ca', CtrlXepLich.layNhanVienChuaCoCa);

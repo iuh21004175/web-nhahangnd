@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, DATE } = require('sequelize');
 const sequelize = require('../config/database');
 const moment = require('moment-timezone');
 
@@ -84,7 +84,7 @@ const KhachHang = sequelize.define('KhachHang', {
     createAt: {
         field: 'create_at',
         type: DataTypes.DATE,
-        defaultValue: () => moment().tz('Asia/Ho_Chi_Minh').toDate()
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'khach_hang',
