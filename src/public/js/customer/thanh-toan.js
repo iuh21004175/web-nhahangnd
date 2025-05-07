@@ -59,9 +59,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else {
         emptyCartMessage.style.display = 'block';
     }
+    const phoneRegex = /^(0[3-9][0-9]{8})$/;
+
 
     document.getElementById('addOrder').addEventListener('click', async function (e) {
         e.preventDefault();
+
+        const fullName = document.getElementById('fullNameTT').value.trim();
+        const phone = document.getElementById('phoneTT').value.trim();
         const address = document.getElementById('address').value;
         const note = document.getElementById('note').value;
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
@@ -69,7 +74,29 @@ document.addEventListener('DOMContentLoaded', async function () {
         const trangThai = 1; // Đặt thành công
         const tongTien = document.getElementById('totalAmount').innerText.replace(/\./g, '').replace('₫', '').trim();
         const hinhThuc = 1; // Đặt hàng online
+
+        // Kiểm tra các trường bắt buộc
+        if (!fullName || !phone || !address) {
+            alert('Vui lòng nhập đầy đủ thông tin: Họ tên, Số điện thoại và Địa chỉ!');
+            return;
+        }
         
+        // Kiểm tra số điện thoại có hợp lệ không
+        if (phone === '') {
+            // Nếu số điện thoại trống
+            document.getElementById('phoneTT').classList.add('is-invalid');  // Thêm class 'is-invalid'
+            document.querySelector('#phoneTT + .invalid-feedback').innerText = 'Vui lòng nhập số điện thoại!';
+            return;
+        } else if (!phoneRegex.test(phone)) {
+            // Nếu số điện thoại không hợp lệ
+            document.getElementById('phoneTT').classList.add('is-invalid');  // Thêm class 'is-invalid'
+            document.querySelector('#phoneTT + .invalid-feedback').innerText = 'Số điện thoại không hợp lệ! Vui lòng nhập lại.';
+            return;
+        } else {
+            document.getElementById('phoneTT').classList.remove('is-invalid');  // Xóa class 'is-invalid' nếu hợp lệ
+        }
+
+        // Kiểm tra rỗng giỏ hàng
         if(gioHang.length === 0){
             alert('Giỏ hàng trống! Vui lòng chọn món ăn trước khi đặt hàng.');
             return;

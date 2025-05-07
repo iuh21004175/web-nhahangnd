@@ -1,7 +1,7 @@
 const { Sequelize, Op, fn, col } = require('sequelize');
 const TaiKhoan = require('../models/TaiKhoan');
 const ChamCong = require('../models/ChamCong');
-
+const jwt = require('jsonwebtoken');
 module.exports = {
     index: (req, res) => {
         res.render('manager/cham-cong');

@@ -19,5 +19,6 @@ module.exports = {
     },
     indexChiTietSanPham: (req, res)=>{
         res.render('customer/chi-tiet-mon-an')
-    },
+    }
+    
 }

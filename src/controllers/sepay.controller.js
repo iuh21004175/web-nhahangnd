@@ -50,8 +50,7 @@ exports.handleWebhook = async (req, res) => {
         const order = await DonHang.findOne({
           where: {
             id: orderId,
-            tongTien: amount_in,
-            trangThai: 7  // trạng thái chờ thanh toán
+            tongTien: amount_in  
           }
         });
       

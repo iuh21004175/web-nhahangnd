@@ -63,8 +63,7 @@ router.get("/suggestions", async (req, res) => {
         `https://services.giaohangtietkiem.vn/services/address/getAddressLevel4?${query}`,
         {
           headers: {
-            Token: "APITokenSample-ca441e70288cB0515F310742", // thay token thật tại đây
-            "X-Client-Source": "PARTNER_CODE", // thay partner code thật nếu cần
+            Token: "1P8rh4LffiWppUJXd9Fn0o1EtSSWmOI98a6cZVA"
           },
         }
       );
@@ -161,5 +160,7 @@ router.post('/them-he-so-luong', CtrlHeSoLuong.themHeSoLuong);
 router.put('/he-so-luong', CtrlHeSoLuong.suaHeSoLuong);
 router.get('/he-so-luong', CtrlHeSoLuong.layHeSoLuong);
 router.get('/generate-qrcode/:idMon', CtrlThucDon.taoMaQR);
+router.get('/lay-gia-don-hang', CtrlDonHang.layGiaDonHang);
+
 
 module.exports = router;

@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const orderItems = document.querySelectorAll('.order-item');
         if (orderItems.length === 0) {
-            alert('Giỏ hàng đang trống!');
+            alert('Vui lòng chọn món!');
             return;
         }
 
@@ -116,9 +116,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Bấm nút thanh toán (checkout)
     document.getElementById('checkout').addEventListener('click', async function(e) {
         e.preventDefault();
+
+        const orderItems = document.querySelectorAll('.order-item');
+        if (orderItems.length === 0) {
+            alert('Vui lòng chọn món!');
+            return;
+        }
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
     
-        const orderItems = document.querySelectorAll('.order-item');
+        
         const chiTietDonHang = [];
         let tongTien = 0;
     
@@ -193,8 +199,38 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
     
         } else if (paymentMethod === '1') {
-            alert('Thanh toán chuyển khoản đang được xử lý...');
-            // Xử lý thanh toán chuyển khoản tại đây
+            const trangThai = 7;
+            try {
+                const response = await fetch(`/api/ghi-don-hang?idBan=${idBan}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        idDonHang: donHang?.id || null,
+                        hinhThuc: 0,
+                        thanhToan: paymentMethod,
+                        trangThai: trangThai,
+                        tongTien,
+                        chiTietDonHang
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status) {
+                    // Redirect sang trang hiển thị QR với id đơn hàng
+                    //localStorage.removeItem('gioHang');
+                    window.location.href = `/manager/thanh-toan-online?id=${data.idDonHang}`;
+
+                    
+                } else {
+                    alert('Tạo đơn hàng thất bại! Vui lòng thử lại.');
+                }
+                
+            }catch (error) {
+                console.error('Lỗi:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+            }
         }
     });  
 });
