@@ -31,9 +31,29 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <select id="assignment-week-filter" class="form-select form-select-sm custom-select-sm d-inline-block m-0" style="width: auto; max-width: 300px;">
-                                <!-- Options sẽ được thêm bằng JavaScript -->
-                            </select>
+                            <div class="input-group custom-dropdown-container" style="max-width: 400px;">
+                                <!-- Dropdown chọn năm -->
+                                <div class="dropdown year-dropdown">
+                                    <button class="btn btn-light bg-white btn-sm dropdown-toggle text-start" type="button" id="yearDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 120px; border: 1px solid #000;">
+                                        <span id="selected-year-text">2025</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-scroll" id="year-dropdown-menu" aria-labelledby="yearDropdownBtn" style="max-height: 250px; overflow-y: auto;">
+                                        <!-- Options năm sẽ được thêm bằng JavaScript -->
+                                    </div>
+                                    <input type="hidden" id="assignment-year-filter" value="2025">
+                                </div>
+
+                                <!-- Dropdown chọn tuần -->
+                                <div class="dropdown week-dropdown flex-grow-1">
+                                    <button class="btn btn-light bg-white btn-sm dropdown-toggle text-start w-100" type="button" id="weekDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid #000;">
+                                        <span id="selected-week-text">Tuần 20: 13/05/2025 -> 19/05/2025</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-scroll w-100" id="week-dropdown-menu" aria-labelledby="weekDropdownBtn" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- Options tuần sẽ được thêm bằng JavaScript -->
+                                    </div>
+                                    <input type="hidden" id="assignment-week-filter" value="2025-W20">
+                                </div>
+                            </div>
                             <select id="assignment-role-filter" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
                                 <option value="all">Bộ phận: Tất cả</option>
                                 <option value="0">Bộ phận: Phục vụ</option>
@@ -68,7 +88,7 @@
                                 <tbody>
                                     <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
                                     <tr>
-                                        <td colspan="4" class="text-center">Đang tải dữ liệu...</td>
+                                        <td colspan="4" class="text-center">Không có nhân viên nào chưa có ca...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -85,18 +105,34 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div>
-                                    <select id="week-select" class="form-select form-select-sm custom-select-sm d-inline-block" style="width: auto; max-width: 300px;">
-                                        <!-- Options sẽ được thêm bằng JavaScript -->
-                                    </select>
-                                    <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
-                                        <option value="all">Bộ phận: Tất cả</option>
-                                        <option value="0">Bộ phận: Phục vụ</option>
-                                        <option value="1">Bộ phận: Đầu bếp</option>
-                                    </select>
+                            <div class="input-group custom-dropdown-container" style="max-width: 400px; display: inline-flex;">
+                                <!-- Dropdown chọn năm -->
+                                <div class="dropdown year-dropdown">
+                                    <button class="btn btn-light bg-white btn-sm dropdown-toggle text-start" type="button" id="yearDropdownBtn-duyet" data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 120px; border: 1px solid #000;">
+                                        <span id="selected-year-text-duyet">2025</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-scroll" id="year-dropdown-menu-duyet" aria-labelledby="yearDropdownBtn-duyet" style="max-height: 250px; overflow-y: auto;">
+                                        <!-- Options năm sẽ được thêm bằng JavaScript -->
+                                    </div>
+                                    <input type="hidden" id="week-select-year" value="2025">
+                                </div>
+                            
+                                <!-- Dropdown chọn tuần -->
+                                <div class="dropdown week-dropdown flex-grow-1">
+                                    <button class="btn btn-light bg-white btn-sm dropdown-toggle text-start w-100" type="button" id="weekDropdownBtn-duyet" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid #000;">
+                                        <span id="selected-week-text-duyet">Tuần 20: 13/05/2025 -> 19/05/2025</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-scroll w-100" id="week-dropdown-menu-duyet" aria-labelledby="weekDropdownBtn-duyet" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- Options tuần sẽ được thêm bằng JavaScript -->
+                                    </div>
+                                    <input type="hidden" id="week-select" value="2025-W20">
                                 </div>
                             </div>
+                            <select id="duyetChucVu-select" class="form-select form-select-sm custom-select-sm d-inline-block w-auto">
+                                <option value="all">Bộ phận: Tất cả</option>
+                                <option value="0">Bộ phận: Phục vụ</option>
+                                <option value="1">Bộ phận: Đầu bếp</option>
+                            </select>
                             <div>
                                 <button id="btn-save" class="btn btn-success" disabled>
                                     <i class="fas fa-save me-2"></i>Lưu

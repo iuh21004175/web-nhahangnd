@@ -300,6 +300,12 @@ async function xuLyBan() {
     function renderKhuVuc(list){
         const khuVucList = document.querySelector('.list-khuVuc')
         let tongSoBan = 0
+        const listHtmlKV = document.querySelectorAll('.list-khuVuc .list-group-item')
+        listHtmlKV.forEach(item => {
+            if(item.dataset.id != 'all'){
+                item.remove()
+            }
+        })
         list.forEach(item => {
             const khuVucItem = `
                 <button class="list-group-item list-group-item-action" data-id="${item.id}">

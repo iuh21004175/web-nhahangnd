@@ -150,3 +150,85 @@
         max-height: 300px;
     }
 }
+
+.page-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #2c3e50;
+}
+
+.dish-thumbnail {
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.timer {
+    font-size: 2.5rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    display: inline-block;
+    min-width: 120px;
+    text-align: center;
+}
+
+.timer.text-danger {
+    animation: pulse 1s infinite;
+}
+
+.dish-image-container {
+    max-width: 250px;
+    margin: 0 auto;
+}
+
+.dish-image-container img {
+    max-height: 200px;
+    object-fit: contain;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+.table {
+    vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .timer {
+        font-size: 2rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .display-6 {
+        font-size: 1.5rem;
+    }
+}

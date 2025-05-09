@@ -213,7 +213,7 @@ module.exports = {
             return res.json({ status: false, error: 'Lỗi server', error });
         }
     },
-    layChiTietMonAn: async (req, res) => {
+    layNguyenLieuMonAn: async (req, res) => {
         const { id } = req.query;
         try{
             const nguyenLieu = await ChiTietMonAn.findAll({

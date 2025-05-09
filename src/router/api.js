@@ -89,7 +89,7 @@ router.get('/mon-an/:id', CtrlThucDon.layMonAnTheoLoai);
 router.get('/chi-tiet-mon-an', CtrlThucDon.layThongTinMonAn);
 router.post('/mon-an', uploadMemory.single('hinhAnh'), CtrlThucDon.themMonAn);
 router.put('/mon-an', uploadMemory.single('hinhAnh'), CtrlThucDon.suaMonAn);
-router.get('/chi-tiet-mon-an', CtrlThucDon.layChiTietMonAn);
+router.get('/danh-sach-nguyen-lieu-mon-an', CtrlThucDon.layNguyenLieuMonAn);
 router.get('/danh-muc-nguyen-lieu', CtrlKho.layDanhMucNguyenLieu);
 router.post('/danh-muc-nguyen-lieu', CtrlKho.themDanhMucNguyenLieu);
 router.put('/danh-muc-nguyen-lieu', CtrlKho.suaDanhMucNguyenLieu);
@@ -166,6 +166,8 @@ router.put('/he-so-luong', CtrlHeSoLuong.suaHeSoLuong);
 router.get('/he-so-luong', CtrlHeSoLuong.layHeSoLuong);
 router.get('/generate-qrcode/:idMon', CtrlThucDon.taoMaQR);
 router.get('/lay-gia-don-hang', CtrlDonHang.layGiaDonHang);
-
-
+router.get('/mon-dang-cho', CtrlDonHang.layMonDangCho);
+router.put('/mon-dang-cho/nhan-mon', CtrlDonHang.nhanMon);
+router.get('/mon-dang-che-bien', CtrlDonHang.layMonDangCheBien);
+router.put('/mon-dang-che-bien/hoan-thanh', CtrlDonHang.hoanThanhMon);
 module.exports = router;

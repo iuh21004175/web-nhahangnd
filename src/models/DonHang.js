@@ -30,7 +30,7 @@ const DonHang = sequelize.define('DonHang', {
     thoiGianGhi: {
         field: 'thoi_gian_ghi',
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     hinhThuc: {
         field: 'hinh_thuc',

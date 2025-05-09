@@ -506,8 +506,8 @@ async function xuLyMonAn(){
         }
     }
     // Hảm thao tác chi tiết món ăn
-    async function getChiTietMonAnAPI(id) {
-        const response = await fetch('/api/chi-tiet-mon-an?id=' + id);
+    async function getNguyenLieuMonAnAPI(id) {
+        const response = await fetch('/api/danh-sach-nguyen-lieu-mon-an?id=' + id);
         try {
             const data = await response.json();
             if (data.status) {
@@ -575,7 +575,7 @@ async function xuLyMonAn(){
                 document.getElementById('viewFoodPrice').innerHTML = parseInt(monAn.gia).toLocaleString("vi-VN") + 'đ';
                 document.getElementById('viewFoodDescription').innerHTML = monAn.moTa;
                 // Lấy danh sách nguyên liệu
-                const listNguyenLieu = await getChiTietMonAnAPI(id);
+                const listNguyenLieu = await getNguyenLieuMonAnAPI(id);
                 document.querySelector('.table-xemNguyenLieu tbody').innerHTML = ''; // Xóa nội dung hiện tại của tbody
                 listNguyenLieu.forEach((nguyenLieu, index) => {
                     const tr = document.createElement('tr');
@@ -605,7 +605,7 @@ async function xuLyMonAn(){
                 document.getElementById('editIngredientsList').innerHTML = '';
                 
                 // Thêm nguyên liệu hiện tại vào danh sách
-                const listNguyenLieu = await getChiTietMonAnAPI(id);
+                const listNguyenLieu = await getNguyenLieuMonAnAPI(id);
                 listNguyenLieu.forEach(item => {
                     addEditIngredientRow(item, listNguyenLieu);
                 });

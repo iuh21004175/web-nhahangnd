@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    // Cập nhật options tuần dựa trên ngày bắt đầu từ CSDL
-    const defaultWeekValue = await updateWeekOptions();
+    // Khởi tạo dropdown cho tab Duyệt ca thay vì updateWeekOptions
+    const defaultWeekValue = await initializeWeekSelectDropdowns();
     
     // Cập nhật ngày cho các tab điều hướng ngày trong tuần
     updateWeekDateRange(defaultWeekValue);
@@ -10,32 +10,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     window.fullShiftsList = listDangKyCa; // Lưu vào biến toàn cục
     thaoTacCaLamViec(listDangKyCa);
     
-
-    
-    
     // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
     updateStatusVisibility(defaultWeekValue);
-    
-    // Lắng nghe sự kiện change trên weekSelect
-    const weekSelect = document.getElementById('week-select');
-    if (weekSelect) {
-        weekSelect.addEventListener('change', function() {
-            // Cập nhật các tab ngày và danh sách ca làm việc
-            updateWeekDateRange(this.value);
-            
-            // Sử dụng chuỗi tuần đầy đủ thay vì chỉ số tuần
-            const weekValue = this.value;
-            
-            // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
-            updateStatusVisibility(weekValue);
-            
-            // Lấy dữ liệu cho tuần mới
-            getAPICaLamViec(weekValue).then(data => {
-                window.fullShiftsList = data; // Đảm bảo lưu dữ liệu vào biến toàn cục
-                thaoTacCaLamViec(data);
-            });
-        });
-    }
     
     // Thêm sự kiện click cho các nút điều hướng ngày
     const dayNavLinks = document.querySelectorAll('.pagination .page-link');
@@ -282,7 +258,121 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+     // Thay đổi hàm cũ
+    const oldUpdateAssignmentTabData = window.updateAssignmentTabData;
+    
+     // Ghi đè lại hàm updateAssignmentTabData để làm việc với dropdown
+    window.updateAssignmentTabData = function(weekValue) {
+         // Lấy giá trị từ input nếu không có tham số
+         if (!weekValue) {
+             const weekInput = document.getElementById('assignment-week-filter');
+             weekValue = weekInput ? weekInput.value : null;
+         }
+         
+         // Gọi hàm cũ nếu có
+         if (typeof oldUpdateAssignmentTabData === 'function') {
+             oldUpdateAssignmentTabData(weekValue);
+         } else {
+             // Nếu không có hàm cũ, thực hiện hành động mặc định
+             console.log('Updating assignment tab data with week:', weekValue);
+             
+             // Hiển thị thông báo đang tải
+             const unregisteredTable = document.getElementById('unregisteredEmployeesTable');
+             if (unregisteredTable && unregisteredTable.querySelector('tbody')) {
+                 unregisteredTable.querySelector('tbody').innerHTML = '<tr><td colspan="4" class="text-center">Đang tải...</td></tr>';
+             }
+             
+             // Lấy và hiển thị danh sách nhân viên chưa có ca
+             getNhanVienChuaCoCa(weekValue).then(data => {
+                 displayNhanVienChuaCoCa(data);
+             });
+         }
+     };
+    // Khởi tạo bộ lọc năm và tuần
+    initializeYearWeekFilters();
+
+    // Khởi tạo các bộ lọc năm-tuần cho tab Duyệt ca - tương tự như tab Phân công
+    initializeWeekSelectDropdowns();
 });
+
+// Kiểm tra beforeunload để xử lý khi có thay đổi chưa lưu
+window.addEventListener('beforeunload', function(e) {
+    // Kiểm tra xem có thay đổi chưa lưu không
+    if (pendingUpdates && pendingUpdates.length > 0) {
+        // Thông báo cho người dùng
+        e.preventDefault();
+        e.returnValue = 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời đi?';
+        return e.returnValue;
+    }
+});
+
+// Thêm đoạn này vào khi tải trang để khởi tạo CSS cần thiết
+document.addEventListener('DOMContentLoaded', function() {
+    // Thêm kiểm tra trạng thái DOM đã tải xong
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addDropdownStyles);
+    } else {
+        addDropdownStyles();
+    }
+});
+
+/**
+ * Thêm CSS cần thiết cho dropdown
+ */
+function addDropdownStyles() {
+    // Kiểm tra nếu style đã tồn tại
+    if (document.getElementById('custom-dropdown-styles')) {
+        return;
+    }
+    
+    // Tạo style element
+    const style = document.createElement('style');
+    style.id = 'custom-dropdown-styles';
+    style.textContent = `
+        .dropdown-scroll {
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        
+        .dropdown-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .dropdown-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .dropdown-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .dropdown-item.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .custom-dropdown-container {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .year-dropdown .btn {
+            min-width: 120px;
+        }
+        
+        .week-dropdown .btn {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    `;
+    
+    // Thêm vào document head
+    document.head.appendChild(style);
+}
+
 function thaoTacHeSoLuong(danhSach) {
     const tbody = document.querySelector('#salary-table tbody');
     tbody.innerHTML = ''; // Xóa dữ liệu cũ (nếu có)
@@ -1105,7 +1195,7 @@ function updateWeekDateRange(weekValue) {
     });
     
     // Mặc định chọn thứ Hai
-    document.querySelector('.pagination .page-item:first-child').classList.add('active');
+    // document.querySelector('.pagination .page-item:first-child').classList.add('active');
 }
 
 // Hàm tính ngày thứ Hai đầu tuần dựa trên năm và số tuần
@@ -1554,6 +1644,161 @@ function bulkApproveShifts() {
 
 /*** PHẦN PHÂN CÔNG CA LÀM VIỆC ***/
 
+function initializeAssignmentTab() {
+    // Khởi tạo bộ lọc năm và tuần
+    initializeYearWeekFilters();
+    
+    // Khởi tạo dữ liệu ban đầu
+    const weekFilter = document.getElementById('assignment-week-filter');
+    if (weekFilter && weekFilter.value) {
+        updateAssignmentTabData(weekFilter.value);
+    }
+    
+    // Thêm sự kiện cho nút Cập nhật thống kê
+    const refreshBtn = document.getElementById('btn-refresh-stats');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            const weekFilter = document.getElementById('assignment-week-filter');
+            if (weekFilter) {
+                updateAssignmentTabData(weekFilter.value);
+                showToastPrimary('Đã cập nhật thống kê');
+            }
+        });
+    }
+    
+    // Cập nhật lại sự kiện cho nút Phân công ca
+    const assignBtn = document.getElementById('btn-assign-shift');
+    if (assignBtn) {
+        assignBtn.addEventListener('click', function() {
+            openAssignmentModal();
+        });
+    }
+    
+    // Thêm sự kiện cho nút Xuất Excel
+    const exportBtn = document.getElementById('btn-export-employees');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            showToastPrimary('Tính năng đang được phát triển');
+        });
+    }
+}
+
+/**
+ * Cập nhật dữ liệu tab phân công và vô hiệu hóa nút phân công nếu không phải tuần sau
+ * @param {string} weekValue - Giá trị tuần được chọn
+ */
+function updateAssignmentTabData(weekValue) {
+    // Hiển thị thông báo đang tải
+    const unregisteredTable = document.getElementById('unregisteredEmployeesTable');
+    if (unregisteredTable && unregisteredTable.querySelector('tbody')) {
+        unregisteredTable.querySelector('tbody').innerHTML = '<tr><td colspan="4" class="text-center">Đang tải...</td></tr>';
+    }
+    
+    // Kiểm tra xem có phải tuần sau không và cập nhật trạng thái các nút
+    const isFutureWeek = checkIfFutureWeek(weekValue);
+    
+    // Vô hiệu hóa/kích hoạt các nút phân công
+    const exportButton = document.getElementById('btn-export-employees');
+    const assignButton = document.getElementById('btn-assign-shift');
+    
+    if (exportButton) {
+        exportButton.disabled = !isFutureWeek;
+    }
+    
+    if (assignButton) {
+        assignButton.disabled = !isFutureWeek;
+    }
+    
+    // Lấy và hiển thị danh sách nhân viên chưa có ca
+    getNhanVienChuaCoCa(weekValue).then(data => {
+        displayNhanVienChuaCoCa(data, isFutureWeek);
+    });
+}
+
+/**
+ * Hiển thị danh sách nhân viên chưa có ca và cập nhật trạng thái nút
+ * @param {Object} data - Dữ liệu từ API
+ * @param {boolean} isFutureWeek - Có phải tuần sau hay không
+ */
+function displayNhanVienChuaCoCa(data, isFutureWeek) {
+    const tableBody = document.querySelector('#unregisteredEmployeesTable tbody');
+    if (!tableBody) return;
+    
+    // Xóa nội dung cũ
+    tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải...</td></tr>';
+    
+    // Lọc theo chức vụ nếu đã chọn
+    let filteredList = [...data.list]; // Tạo bản sao để không ảnh hưởng đến dữ liệu gốc
+    const roleFilter = document.getElementById('assignment-role-filter');
+    
+    if (roleFilter && roleFilter.value !== 'all') {
+        const roleValue = parseInt(roleFilter.value);
+        filteredList = filteredList.filter(employee => employee.chucVu === roleValue);
+    }
+    
+    // Kiểm tra nếu không có dữ liệu
+    if (!filteredList || filteredList.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Không có nhân viên nào chưa có ca</td></tr>';
+        return;
+    }
+    
+    // Xóa thông báo đang tải để hiển thị dữ liệu
+    tableBody.innerHTML = '';
+    
+    // Thêm từng nhân viên vào bảng
+    filteredList.forEach(employee => {
+        // Xác định tên chức vụ
+        let roleName = '';
+        switch(employee.chucVu) {
+            case 0: roleName = 'Phục vụ'; break;
+            case 1: roleName = 'Đầu bếp'; break;
+            default: roleName = 'Không xác định';
+        }
+        
+        // Tạo hàng mới với nút bị vô hiệu hóa nếu không phải tuần sau
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>#${employee.id}</td>
+            <td>${employee.ten}</td>
+            <td>${roleName}</td>
+            <td>
+                <button class="btn btn-sm btn-primary assign-single-btn" 
+                        data-id="${employee.id}" 
+                        data-name="${employee.ten}"
+                        ${!isFutureWeek ? 'disabled' : ''}>
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Gắn sự kiện cho nút phân công nếu là tuần sau
+    if (isFutureWeek) {
+        attachAssignButtonEvents();
+    }
+    
+    // Thêm thông báo nếu không phải tuần sau
+    if (!isFutureWeek) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning mt-3';
+        alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Chỉ có thể phân công ca làm việc cho tuần sau';
+        
+        // Thêm vào đầu bảng
+        const container = tableBody.closest('.card-body');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+        }
+    } else {
+        // Xóa thông báo nếu có
+        const existingAlert = document.querySelector('#unregisteredEmployeesTable').closest('.card-body').querySelector('.alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+    }
+}
+
 // Hàm để cập nhật tùy chọn tuần cho assignment-week-filter
 function populateAssignmentWeekFilter() {
     // Lấy thông tin week-select từ tab Duyệt ca
@@ -1593,7 +1838,7 @@ function updateAssignmentTabData(weekValue) {
     // Hiển thị thông báo đang tải
     const unregisteredTable = document.getElementById('unregisteredEmployeesTable');
     if (unregisteredTable && unregisteredTable.querySelector('tbody')) {
-        unregisteredTable.querySelector('tbody').innerHTML = '<tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>';
+        unregisteredTable.querySelector('tbody').innerHTML = '<tr><td colspan="4" class="text-center">Không có nhân viên nào chưa có ca...</td></tr>';
     }
     
     // Lấy và hiển thị danh sách nhân viên chưa có ca
@@ -1622,44 +1867,6 @@ function updateAssignmentDateRange(weekValue) {
     dateRangeElement.textContent = `${startDateFormatted} - ${endDateFormatted}`;
 }
 
-// Cập nhật hàm khởi tạo tab Phân công
-function initializeAssignmentTab() {
-    // Cập nhật tùy chọn tuần
-    populateAssignmentWeekFilter();
-    
-    // Khởi tạo dữ liệu ban đầu
-    const assignmentWeekFilter = document.getElementById('assignment-week-filter');
-    if (assignmentWeekFilter && assignmentWeekFilter.value) {
-        updateAssignmentTabData(assignmentWeekFilter.value);
-    }
-    
-    // Thêm sự kiện cho nút Cập nhật thống kê
-    const refreshBtn = document.getElementById('btn-refresh-stats');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-            const weekValue = document.getElementById('assignment-week-filter').value;
-            updateAssignmentTabData(weekValue);
-            showToastPrimary('Đã cập nhật thống kê');
-        });
-    }
-    
-    // Thêm sự kiện cho nút Phân công ca
-    const assignBtn = document.getElementById('btn-assign-shift');
-    if (assignBtn) {
-        assignBtn.addEventListener('click', function() {
-            openAssignmentModal();
-        });
-    }
-    
-    // Thêm sự kiện cho nút Xuất Excel
-    const exportBtn = document.getElementById('btn-export-employees');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', function() {
-            showToastPrimary('Tính năng đang được phát triển');
-        });
-    }
-}
-
 // Hàm gọi API lấy danh sách nhân viên chưa có ca
 async function getNhanVienChuaCoCa(weekValue) {
     try {
@@ -1686,7 +1893,7 @@ function displayNhanVienChuaCoCa(data) {
     if (!tableBody) return;
     
     // Xóa nội dung cũ và hiển thị thông báo đang tải
-    tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Không có nhân viên nào chưa có ca...</td></tr>';
     
     // Lọc theo chức vụ nếu đã chọn
     let filteredList = [...data.list]; // Tạo bản sao để không ảnh hưởng đến dữ liệu gốc
@@ -1851,7 +2058,11 @@ function openAssignmentModal(employeeId = null, employeeName = null) {
     assignModal.show();
 }
 
-// Hàm kiểm tra xem tuần được chọn có phải tuần sau không
+/**
+ * Kiểm tra xem tuần được chọn có phải tuần sau không
+ * @param {string} weekValue - Giá trị tuần được chọn (định dạng: YYYY-WXX)
+ * @returns {boolean} - True nếu là tuần sau, False nếu không phải
+ */
 function checkIfFutureWeek(weekValue) {
     // Phân tích giá trị tuần được chọn
     const [selectedYear, selectedWeekPart] = weekValue.split('-W');
@@ -2873,4 +3084,591 @@ function removeEmployeeFromAssignment(employeeId) {
             }
         }
     }
+}
+
+/**
+ * Khởi tạo và quản lý bộ lọc năm và tuần
+ */
+async function initializeYearWeekFilters() {
+    const yearInput = document.getElementById('assignment-year-filter');
+    const weekInput = document.getElementById('assignment-week-filter');
+    const yearDropdownMenu = document.getElementById('year-dropdown-menu');
+    const weekDropdownMenu = document.getElementById('week-dropdown-menu');
+    const selectedYearText = document.getElementById('selected-year-text');
+    const selectedWeekText = document.getElementById('selected-week-text');
+    const refreshButton = document.getElementById('refresh-week-filter');
+    
+    // Kiểm tra các phần tử cần thiết có tồn tại không
+    if (!yearInput || !weekInput) return;
+    
+    // Kiểm tra các phần tử dropdown UI có tồn tại không
+    const hasDropdownUI = yearDropdownMenu && weekDropdownMenu && selectedYearText && selectedWeekText;
+    
+    // Tải thông tin ngày bắt đầu ca từ API
+    const startDateInfo = await getFirstRecordDate();
+    
+    // Tính toán năm hiện tại
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    
+    // Tính toán năm kết thúc (năm hiện tại hoặc năm sau)
+    const today = new Date();
+    const currentDayOfWeek = today.getDay(); // 0 = Chủ nhật, 1-6 = Thứ 2-CN
+    const isEndYearNextYear = currentDayOfWeek === 0; // Nếu là chủ nhật, năm kết thúc là năm sau
+    const endYear = isEndYearNextYear ? currentYear + 1 : currentYear;
+    
+    // Xác định năm bắt đầu
+    let startYear;
+    
+    if (startDateInfo.hasRecords) {
+        // Nếu có dữ liệu ca, lấy năm của ca đầu tiên
+        startYear = new Date(startDateInfo.date).getFullYear();
+    } else {
+        // Nếu không có dữ liệu ca, chỉ hiển thị năm hiện tại
+        startYear = currentYear;
+    }
+    
+    // Giới hạn năm bắt đầu không được lớn hơn năm hiện tại
+    startYear = Math.min(startYear, currentYear);
+    
+    // Cập nhật UI cho Year Dropdown nếu tồn tại
+    if (hasDropdownUI) {
+        // Xóa tất cả các option năm hiện tại
+        yearDropdownMenu.innerHTML = '';
+        
+        // Thêm các năm từ năm bắt đầu đến năm kết thúc
+        for (let year = startYear; year <= endYear; year++) {
+            const item = document.createElement('a');
+            item.className = 'dropdown-item';
+            item.href = '#';
+            item.textContent = year;
+            
+            // Chọn năm hiện tại là mặc định
+            if (year === currentYear) {
+                item.classList.add('active');
+                yearInput.value = year;
+                selectedYearText.textContent = year;
+            }
+            
+            // Thêm sự kiện click cho item
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Cập nhật trạng thái active
+                yearDropdownMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Cập nhật hidden input và text hiển thị
+                const selectedYear = parseInt(this.textContent);
+                yearInput.value = selectedYear;
+                selectedYearText.textContent = selectedYear;
+                
+                // Cập nhật danh sách tuần
+                populateWeekOptions(selectedYear);
+            });
+            
+            yearDropdownMenu.appendChild(item);
+        }
+    } else {
+        // Nếu không có UI dropdown, vẫn cập nhật giá trị cho input
+        yearInput.value = currentYear;
+    }
+    
+    // Khởi tạo các tùy chọn tuần cho năm hiện tại
+    populateWeekOptions(currentYear);
+    
+    // Thêm sự kiện cho nút làm mới nếu tồn tại
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            // Lấy tuần và năm hiện tại hoặc tuần sau nếu hôm nay là chủ nhật
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            
+            // Cập nhật lại bộ lọc về năm hiện tại
+            yearInput.value = currentYear;
+            
+            // Cập nhật UI text nếu có
+            if (selectedYearText) {
+                selectedYearText.textContent = currentYear;
+            }
+            
+            // Đánh dấu năm hiện tại trong dropdown nếu có
+            if (yearDropdownMenu) {
+                yearDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+                    if (parseInt(item.textContent) === currentYear) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Tải lại các tùy chọn tuần cho năm hiện tại
+            populateWeekOptions(currentYear);
+            
+            // Chọn tuần hiện tại hoặc tuần sau nếu là chủ nhật
+            const currentWeek = getWeekNumber(currentDate);
+            const isEndWeekNextWeek = currentDate.getDay() === 0;
+            let targetWeek = isEndWeekNextWeek ? currentWeek.week + 1 : currentWeek.week;
+            let targetYear = currentYear;
+            
+            // Nếu tuần tiếp theo là tuần 53 nhưng năm chỉ có 52 tuần, hoặc tuần 1 của năm sau
+            if (targetWeek > getWeeksInYear(targetYear)) {
+                targetWeek = 1;
+                targetYear = currentYear + 1;
+            }
+            
+            // Kiểm tra nếu cần chuyển năm
+            if (targetYear > currentYear) {
+                yearInput.value = targetYear;
+                
+                if (selectedYearText) {
+                    selectedYearText.textContent = targetYear;
+                }
+                
+                // Đánh dấu năm đó trong dropdown nếu có
+                if (yearDropdownMenu) {
+                    yearDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+                        if (parseInt(item.textContent) === targetYear) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                }
+                
+                populateWeekOptions(targetYear);
+            }
+        });
+    }
+    
+    return weekInput.value; // Trả về giá trị tuần mặc định
+}
+
+/**
+ * Tạo các tùy chọn tuần cho năm được chọn trong dropdown
+ * @param {number} year - Năm được chọn
+ */
+function populateWeekOptions(year) {
+    const weekInput = document.getElementById('assignment-week-filter');
+    const weekDropdownMenu = document.getElementById('week-dropdown-menu');
+    const selectedWeekText = document.getElementById('selected-week-text');
+    
+    if (!weekInput) return;
+    
+    // Kiểm tra UI dropdown
+    const hasDropdownUI = weekDropdownMenu && selectedWeekText;
+    
+    // Xóa tất cả tùy chọn hiện tại nếu có UI dropdown
+    if (hasDropdownUI) {
+        weekDropdownMenu.innerHTML = '';
+    }
+    
+    // Lấy thông tin tuần hiện tại
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentWeekInfo = getWeekNumber(currentDate);
+    const currentWeek = currentWeekInfo.week;
+    
+    // Xác định tuần giới hạn
+    const isEndWeekNextWeek = currentDate.getDay() === 0; // Nếu là chủ nhật
+    let endWeek = isEndWeekNextWeek ? currentWeek + 1 : currentWeek;
+    let endWeekYear = currentYear;
+    
+    // Nếu tuần giới hạn vượt quá số tuần trong năm hiện tại
+    if (endWeek > getWeeksInYear(currentYear)) {
+        endWeek = 1; // Tuần đầu tiên của năm sau
+        endWeekYear = currentYear + 1;
+    }
+    
+    // Tính số tuần trong năm được chọn
+    const weeksInYear = getWeeksInYear(year);
+    
+    // Xác định tuần bắt đầu và tuần kết thúc cho năm được chọn
+    let startWeek = 1;
+    let maxWeek = weeksInYear;
+    
+    // Nếu năm được chọn là năm hiện tại hoặc năm sau, giới hạn tuần tối đa
+    if (year === currentYear) {
+        maxWeek = endWeek;
+    } else if (year > currentYear) {
+        // Nếu là năm sau, chỉ hiển thị tuần 1 nếu tuần giới hạn là tuần 1 của năm sau
+        if (endWeekYear > currentYear && endWeek === 1) {
+            maxWeek = 1;
+        } else {
+            maxWeek = 0; // Không có tuần nào của năm sau được hiển thị
+        }
+    }
+    
+    let selectedWeekValue = null;
+    let selectedWeekDisplay = null;
+    
+    // Thêm các tùy chọn tuần từ tuần bắt đầu đến tuần kết thúc
+    for (let week = startWeek; week <= maxWeek; week++) {
+        // Tính ngày đầu và cuối của tuần
+        const firstDayOfWeek = getFirstDayOfWeek(year, week);
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+        
+        // Format ngày
+        const startDateFormatted = formatDateToVN(firstDayOfWeek);
+        const endDateFormatted = formatDateToVN(lastDayOfWeek);
+        
+        // Tạo value và text hiển thị
+        const weekValue = `${year}-W${week.toString().padStart(2, '0')}`;
+        const weekDisplay = `Tuần ${week}: ${startDateFormatted} -> ${endDateFormatted}`;
+        
+        // Chọn tuần mặc định: tuần kết thúc nếu năm được chọn là năm giới hạn
+        const isDefaultSelected = (year === endWeekYear && week === endWeek) || 
+                               (year === currentYear && week === maxWeek);
+        
+        if (isDefaultSelected) {
+            selectedWeekValue = weekValue;
+            selectedWeekDisplay = weekDisplay;
+            
+            // Cập nhật giá trị hidden input
+            weekInput.value = weekValue;
+            
+            // Cập nhật UI nếu có
+            if (hasDropdownUI) {
+                selectedWeekText.textContent = weekDisplay;
+            }
+        }
+        
+        // Tạo và thêm dropdown item nếu có UI
+        if (hasDropdownUI) {
+            const item = document.createElement('a');
+            item.className = 'dropdown-item';
+            item.href = '#';
+            item.textContent = weekDisplay;
+            item.setAttribute('data-value', weekValue);
+            
+            if (isDefaultSelected) {
+                item.classList.add('active');
+            }
+            
+            // Thêm sự kiện click
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Cập nhật trạng thái active
+                weekDropdownMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Cập nhật hidden input và text hiển thị
+                const value = this.getAttribute('data-value');
+                weekInput.value = value;
+                selectedWeekText.textContent = this.textContent;
+                
+                // Kích hoạt sự kiện change trên input để cập nhật dữ liệu
+                triggerCustomChangeEvent(weekInput, value);
+            });
+            
+            weekDropdownMenu.appendChild(item);
+        }
+    }
+    
+    // Xử lý trường hợp không có tuần nào được thêm
+    if (hasDropdownUI && weekDropdownMenu.children.length === 0 && year > currentYear) {
+        // Thêm một thông báo thay vì tùy chọn
+        const item = document.createElement('a');
+        item.className = 'dropdown-item disabled';
+        item.href = '#';
+        item.textContent = "Không có tuần phù hợp";
+        weekDropdownMenu.appendChild(item);
+        
+        // Cập nhật text hiển thị
+        selectedWeekText.textContent = "Không có tuần phù hợp";
+        weekInput.value = "";
+    } else if (selectedWeekValue) {
+        // Kích hoạt sự kiện change để cập nhật dữ liệu
+        triggerCustomChangeEvent(weekInput, selectedWeekValue);
+    }
+    
+    return selectedWeekValue;
+}
+
+/**
+ * Tính số tuần trong một năm theo chuẩn ISO 8601
+ * @param {number} year - Năm cần tính
+ * @returns {number} - Số tuần trong năm
+ */
+function getWeeksInYear(year) {
+    // Cách 1: Kiểm tra ngày cuối cùng của năm
+    const lastDay = new Date(year, 11, 31);
+    const lastDayOfYear = lastDay.getDay();
+    
+    // Nếu ngày cuối cùng là thứ Hai, Ba, Tư (1, 2, 3) thì năm có 53 tuần, ngược lại là 52 tuần
+    // Theo chuẩn ISO 8601
+    if (lastDayOfYear === 1 || lastDayOfYear === 2 || lastDayOfYear === 3) {
+        return 53;
+    }
+    
+    // Cách 2: Kiểm tra thêm nếu 1/1 là thứ Năm
+    const firstDay = new Date(year, 0, 1);
+    if (firstDay.getDay() === 4) {
+        return 53;
+    }
+    
+    return 52;
+}
+
+/**
+ * Kích hoạt sự kiện change trên input
+ * @param {HTMLElement} element - Phần tử input cần kích hoạt sự kiện
+ * @param {string} value - Giá trị của input
+ */
+function triggerCustomChangeEvent(element, value) {
+    // Cập nhật giá trị
+    element.value = value;
+    
+    // Tạo sự kiện change
+    const event = new Event('change', { bubbles: true });
+    
+    // Kích hoạt sự kiện
+    element.dispatchEvent(event);
+    
+    // Nếu là weekInput, thì cập nhật dữ liệu tab
+    if (element.id === 'assignment-week-filter') {
+        updateAssignmentTabData(value);
+    }
+}
+
+// Khởi tạo các bộ lọc năm-tuần cho tab Duyệt ca - tương tự như tab Phân công
+async function initializeWeekSelectDropdowns() {
+    const yearInput = document.getElementById('week-select-year');
+    const weekInput = document.getElementById('week-select');
+    const yearDropdownMenu = document.getElementById('year-dropdown-menu-duyet');
+    const weekDropdownMenu = document.getElementById('week-dropdown-menu-duyet');
+    const selectedYearText = document.getElementById('selected-year-text-duyet');
+    const selectedWeekText = document.getElementById('selected-week-text-duyet');
+    
+    if (!yearInput || !weekInput || !yearDropdownMenu || !weekDropdownMenu || !selectedYearText || !selectedWeekText) {
+        console.error('Không tìm thấy các phần tử dropdown cho tab Duyệt ca');
+        return;
+    }
+    
+    // Tải thông tin ngày bắt đầu ca từ API
+    const startDateInfo = await getFirstRecordDate();
+    
+    // Tính toán năm hiện tại
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    
+    // Tính toán năm kết thúc (năm hiện tại hoặc năm sau)
+    const today = new Date();
+    const currentDayOfWeek = today.getDay(); // 0 = Chủ nhật, 1-6 = Thứ 2-CN
+    const isEndYearNextYear = currentDayOfWeek === 0; // Nếu là chủ nhật, năm kết thúc là năm sau
+    const endYear = isEndYearNextYear ? currentYear + 1 : currentYear;
+    
+    // Xác định năm bắt đầu
+    let startYear;
+    
+    if (startDateInfo.hasRecords) {
+        // Nếu có dữ liệu ca, lấy năm của ca đầu tiên
+        startYear = new Date(startDateInfo.date).getFullYear();
+    } else {
+        // Nếu không có dữ liệu ca, chỉ hiển thị năm hiện tại
+        startYear = currentYear;
+    }
+    
+    // Giới hạn năm bắt đầu không được lớn hơn năm hiện tại
+    startYear = Math.min(startYear, currentYear);
+    
+    // Xóa tất cả các option năm hiện tại
+    yearDropdownMenu.innerHTML = '';
+    
+    // Thêm các năm từ năm bắt đầu đến năm kết thúc
+    for (let year = startYear; year <= endYear; year++) {
+        const item = document.createElement('a');
+        item.className = 'dropdown-item';
+        item.href = '#';
+        item.textContent = year;
+        
+        // Chọn năm hiện tại là mặc định
+        if (year === currentYear) {
+            item.classList.add('active');
+            yearInput.value = year;
+            selectedYearText.textContent = year;
+        }
+        
+        // Thêm sự kiện click cho item
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Cập nhật trạng thái active
+            yearDropdownMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Cập nhật hidden input và text hiển thị
+            const selectedYear = parseInt(this.textContent);
+            yearInput.value = selectedYear;
+            selectedYearText.textContent = selectedYear;
+            
+            // Cập nhật danh sách tuần
+            populateWeekSelectOptions(selectedYear);
+        });
+        
+        yearDropdownMenu.appendChild(item);
+    }
+    
+    // Khởi tạo tuần cho năm hiện tại
+    return populateWeekSelectOptions(currentYear);
+}
+
+// Tạo các tùy chọn tuần cho dropdown tại tab Duyệt ca
+function populateWeekSelectOptions(year) {
+    const weekInput = document.getElementById('week-select');
+    const weekDropdownMenu = document.getElementById('week-dropdown-menu-duyet');
+    const selectedWeekText = document.getElementById('selected-week-text-duyet');
+    
+    if (!weekInput || !weekDropdownMenu || !selectedWeekText) {
+        console.error('Không tìm thấy các phần tử dropdown cho tab Duyệt ca');
+        return null;
+    }
+    
+    // Xóa tất cả tùy chọn hiện tại
+    weekDropdownMenu.innerHTML = '';
+    
+    // Lấy thông tin tuần hiện tại
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentWeekInfo = getWeekNumber(currentDate);
+    const currentWeek = currentWeekInfo.week;
+    
+    // Xác định tuần giới hạn
+    const isEndWeekNextWeek = currentDate.getDay() === 0; // Nếu là chủ nhật
+    let endWeek = isEndWeekNextWeek ? currentWeek + 1 : currentWeek;
+    let endWeekYear = currentYear;
+    
+    // Nếu tuần giới hạn vượt quá số tuần trong năm hiện tại
+    if (endWeek > getWeeksInYear(currentYear)) {
+        endWeek = 1; // Tuần đầu tiên của năm sau
+        endWeekYear = currentYear + 1;
+    }
+    
+    // Tính số tuần trong năm được chọn
+    const weeksInYear = getWeeksInYear(year);
+    
+    // Xác định tuần bắt đầu và tuần kết thúc cho năm được chọn
+    let startWeek = 1;
+    let maxWeek = weeksInYear;
+    
+    // Nếu năm được chọn là năm hiện tại hoặc năm sau, giới hạn tuần tối đa
+    if (year === currentYear) {
+        maxWeek = endWeek;
+    } else if (year > currentYear) {
+        // Nếu là năm sau, chỉ hiển thị tuần 1 nếu tuần giới hạn là tuần 1 của năm sau
+        if (endWeekYear > currentYear && endWeek === 1) {
+            maxWeek = 1;
+        } else {
+            maxWeek = 0; // Không có tuần nào của năm sau được hiển thị
+        }
+    }
+    
+    let selectedWeekValue = null;
+    let selectedWeekDisplay = null;
+    
+    // Thêm các tùy chọn tuần từ tuần bắt đầu đến tuần kết thúc
+    for (let week = startWeek; week <= maxWeek; week++) {
+        // Tính ngày đầu và cuối của tuần
+        const firstDayOfWeek = getFirstDayOfWeek(year, week);
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+        
+        // Format ngày
+        const startDateFormatted = formatDateToVN(firstDayOfWeek);
+        const endDateFormatted = formatDateToVN(lastDayOfWeek);
+        
+        // Tạo value và text hiển thị
+        const weekValue = `${year}-W${week.toString().padStart(2, '0')}`;
+        const weekDisplay = `Tuần ${week}: ${startDateFormatted} -> ${endDateFormatted}`;
+        
+        // Chọn tuần mặc định: tuần kết thúc nếu năm được chọn là năm giới hạn
+        const isDefaultSelected = (year === endWeekYear && week === endWeek) || 
+                               (year === currentYear && week === maxWeek);
+        
+        if (isDefaultSelected) {
+            selectedWeekValue = weekValue;
+            selectedWeekDisplay = weekDisplay;
+            
+            // Cập nhật giá trị hidden input và text hiển thị
+            weekInput.value = weekValue;
+            selectedWeekText.textContent = weekDisplay;
+        }
+        
+        // Tạo dropdown item
+        const item = document.createElement('a');
+        item.className = 'dropdown-item';
+        item.href = '#';
+        item.textContent = weekDisplay;
+        item.setAttribute('data-value', weekValue);
+        
+        if (isDefaultSelected) {
+            item.classList.add('active');
+        }
+        
+        // Thêm sự kiện click
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Cập nhật trạng thái active
+            weekDropdownMenu.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Cập nhật hidden input và text hiển thị
+            const value = this.getAttribute('data-value');
+            weekInput.value = value;
+            selectedWeekText.textContent = this.textContent;
+            
+            // Kích hoạt sự kiện change để cập nhật dữ liệu
+            triggerWeekSelectChange(value);
+        });
+        
+        weekDropdownMenu.appendChild(item);
+    }
+    
+    // Xử lý trường hợp không có tuần nào được thêm
+    if (weekDropdownMenu.children.length === 0 && year > currentYear) {
+        // Thêm một thông báo thay vì tùy chọn
+        const item = document.createElement('a');
+        item.className = 'dropdown-item disabled';
+        item.href = '#';
+        item.textContent = "Không có tuần phù hợp";
+        weekDropdownMenu.appendChild(item);
+        
+        // Cập nhật text hiển thị
+        selectedWeekText.textContent = "Không có tuần phù hợp";
+        weekInput.value = "";
+    } else if (selectedWeekValue) {
+        // Kích hoạt sự kiện change để cập nhật dữ liệu
+        triggerWeekSelectChange(selectedWeekValue);
+    }
+    
+    return selectedWeekValue;
+}
+
+// Kích hoạt sự kiện change trên week-select
+function triggerWeekSelectChange(weekValue) {
+    const weekSelect = document.getElementById('week-select');
+    if (!weekSelect) return;
+    
+    // Cập nhật giá trị
+    weekSelect.value = weekValue;
+    
+    // Tạo sự kiện change để duy trì tính tương thích với code cũ
+    const event = new Event('change', { bubbles: true });
+    weekSelect.dispatchEvent(event);
+    
+    // Cập nhật các tab ngày và danh sách ca làm việc
+    updateWeekDateRange(weekValue);
+    
+    // Cập nhật hiển thị trạng thái dựa trên tuần được chọn
+    updateStatusVisibility(weekValue);
+    
+    // Lấy dữ liệu cho tuần mới
+    getAPICaLamViec(weekValue).then(data => {
+        window.fullShiftsList = data; // Đảm bảo lưu dữ liệu vào biến toàn cục
+        thaoTacCaLamViec(data);
+    });
 }

@@ -76,8 +76,8 @@
 }
 
 .status-confirmed + .dropdown-menu .dropdown-header {
-    background-color: #d1ecf1;
-    color: #0c5460;
+    background-color: #f1d4fa;
+    color: #8E24AA;
 }
 
 .status-rejected + .dropdown-menu .dropdown-header {
@@ -453,4 +453,32 @@ tr.highlight-row {
 
 .employee-card .default-avatar {
     font-size: 2rem;
+}
+
+/* Styles cho input group năm-tuần */
+.input-group-year-week {
+    margin-bottom: 15px;
+    border-radius: 0.25rem;
+}
+
+/* Kiểu cho combobox năm */
+#assignment-year-filter {
+    font-weight: 500;
+    text-align: center;
+    border-right: 0;
+    background-color: #f8f9fa;
+}
+
+/* Kiểu cho select tuần */
+#assignment-week-filter {
+    border-left: 0;
+    border-right: 0;
+}
+
+/* Kiểu cho nút làm mới */
+#refresh-week-filter {
+    border-color: #ced4da;
+}
+#refresh-week-filter:hover {
+    background-color: #e9ecef;
 }

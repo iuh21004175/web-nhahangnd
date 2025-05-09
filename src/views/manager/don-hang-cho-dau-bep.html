@@ -4,290 +4,148 @@
     scripts: '<script src="/js/manager/don-hang-cho-dau-bep.js"></script>',
     body: `
     <div class="order-management-container">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="mb-1">Quản lý đơn hàng - Bếp</h4>
-                <p class="text-muted mb-0">Xem và cập nhật trạng thái các món ăn đang chờ chế biến</p>
-            </div>
-            <div class="d-flex gap-2">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-filter me-1"></i> Lọc trạng thái
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item filter-status active" href="#" data-status="all">Tất cả</a></li>
-                        <li><a class="dropdown-item filter-status" href="#" data-status="pending">Chờ chế biến</a></li>
-                        <li><a class="dropdown-item filter-status" href="#" data-status="processing">Đang chế biến</a></li>
-                        <li><a class="dropdown-item filter-status" href="#" data-status="completed">Hoàn thành</a></li>
-                    </ul>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-sort me-1"></i> Sắp xếp
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item sort-option active" href="#" data-sort="time-desc">Mới nhất trước</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="time-asc">Cũ nhất trước</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="table">Theo bàn</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="priority">Ưu tiên</a></li>
-                    </ul>
-                </div>
-                <button id="refresh-btn" class="btn btn-primary">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Thống kê nhanh -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stats-card bg-light-warning">
-                    <div>
-                        <h2 id="pending-count">5</h2>
-                        <p>Chờ chế biến</p>
-                    </div>
-                    <div class="stats-icon warning">
-                        <i class="fas fa-hourglass-start"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card bg-light-info">
-                    <div>
-                        <h2 id="processing-count">3</h2>
-                        <p>Đang chế biến</p>
-                    </div>
-                    <div class="stats-icon info">
-                        <i class="fas fa-fire"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card bg-light-success">
-                    <div>
-                        <h2 id="completed-count">12</h2>
-                        <p>Hoàn thành hôm nay</p>
-                    </div>
-                    <div class="stats-icon success">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card bg-light-primary">
-                    <div>
-                        <h2 id="avg-time">14<small>p</small></h2>
-                        <p>Thời gian trung bình</p>
-                    </div>
-                    <div class="stats-icon primary">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Danh sách đơn hàng -->
-        <div class="row">
-            <!-- Phần bên trái: Danh sách đơn hàng -->
-            <div class="col-md-4">
-                <div class="card mb-4 mb-md-0">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Danh sách đơn hàng</h5>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="show-completed">
-                            <label class="form-check-label" for="show-completed">Hiện đã hoàn thành</label>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group order-list">
-                            <!-- Danh sách đơn hàng sẽ được render từ JavaScript -->
-                            <a href="#" class="list-group-item list-group-item-action active" data-id="1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">Bàn 05 <span class="badge bg-warning">Chờ chế biến</span></h6>
-                                    <small class="text-muted">09:45</small>
-                                </div>
-                                <p class="mb-1"><small>3 món - Ưu tiên cao</small></p>
-                                <div class="progress" style="height: 5px">
-                                    <div class="progress-bar bg-danger" style="width: 0%"></div>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action" data-id="2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">Bàn 08 <span class="badge bg-info">Đang chế biến</span></h6>
-                                    <small class="text-muted">09:32</small>
-                                </div>
-                                <p class="mb-1"><small>5 món - Ưu tiên bình thường</small></p>
-                                <div class="progress" style="height: 5px">
-                                    <div class="progress-bar bg-info" style="width: 40%"></div>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action" data-id="3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">Bàn 12 <span class="badge bg-info">Đang chế biến</span></h6>
-                                    <small class="text-muted">09:25</small>
-                                </div>
-                                <p class="mb-1"><small>4 món - Ưu tiên bình thường</small></p>
-                                <div class="progress" style="height: 5px">
-                                    <div class="progress-bar bg-info" style="width: 75%"></div>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action" data-id="4">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">Mang về #102 <span class="badge bg-success">Hoàn thành</span></h6>
-                                    <small class="text-muted">09:10</small>
-                                </div>
-                                <p class="mb-1"><small>2 món - Ưu tiên thấp</small></p>
-                                <div class="progress" style="height: 5px">
-                                    <div class="progress-bar bg-success" style="width: 100%"></div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Phần bên phải: Chi tiết đơn hàng -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-0" id="order-detail-title">Chi tiết đơn hàng - Bàn 05</h5>
-                                <p class="mb-0 text-muted" id="order-detail-info">Mã đơn: #ORD001 - Thời gian: 09:45</p>
-                            </div>
-                            <div class="order-status-badge">
-                                <span class="badge rounded-pill bg-warning">Chờ chế biến</span>
-                            </div>
-                        </div>
+        <!-- Món đang làm -->
+        <div class="row mb-4" id="currentDishSection">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-fire-alt me-2"></i> Món ăn đang chế biến
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <div class="kitchen-note mb-3">
-                            <div class="alert alert-light">
-                                <h6><i class="fas fa-clipboard-list me-2"></i> Ghi chú cho bếp:</h6>
-                                <p class="mb-0" id="kitchen-note-text">Khách yêu cầu món súp không quá nóng, và không cho hành vào món xào.</p>
+                        <!-- Ẩn phần này bằng d-none khi có món ăn đang chế biến -->
+                        <div id="noDishInProgress" class="text-center py-5 ">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Bạn chưa nhận món ăn nào để chế biến</h5>
+                            <p class="text-muted">Hãy nhận món ăn từ danh sách món chờ bên dưới</p>
+                        </div>
+                        
+                        <!-- Hiển thị phần này khi có món ăn đang chế biến -->
+                        <div id="currentDishInfo" class="d-none">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4 id="currentDishName" class="fw-bold mb-3">Bò lúc lắc sốt tiêu đen</h4>
+                                    <div class="dish-details mb-3">
+                                        <p><strong>Đơn hàng:</strong> #<span id="currentOrderId">2305</span></p>
+                                        <p><strong>Số lượng:</strong> <span id="currentDishQuantity">2</span></p>
+                                        <p><strong>Thời gian nhận:</strong> <span id="currentDishStartTime">15:30</span></p>
+                                        <p><strong>Ghi chú:</strong> <span id="currentDishNote" class="text-danger">Nấu chín kỹ, ít cay</span></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="dish-image-container mb-3">
+                                        <img id="currentDishImage" src="https://cdn.tgdd.vn/Files/2022/01/25/1412805/cach-lam-bo-luc-lac-mem-ngon-don-gian-tai-nha-202201250230038502.jpg" class="img-fluid rounded" alt="Bò lúc lắc sốt tiêu đen">
+                                    </div>
+                                    <div class="timer-container mb-3">
+                                        <h5 class="mb-2">Thời gian đã trôi qua</h5>
+                                        <div class="d-flex justify-content-center">
+                                            <div class="timer" id="dishTimer">08:24</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12 text-center">
+                                    <button id="completeDishBtn" class="btn btn-success btn-lg">
+                                        <i class="fas fa-check-circle me-2"></i>Hoàn thành món ăn này
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Danh sách món ăn trong đơn hàng -->
-                        <div class="table-responsive">
-                            <table class="table table-hover order-items-table">
-                                <thead>
+        <!-- Danh sách món ăn đang chờ -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i> Danh sách món ăn đang chờ
+                        </h5>
+                        <!-- <button id="refreshPendingList" class="btn btn-sm btn-light">
+                            <i class="fas fa-sync-alt me-1"></i> Làm mới
+                        </button> -->
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 400px;">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th scope="col" width="50">#</th>
+                                        <th scope="col">STT</th>
                                         <th scope="col">Món ăn</th>
-                                        <th scope="col" width="80">SL</th>
-                                        <th scope="col" width="180">Ghi chú</th>
-                                        <th scope="col" width="160">Trạng thái</th>
-                                        <th scope="col" width="100">Hành động</th>
+                                        <th scope="col">Đơn hàng</th>
+                                        <th scope="col">Số lượng</th>
+                                        <th scope="col">Thời gian đơn</th>
+                                        <th scope="col">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody id="order-items">
-                                    <tr>
-                                        <td>1</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="dish-img me-2">
-                                                    <img src="/images/dishes/soup.jpg" width="40" height="40" alt="Súp">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Súp hải sản</h6>
-                                                    <small class="text-muted">#SP001</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>1</td>
-                                        <td><small>Không quá nóng</small></td>
-                                        <td>
-                                            <select class="form-select form-select-sm status-select" data-item-id="1">
-                                                <option value="pending" selected>Chờ chế biến</option>
-                                                <option value="processing">Đang chế biến</option>
-                                                <option value="completed">Hoàn thành</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info start-cooking-btn" data-item-id="1">
-                                                <i class="fas fa-fire"></i> Bắt đầu
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="dish-img me-2">
-                                                    <img src="/images/dishes/stir-fry.jpg" width="40" height="40" alt="Xào">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Thịt bò xào nấm</h6>
-                                                    <small class="text-muted">#XN003</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>2</td>
-                                        <td><small>Không hành</small></td>
-                                        <td>
-                                            <select class="form-select form-select-sm status-select" data-item-id="2">
-                                                <option value="pending" selected>Chờ chế biến</option>
-                                                <option value="processing">Đang chế biến</option>
-                                                <option value="completed">Hoàn thành</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info start-cooking-btn" data-item-id="2">
-                                                <i class="fas fa-fire"></i> Bắt đầu
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="dish-img me-2">
-                                                    <img src="/images/dishes/rice.jpg" width="40" height="40" alt="Cơm">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Cơm trắng</h6>
-                                                    <small class="text-muted">#CM001</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>3</td>
-                                        <td><small></small></td>
-                                        <td>
-                                            <select class="form-select form-select-sm status-select" data-item-id="3">
-                                                <option value="pending" selected>Chờ chế biến</option>
-                                                <option value="processing">Đang chế biến</option>
-                                                <option value="completed">Hoàn thành</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info start-cooking-btn" data-item-id="3">
-                                                <i class="fas fa-fire"></i> Bắt đầu
-                                            </button>
-                                        </td>
-                                    </tr>
+                                <tbody id="pendingDishesTable">
+                                    <!-- Dữ liệu mẫu cho bảng món ăn đang chờ -->
+
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- Nút cập nhật trạng thái toàn bộ đơn hàng -->
-                        <div class="mt-4 d-flex justify-content-between align-items-center">
-                            <div class="timer-info">
-                                <span class="badge rounded-pill bg-light text-dark">
-                                    <i class="fas fa-hourglass-half me-1"></i> Thời gian chờ: <span id="waiting-time">12 phút</span>
-                                </span>
-                            </div>
-                            <div class="action-buttons">
-                                <button class="btn btn-warning me-2" id="start-all-btn">
-                                    <i class="fas fa-play me-1"></i> Bắt đầu tất cả
-                                </button>
-                                <button class="btn btn-success" id="complete-order-btn">
-                                    <i class="fas fa-check-circle me-1"></i> Hoàn thành đơn
-                                </button>
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal xác nhận nhận món -->
+        <div class="modal fade" id="confirmTakeDishModal" tabindex="-1" aria-labelledby="confirmTakeDishModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="confirmTakeDishModalLabel">Xác nhận nhận món</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn nhận món <strong id="takeDishName">Cơm chiên Dương Châu</strong> để chế biến?</p>
+                        <p>Đơn hàng: #<span id="takeDishOrderId">2306</span></p>
+                        <p>Số lượng: <span id="takeDishQuantity">2</span></p>
+                        <input type="hidden" id="takeDishId" value="2">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" id="confirmTakeDishBtn">Xác nhận nhận món</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal xác nhận hoàn thành món -->
+        <div class="modal fade" id="confirmCompleteDishModal" tabindex="-1" aria-labelledby="confirmCompleteDishModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="confirmCompleteDishModalLabel">Xác nhận hoàn thành món</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn đã hoàn thành món <strong id="completeDishName">Bò lúc lắc sốt tiêu đen</strong>?</p>
+                        <p>Đơn hàng: #<span id="completeDishOrderId">2305</span></p>
+                        <p>Thời gian chế biến: <span id="completeDishTime">8 phút 24 giây</span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chưa xong</button>
+                        <button type="button" class="btn btn-success" id="confirmCompleteDishBtnFinal">Đã hoàn thành</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast thông báo -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="chefToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-success text-white">
+                    <strong class="me-auto">Thành công</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="toastMessage">
+                    Đã nhận món ăn thành công!
                 </div>
             </div>
         </div>
