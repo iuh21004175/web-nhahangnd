@@ -122,6 +122,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('Vui lòng chọn món!');
             return;
         }
+
+        // Kiểm tra nếu tất cả món đều có trạng thái là 3
+        const allItemsReady = Array.from(orderItems).every(item => {
+            const dataId = item.dataset.id; 
+            const trangThai = parseInt(dataId.split('-')[1]);
+            return trangThai === 3;
+        });
+
+        if (!allItemsReady) {
+            alert('Chỉ có thể thanh toán khi tất cả món đã được gửi!');
+            return;
+        }
+
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
     
         
@@ -273,40 +286,55 @@ function thaoTacLoaiMon(list) {
 function thaoTacThucDon(list) {
     const danhSachMonAn = document.querySelector('#danhSachMonAn');
     danhSachMonAn.innerHTML = "";
+
     if (list.length === 0) {
         danhSachMonAn.innerHTML = `<p class="text-center text-danger">Không có món trong loại này.</p>`;
         return;
     }
+
     list.forEach(monAn => {
-        const card = `
-        <div class="col">
-            <div class="menu-item card h-100" data-id="${monAn.id}" data-name="${monAn.ten}" data-price="${monAn.gia}" data-img="${monAn.hinhAnh}">
-                <img src="${monAn.hinhAnh}" class="card-img-top" style="height: 160px; object-fit: cover;" alt="${monAn.ten}">
-                <div class="card-body d-flex flex-column justify-content-between h-100">
-                    <div>
-                        <h6 class="card-title">${monAn.ten}</h6>
-                        <p class="card-text text-primary">${monAn.gia.toLocaleString('vi-VN')}₫</p>
-                    </div>
-                </div>                    
-            </div>
-        </div> 
-        `;
-        danhSachMonAn.innerHTML += card;
+        // Nếu có nhiều chi tiết món với các trạng thái khác nhau
+        const trangThaiList = monAn.ChiTietDonHangList || [{ trangThai: 0 }]; // fallback nếu không có
+
+        trangThaiList.forEach(ct => {
+            const trangThai = ct.trangThai;
+
+            const card = `
+            <div class="col">
+                <div class="menu-item card h-100"
+                    data-id="${monAn.id}"
+                    data-name="${monAn.ten}"
+                    data-price="${monAn.gia}"
+                    data-img="${monAn.hinhAnh}"
+                    data-status="${trangThai}">
+                    <img src="${monAn.hinhAnh}" class="card-img-top" style="height: 160px; object-fit: cover;" alt="${monAn.ten}">
+                    <div class="card-body d-flex flex-column justify-content-between h-100">
+                        <div>
+                            <h6 class="card-title">${monAn.ten} ${trangThai > 0 ? `(trạng thái: ${trangThai})` : ''}</h6>
+                            <p class="card-text text-primary">${monAn.gia.toLocaleString('vi-VN')}₫</p>
+                        </div>
+                    </div>                    
+                </div>
+            </div>`;
+            danhSachMonAn.innerHTML += card;
+        });
     });
 
-    // Xử lý sự kiện Thêm vào giỏ
+    // Sự kiện click
     document.querySelectorAll('.menu-item').forEach(function(item) {
         item.addEventListener('click', function() {
             const id = this.dataset.id;
             const name = this.dataset.name;
             const price = parseInt(this.dataset.price);
             const img = this.dataset.img;
+            const trangThai = parseInt(this.dataset.status || "0");
 
-            // Thêm món vào giỏ hàng
-            themVaoGioHang(id, name, price, img);
+            themVaoGioHang(id, name, price, img, trangThai);
         });
     });
 }
+
+
 
 function thaoTacBan(banList) {
     const banContainer = document.querySelector('.table-selection'); // Selector chứa danh sách bàn
@@ -341,26 +369,23 @@ function thaoTacBan(banList) {
     });
 }
 
-
-
-function themVaoGioHang(id, name, price, img) {
+function themVaoGioHang(id, name, price, img, trangThai = 0) {
     const orderItems = document.querySelector('.order-items');
-    
-    // Kiểm tra xem món ăn đã có trong giỏ hay chưa
-    const existingItem = orderItems.querySelector(`.order-item[data-id="${id}"]`);
+    const key = `${id}-${trangThai}`;
+
+    // Kiểm tra xem món ăn đã có trong giỏ chưa (phân biệt theo trạng thái)
+    const existingItem = orderItems.querySelector(`.order-item[data-id="${key}"]`);
     if (existingItem) {
-        // Nếu có, tăng số lượng
         const quantityInput = existingItem.querySelector('.so-luong');
         quantityInput.value = parseInt(quantityInput.value) + 1;
-        updateTotal(); // Cập nhật lại tổng giá trị
+        updateTotal();
         return;
     }
 
     const orderItem = document.createElement('div');
     orderItem.className = 'order-item d-flex justify-content-between mb-2';
-    orderItem.dataset.id = id;
+    orderItem.dataset.id = key;
 
-    // Tạo nội dung món ăn trong giỏ hàng
     orderItem.innerHTML = `
         <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="d-flex align-items-center">
@@ -378,7 +403,7 @@ function themVaoGioHang(id, name, price, img) {
                 <input type="number" class="form-control text-center so-luong" value="1" min="1" style="width: 50px;">
                 <button class="btn btn-outline-secondary btn-tang" type="button">+</button>
             </div>
-            <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${id}">Xóa</button>
+            <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${key}">Xóa</button>
         </div>
     `;
 
@@ -525,44 +550,72 @@ function thaoTacDonHang(donHang) {
 
     if (!donHang || !donHang.ChiTietDonHangs || donHang.ChiTietDonHangs.length === 0) {
         console.log('Không có đơn hàng đã lưu.');
-        donHangContainer.innerHTML = '';
         return;
     }
 
-    donHang.ChiTietDonHangs.forEach(ct => {
-        const mon = ct.MonAn;
+    const trangThaiChiTiet = {
+        0: 'Chờ đầu bếp',
+        1: 'Đang chế biến',
+        2: 'Đã hoàn thành',
+        3: 'Đã gửi'
+    };
 
+    const orderMap = {}; // Để lưu trữ các món ăn theo key (id và trạng thái)
+
+    donHang.ChiTietDonHangs.forEach((ct) => {
+        const mon = ct.MonAn;
+        const key = `${mon.id}-${ct.trangThai}`; // Phân biệt cùng món khác trạng thái
+
+        // Kiểm tra xem món ăn đã tồn tại trong orderMap chưa
+        if (orderMap[key]) {
+            // Nếu đã tồn tại, cộng dồn số lượng
+            orderMap[key].soLuong += ct.soLuong;
+        } else {
+            // Nếu chưa tồn tại, thêm mới vào orderMap
+            orderMap[key] = { mon, trangThai: ct.trangThai, soLuong: ct.soLuong };
+        }
+    });
+
+    // Render các món ăn từ orderMap
+    Object.values(orderMap).forEach((item) => {
         const orderItem = document.createElement('div');
         orderItem.className = 'order-item d-flex justify-content-between mb-2';
-        orderItem.dataset.id = mon.id;
+        const key = `${item.mon.id}-${item.trangThai}`; // Dùng key duy nhất để phân biệt
+
+        orderItem.dataset.id = key;
 
         orderItem.innerHTML = `
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center">
-                    <img src="${mon.hinhAnh || '/default.jpg'}" alt="${mon.ten}" style="height: 50px; width: 50px; object-fit: cover; margin-right: 15px;">
+                    <img src="${item.mon.hinhAnh || '/default.jpg'}" alt="${item.mon.ten}" style="height: 50px; width: 50px; object-fit: cover; margin-right: 15px;">
                 </div>
                 <div class="d-flex flex-column">
-                    <span class="fw-bold">${mon.ten}</span>
-                    <span class="price text-primary">${mon.gia.toLocaleString('vi-VN')}₫</span>
+                    <span class="fw-bold">${item.mon.ten}</span>
+                    <span class="price text-primary">${item.mon.gia.toLocaleString('vi-VN')}₫</span>
+                    <span class="badge bg-info mt-1" style="display: inline-block; width: fit-content; white-space: nowrap;">
+                        ${trangThaiChiTiet[item.trangThai] || 'Không rõ trạng thái'}
+                    </span>
                 </div>
             </div>
 
             <div class="d-flex align-items-center mb-2">
                 <div class="input-group input-group-sm" style="max-width: 130px;">
-                    <button class="btn btn-outline-secondary btn-giam" type="button">-</button>
-                    <input type="number" class="form-control text-center so-luong" value="${ct.soLuong}" min="1" style="width: 50px;">
-                    <button class="btn btn-outline-secondary btn-tang" type="button">+</button>
+                    <button class="btn btn-outline-secondary btn-giam" type="button" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">-</button>
+                    <input type="number" class="form-control text-center so-luong" value="${item.soLuong}" min="1" style="width: 50px;" ${item.trangThai === 1 || item.trangThai === 2 ? 'readonly' : ''}>
+                    <button class="btn btn-outline-secondary btn-tang" type="button" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">+</button>
                 </div>
-                <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${mon.id}">Xóa</button>
+                <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${key}" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">Xóa</button>
+                ${item.trangThai === 2 ? `<button class="btn btn-sm btn-success ms-2 btn-da-gui" data-id="${key}">Gửi</button>` : ''}
             </div>
         `;
 
         donHangContainer.appendChild(orderItem);
 
-        // Gán sự kiện
+        // Gán sự kiện cho nút tăng, giảm, xóa, đã gửi món
         const btnTang = orderItem.querySelector('.btn-tang');
         const btnGiam = orderItem.querySelector('.btn-giam');
         const btnXoa = orderItem.querySelector('.btn-xoa');
+        const btnDaGui = orderItem.querySelector('.btn-da-gui');
         const inputSoLuong = orderItem.querySelector('.so-luong');
 
         btnTang.addEventListener('click', () => {
@@ -581,7 +634,16 @@ function thaoTacDonHang(donHang) {
             orderItem.remove();
             updateTotal();
         });
+
+        if (btnDaGui) {
+            btnDaGui.addEventListener('click', () => {
+                // Xử lý logic khi đã gửi món
+                console.log('Món đã được gửi!');
+                btnDaGui.disabled = true; // Vô hiệu hóa nút sau khi đã nhấn
+            });
+        }
     });
 
     updateTotal();
 }
+

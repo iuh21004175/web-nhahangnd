@@ -1,10 +1,21 @@
+// Thêm biến để theo dõi trạng thái đầu bếp có đang chế biến món nào không
+let isChefCooking = false;
+
 document.addEventListener('DOMContentLoaded', async function() {
-    let listMonCho = await getAPIMonCho()
-    thaoTacMonCho(listMonCho)
-    let monDangCheBien = await getAPIMonDangCheBien()
-    if(monDangCheBien){
-        capNhatDangCheBien(monDangCheBien)
+    let listMonCho = await getAPIMonCho();
+    let monDangCheBien = await getAPIMonDangCheBien();
+    
+    // Kiểm tra xem đầu bếp có đang chế biến món nào không
+    if(monDangCheBien) {
+        isChefCooking = true;
+        capNhatDangCheBien(monDangCheBien);
+    } else {
+        isChefCooking = false;
     }
+    
+    // Hiển thị danh sách món chờ với trạng thái nút phù hợp
+    thaoTacMonCho(listMonCho);
+    
     document.getElementById('completeDishBtn').addEventListener('click', async function() {
         const id = this.dataset.id;
         if (id) {
@@ -18,9 +29,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
                 const data = await response.json();
                 if(data.status){
-                    stopTimer()
+                    stopTimer();
                     document.getElementById('noDishInProgress').classList.remove('d-none');
                     document.getElementById('currentDishInfo').classList.add('d-none');
+                    
+                    // Cập nhật trạng thái đầu bếp không còn chế biến món nào
+                    isChefCooking = false;
+                    
+                    // Cập nhật lại danh sách món chờ với nút đã được kích hoạt
+                    let updatedList = await getAPIMonCho();
+                    thaoTacMonCho(updatedList);
+                    
+                    showToastSuccess('Món ăn đã được hoàn thành.');
                 }
                 else{
                     showToastDanger('Lỗi khi hoàn thành món ăn. Vui lòng thử lại sau.');
@@ -30,8 +50,110 @@ document.addEventListener('DOMContentLoaded', async function() {
                 showToastDanger('Lỗi khi hoàn thành món ăn. Vui lòng thử lại sau.');
             }
         }
-    })
-})
+    });
+});
+
+// Hàm thaoTacMonCho được cập nhật để xử lý trạng thái vô hiệu hóa nút
+function thaoTacMonCho(list){
+    let tableBody = document.querySelector('#pendingDishesTable');
+    tableBody.innerHTML = ''; // Xóa nội dung hiện tại của tbody
+    
+    if(list.length > 0){
+        list.forEach((item, index) => {
+            let row = document.createElement('tr');
+            
+            // Thêm thuộc tính disabled cho nút nếu đầu bếp đang chế biến món
+            const buttonDisabled = isChefCooking ? 'disabled' : '';
+            const buttonTooltip = isChefCooking ? 'data-bs-toggle="tooltip" data-bs-placement="top" title="Bạn đang chế biến món khác"' : '';
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="${item.MonAn.hinhAnh}" alt="${item.MonAn.ten}" class="dish-thumbnail me-2" width="40" height="40">
+                        <div>
+                            <div class="fw-bold">${item.MonAn.ten}</div>
+                            <small class="text-muted">${item.MonAn.GhiChu ? item.MonAn.GhiChu : 'Không có'}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>#${item.idDonHang}</td>
+                <td>${item.soLuong}</td>
+                <td>${formatDateTime(item.thoiGianCapNhat)}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm take-dish-btn" ${buttonDisabled} ${buttonTooltip} data-id="${item.id}">
+                        <i class="fas fa-utensils me-1"></i> Nhận món
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Khởi tạo tooltips nếu có
+        if (isChefCooking) {
+            // Khởi tạo tooltips - Bootstrap 5
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+
+        // Thêm sự kiện click cho các nút
+        document.querySelectorAll('.take-dish-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                // Nếu nút bị vô hiệu hóa, không thực hiện hành động
+                if (this.disabled) return;
+                
+                const id = this.dataset.id;
+                const monDangCheBien = list.find(item => item.id == id);
+                
+                if (monDangCheBien) {
+                    try {
+                        const response = await fetch('/api/mon-dang-cho/nhan-mon', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ id })
+                        });
+                        const data = await response.json();
+                        
+                        if(data.status){
+                            // Cập nhật trạng thái đầu bếp đang chế biến món
+                            isChefCooking = true;
+                            
+                            showToastSuccess('Nhận món thành công.');
+                            
+                            // Cập nhật lại danh sách món đang chờ với nút đã bị vô hiệu hóa
+                            let updatedList = await getAPIMonCho();
+                            thaoTacMonCho(updatedList);
+                            
+                            // Cập nhật thông tin món đang chế biến
+                            capNhatDangCheBien(data.obj);
+                        }
+                        else{
+                            showToastDanger('Lỗi khi nhận món. Vui lòng thử lại sau.');
+                        }
+                    }
+                    catch (error) {
+                        console.error('Error receiving dish:', error);
+                        showToastDanger('Lỗi khi nhận món. Vui lòng thử lại sau.');
+                    }
+                } else {
+                    showToastDanger('Món không tồn tại trong danh sách chờ.');
+                }
+            });
+        });
+    }
+    else{
+        let row = document.createElement('tr');
+        row.innerHTML = `
+            <td colspan="6" class="text-center">Không có món nào trong danh sách chờ.</td>
+        `;
+        tableBody.appendChild(row);
+    }
+}
+
 async function getAPIMonCho() { // Hàm này sẽ gọi API để lấy danh sách món đang chờ
     try {
         const response = await fetch('/api/mon-dang-cho');
@@ -66,81 +188,6 @@ async function getAPIMonDangCheBien() { // Hàm này sẽ gọi API để lấy 
         console.error('Error fetching mon dang che bien:', error);
         showToastDanger('Lỗi khi tải danh sách món chế biến. Vui lòng thử lại sau.');
         return null
-    }
-}
-function thaoTacMonCho(list){
-    let tableBody = document.querySelector('#pendingDishesTable');
-    tableBody.innerHTML = ''; // Xóa nội dung hiện tại của tbody
-    if(list.length > 0){
-    
-        list.forEach((item, index) => {
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <img src="${item.MonAn.hinhAnh}" alt="Canh chua cá lóc" class="dish-thumbnail me-2" width="40" height="40">
-                        <div>
-                            <div class="fw-bold">${item.MonAn.ten}</div>
-                            <small class="text-muted">${item.MonAn.GhiChu ? item.MonAn.GhiChu : 'Không có'}</small>
-                        </div>
-                    </div>
-                </td>
-                <td>#${item.idDonHang}</td>
-                <td>${item.soLuong}</td>
-                <td>${formatDateTime(item.thoiGianCapNhat)}</td>
-                <td>
-                    <button class="btn btn-primary btn-sm take-dish-btn" data-id="${item.id}">
-                        <i class="fas fa-utensils me-1"></i> Nhận món
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        document.querySelectorAll('.take-dish-btn').forEach(button => {
-            button.addEventListener('click', async function() {
-                const id = this.dataset.id;
-                
-                const monDangCheBien = list.find(item => item.id == id);
-                if (monDangCheBien) {
-                    try {
-                        const response = await fetch('/api/mon-dang-cho/nhan-mon', {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ id })
-                        });
-                        const data = await response.json();
-                        if(data.status){
-                            showToastSuccess('Nhận món thành công.');
-                            thaoTacMonCho(await getAPIMonCho())
-                            capNhatDangCheBien(data.obj)
-                            // Cập nhật thông tin món ăn đang chế biến món ăn
-                        }
-                        else{
-                            showToastDanger('Lỗi khi nhận món. Vui lòng thử lại sau.');
-                        }
-                    }
-                    catch (error) {
-                        console.error('Error receiving dish:', error);
-                        showToastDanger('Lỗi khi nhận món. Vui lòng thử lại sau.');
-                    }
-
-                } else {
-                    showToastDanger('Món không tồn tại trong danh sách chờ.');
-                }
-            })
-
-        })
-    }
-    else{
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td colspan="6" class="text-center">Không có món nào trong danh sách chờ.</td>
-        `;
-        tableBody.appendChild(row);
     }
 }
 // Biến lưu trữ thông tin về đồng hồ

@@ -7,21 +7,18 @@ const ChiTietDonHang = sequelize.define('ChiTietDonHang', {
     id: {
         field: 'id',
         type: DataTypes.INTEGER,
-        allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
     idDonHang: {
         field: 'id_don_hang',
         type: DataTypes.INTEGER,
-        allowNull: false,
-        unique: true
+        allowNull: false
     },
     idMonAn: {
         field: 'id_mon_an',
         type: DataTypes.INTEGER,
-        allowNull: false,
-        unique: true
+        allowNull: false
     },
     soLuong: {
         field: 'so_luong',
@@ -40,7 +37,7 @@ const ChiTietDonHang = sequelize.define('ChiTietDonHang', {
     },
     trangThai: {
         field: 'trang_thai',
-        type: DataTypes.INTEGER, // 0: Chờ đầu bếp nhận món, 1: Đang chế biến, 2: Đã hoàn thành, 3: Đã mang lên
+        type: DataTypes.INTEGER, // 0: Chờ đầu bếp nhận món, 1: Đang chế biến, 2: Đã hoàn thành
         allowNull: false,
         defaultValue: 0
     },

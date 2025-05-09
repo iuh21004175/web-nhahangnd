@@ -90,7 +90,7 @@ module.exports = {
     ghiDonHang: async (req, res) => {
         const { idDonHang, hinhThuc, thanhToan, trangThai, tongTien, chiTietDonHang } = req.body;
         const idBan = req.query.idBan;
-    
+
         const hinhThucNum = parseInt(hinhThuc);
         const trangThaiNum = parseInt(trangThai);
         const tongTienNum = parseFloat(tongTien);
@@ -102,36 +102,36 @@ module.exports = {
             if (!idBan) {
                 return res.status(400).json({ status: false, error: 'Thiếu ID bàn' });
             }
-    
+
             const token = req.cookies.AuthTokenManager;
             if (!token) {
                 return res.status(401).json({ error: 'Chưa đăng nhập' });
             }
-    
+            // Giải mã token để lấy thông tin tài khoản
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             if (!decoded) {
                 return res.status(401).json({ error: 'Token không hợp lệ' });
             }
-    
+
             const taiKhoan = await TaiKhoan.findOne({ where: { tenDangNhap: decoded.tenDangNhap } });
             if (!taiKhoan) {
                 return res.status(404).json({ status: false, error: 'Tài khoản không tồn tại' });
             }
-    
+
             const idNhanVien = taiKhoan.idNhanVien;
             const thoiGianGhi = moment().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
-    
+
             let donHang;
-    
+
             // CẬP NHẬT ĐƠN HÀNG CŨ
             if (idDonHang) {
                 donHang = await DonHang.findByPk(idDonHang);
                 if (!donHang) {
                     return res.status(404).json({ status: false, error: 'Không tìm thấy đơn hàng để cập nhật' });
                 }
-    
+
                 console.log('Trạng thái ban đầu của đơn hàng:', donHang.trangThai);
-    
+
                 // Cập nhật thông tin đơn hàng nếu trạng thái chuyển từ 7 -> 2
                 if (trangThaiNum === 2 && donHang.trangThai === 7) {
                     await donHang.update({
@@ -147,27 +147,39 @@ module.exports = {
                         tongTien: tongTienNum
                     });
                 }
-    
-                // Xóa chi tiết cũ
-                await ChiTietDonHang.destroy({ where: { idDonHang } });
-    
-                if (!chiTietDonHang || chiTietDonHang.length === 0) {
-                    // Nếu không còn chi tiết món → xóa luôn đơn hàng
-                    await donHang.destroy();
-                    return res.status(400).json({ status: false, error: 'Đơn hàng không còn món ăn nên đã bị xóa' });
+
+                // Thêm hoặc cập nhật chi tiết món ăn
+                if (chiTietDonHang && chiTietDonHang.length > 0) {
+                    for (const item of chiTietDonHang) {
+                        const idMonAn = parseInt(item.idMonAn);
+                        const soLuongThem = parseInt(item.soLuong);
+
+                        // Kiểm tra đã có món này đang ở trạng thái chờ chế biến (0)
+                        const chiTietDangCho = await ChiTietDonHang.findOne({
+                            where: { idDonHang, idMonAn, trangThai: 0 }
+                        });
+
+                        if (chiTietDangCho) {
+                            // Cộng dồn số lượng nếu đã có món đang chờ chế biến
+                            await chiTietDangCho.update({
+                                soLuong: chiTietDangCho.soLuong + soLuongThem,
+                                thoiGianCapNhat: new Date()
+                            });
+                        } else {
+                            // Nếu chưa có, tạo mới
+                            await ChiTietDonHang.create({
+                                idDonHang,
+                                idMonAn,
+                                soLuong: soLuongThem,
+                                gia: item.gia,
+                                ghiChu: item.ghiChu || '',
+                                trangThai: 0,
+                                thoiGianCapNhat: new Date()
+                            });
+                        }
+                    }
                 }
-    
-                // Ghi chi tiết mới
-                for (const item of chiTietDonHang) {
-                    await ChiTietDonHang.create({
-                        idDonHang,
-                        idMonAn: item.idMonAn,
-                        soLuong: item.soLuong,
-                        gia: item.gia,
-                        ghiChu: item.ghiChu || ''
-                    });
-                }
-    
+
             } else {
                 // TẠO ĐƠN HÀNG MỚI
                 donHang = await DonHang.create({
@@ -179,30 +191,38 @@ module.exports = {
                     trangThai: trangThaiNum,
                     tongTien: tongTienNum
                 });
-    
+
                 if (!chiTietDonHang || chiTietDonHang.length === 0) {
                     await donHang.destroy();
                     return res.status(400).json({ status: false, error: 'Đơn hàng không có món ăn nên đã bị xóa' });
                 }
-    
+
                 for (const item of chiTietDonHang) {
+                    const idMonAn = parseInt(item.idMonAn); // Chuyển đổi sang số nguyên
+
+                    if (isNaN(idMonAn)) {
+                        return res.status(400).json({ status: false, error: 'ID món ăn không hợp lệ' });
+                    }
+
                     await ChiTietDonHang.create({
                         idDonHang: donHang.id,
-                        idMonAn: item.idMonAn,
+                        idMonAn,
                         soLuong: item.soLuong,
                         gia: item.gia,
-                        ghiChu: item.ghiChu || ''
+                        ghiChu: item.ghiChu || '',
+                        trangThai: 0  // Trạng thái mặc định là 0 khi thêm món ăn
                     });
                 }
             }
-    
+
             res.json({ status: true, idDonHang: donHang.id, trangThai: donHang.trangThai });
-    
+
         } catch (error) {
             console.error('Lỗi khi ghi đơn hàng:', error);
             res.status(500).json({ status: false, error: 'Lỗi server', chiTiet: error.message });
         }
     },
+
     getSuccessOrders: async (req, res) => {
         const { id } = req.params;  // Lấy 'id' từ URL params
         try {
@@ -449,7 +469,7 @@ module.exports = {
                 include: [
                     {
                         model: ChiTietDonHang,
-                        attributes: ['idDonHang', 'soLuong', 'gia'], 
+                        attributes: ['idDonHang', 'soLuong', 'gia', 'trangThai'], 
                         include: [
                             {
                                 model: MonAn,
