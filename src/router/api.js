@@ -170,4 +170,6 @@ router.get('/mon-dang-cho', CtrlDonHang.layMonDangCho);
 router.put('/mon-dang-cho/nhan-mon', CtrlDonHang.nhanMon);
 router.get('/mon-dang-che-bien', CtrlDonHang.layMonDangCheBien);
 router.put('/mon-dang-che-bien/hoan-thanh', CtrlDonHang.hoanThanhMon);
+router.put('/mon-da-gui', CtrlDonHang.guiMon);
+
 module.exports = router;

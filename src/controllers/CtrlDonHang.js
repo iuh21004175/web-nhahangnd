@@ -154,29 +154,35 @@ module.exports = {
                         const idMonAn = parseInt(item.idMonAn);
                         const soLuongThem = parseInt(item.soLuong);
 
-                        // Kiểm tra đã có món này đang ở trạng thái chờ chế biến (0)
+                        // Kiểm tra món có trong đơn hàng chưa
                         const chiTietDangCho = await ChiTietDonHang.findOne({
-                            where: { idDonHang, idMonAn, trangThai: 0 }
+                            where: {
+                                idDonHang,
+                                idMonAn,
+                                trangThai: 0 // Kiểm tra nếu món này đang ở trạng thái "chờ chế biến"
+                            }
                         });
 
                         if (chiTietDangCho) {
-                            // Cộng dồn số lượng nếu đã có món đang chờ chế biến
+                            // Nếu món đã có trong đơn và đang chờ chế biến
+                            
                             await chiTietDangCho.update({
-                                soLuong: chiTietDangCho.soLuong + soLuongThem,
+                                soLuong: soLuongThem,
                                 thoiGianCapNhat: new Date()
                             });
                         } else {
-                            // Nếu chưa có, tạo mới
+                            // Nếu món chưa có trong đơn, tạo mới
                             await ChiTietDonHang.create({
                                 idDonHang,
                                 idMonAn,
                                 soLuong: soLuongThem,
                                 gia: item.gia,
                                 ghiChu: item.ghiChu || '',
-                                trangThai: 0,
+                                trangThai: 0,  // Trạng thái mặc định là chờ chế biến
                                 thoiGianCapNhat: new Date()
                             });
                         }
+
                     }
                 }
 
@@ -469,7 +475,7 @@ module.exports = {
                 include: [
                     {
                         model: ChiTietDonHang,
-                        attributes: ['idDonHang', 'soLuong', 'gia', 'trangThai'], 
+                        attributes: ['id','idDonHang', 'soLuong', 'gia', 'trangThai'], 
                         include: [
                             {
                                 model: MonAn,
@@ -677,6 +683,26 @@ module.exports = {
             mon.trangThai = 2; // Hoàn thành
             mon.thoiGianCapNhat = moment().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
             await mon.save();
+            return res.json({ status: true, message: 'Cập nhật thành công'});
+        } catch (error) {
+            console.error('Lỗi khi cập nhật món:', error);
+            return res.status(500).json({ status: false, error: 'Lỗi server' });
+        }
+    },
+
+    guiMon: async (req, res) => { // Đã giao món cho khách
+        const { id } = req.body;
+        try {
+            let mon = await ChiTietDonHang.findOne({
+                where: { id }
+            });
+            if (!mon) {
+                return res.status(404).json({ status: false, error: 'Không tìm thấy món ăn' });
+            }
+            mon.trangThai = 3; // Đã giao
+            mon.thoiGianCapNhat = moment().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+            await mon.save();
+            console.log('Response JSON:', { status: true, message: 'Cập nhật thành công' });
             return res.json({ status: true, message: 'Cập nhật thành công'});
         } catch (error) {
             console.error('Lỗi khi cập nhật món:', error);

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     thaoTacThucDon(listMonAn);
     thaoTacBan(ban);
     thaoTacDonHang(donHang);
+    initGuiButtons();
 
     // Bấm nút lưu đơn hàng (saveDraft)
     document.getElementById('saveDraft').addEventListener('click', async function (e) {
@@ -246,7 +247,62 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         }
     });  
+
 });
+
+function initGuiButtons() {
+    const donHangContainer = document.querySelector('.order-items');
+
+    // Delegate the event to the container
+    donHangContainer.addEventListener('click', async (event) => {
+        if (event.target.classList.contains('btn-da-gui')) {
+            const btn = event.target;
+            const chiTietId = btn.dataset.idchitiet;
+
+            if (!chiTietId) {
+                alert('Không tìm thấy ID chi tiết đơn hàng.');
+                return;
+            }
+
+            const idBan = new URLSearchParams(window.location.search).get('idBan');
+            if (!idBan) {
+                alert('Không tìm thấy ID bàn trên URL.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang gửi...';
+
+            try {
+                const response = await fetch('/api/mon-da-gui', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: chiTietId })
+                });
+
+                const data = await response.json();
+
+                if (data.status) {
+                    const res = await fetch(`/api/don-hang-theo-ban?idBan=${idBan}`);
+                    const newDonHang = await res.json();
+
+                    // Cập nhật giao diện sau khi gửi món thành công
+                    thaoTacDonHang(newDonHang); // Đảm bảo thaoTacDonHang cập nhật danh sách đơn hàng
+                } else {
+                    alert('Không thể cập nhật trạng thái: ' + (data.error || 'Lỗi không xác định'));
+                }
+            } catch (err) {
+                console.error('Lỗi gửi món:', err);
+                alert('Lỗi gửi món: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Gửi';
+            }
+        }
+    });
+}
 
 
 function thaoTacLoaiMon(list) {
@@ -546,7 +602,7 @@ async function getAPIDonHang(idBan) {
 
 function thaoTacDonHang(donHang) {
     const donHangContainer = document.querySelector('.order-items');
-    donHangContainer.innerHTML = ''; // Clear trước
+    donHangContainer.innerHTML = '';
 
     if (!donHang || !donHang.ChiTietDonHangs || donHang.ChiTietDonHangs.length === 0) {
         console.log('Không có đơn hàng đã lưu.');
@@ -560,90 +616,74 @@ function thaoTacDonHang(donHang) {
         3: 'Đã gửi'
     };
 
-    const orderMap = {}; // Để lưu trữ các món ăn theo key (id và trạng thái)
-
     donHang.ChiTietDonHangs.forEach((ct) => {
         const mon = ct.MonAn;
-        const key = `${mon.id}-${ct.trangThai}`; // Phân biệt cùng món khác trạng thái
+        const key = `${mon?.id || 'unknown'}-${ct.trangThai}-${ct.id}`;
 
-        // Kiểm tra xem món ăn đã tồn tại trong orderMap chưa
-        if (orderMap[key]) {
-            // Nếu đã tồn tại, cộng dồn số lượng
-            orderMap[key].soLuong += ct.soLuong;
-        } else {
-            // Nếu chưa tồn tại, thêm mới vào orderMap
-            orderMap[key] = { mon, trangThai: ct.trangThai, soLuong: ct.soLuong };
-        }
-    });
-
-    // Render các món ăn từ orderMap
-    Object.values(orderMap).forEach((item) => {
         const orderItem = document.createElement('div');
         orderItem.className = 'order-item d-flex justify-content-between mb-2';
-        const key = `${item.mon.id}-${item.trangThai}`; // Dùng key duy nhất để phân biệt
-
         orderItem.dataset.id = key;
 
         orderItem.innerHTML = `
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center">
-                    <img src="${item.mon.hinhAnh || '/default.jpg'}" alt="${item.mon.ten}" style="height: 50px; width: 50px; object-fit: cover; margin-right: 15px;">
+                    <img src="${mon?.hinhAnh || '/default.jpg'}" alt="${mon?.ten || 'Món ăn'}" style="height: 50px; width: 50px; object-fit: cover; margin-right: 15px;">
                 </div>
                 <div class="d-flex flex-column">
-                    <span class="fw-bold">${item.mon.ten}</span>
-                    <span class="price text-primary">${item.mon.gia.toLocaleString('vi-VN')}₫</span>
+                    <span class="fw-bold">${mon?.ten || 'Không rõ món'}</span>
+                    <span class="price text-primary">${(mon?.gia || 0).toLocaleString('vi-VN')}₫</span>
                     <span class="badge bg-info mt-1" style="display: inline-block; width: fit-content; white-space: nowrap;">
-                        ${trangThaiChiTiet[item.trangThai] || 'Không rõ trạng thái'}
+                        ${trangThaiChiTiet[ct.trangThai] || 'Không rõ trạng thái'}
                     </span>
                 </div>
             </div>
 
             <div class="d-flex align-items-center mb-2">
                 <div class="input-group input-group-sm" style="max-width: 130px;">
-                    <button class="btn btn-outline-secondary btn-giam" type="button" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">-</button>
-                    <input type="number" class="form-control text-center so-luong" value="${item.soLuong}" min="1" style="width: 50px;" ${item.trangThai === 1 || item.trangThai === 2 ? 'readonly' : ''}>
-                    <button class="btn btn-outline-secondary btn-tang" type="button" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">+</button>
+                    <button class="btn btn-outline-secondary btn-giam" type="button" style="${[1,2,3].includes(ct.trangThai) ? 'display: none;' : ''}">-</button>
+                    <input type="number" class="form-control text-center so-luong" value="${ct.soLuong}" min="1" style="width: 50px;" ${[1,2,3].includes(ct.trangThai) ? 'readonly' : ''}>
+                    <button class="btn btn-outline-secondary btn-tang" type="button" style="${[1,2,3].includes(ct.trangThai) ? 'display: none;' : ''}">+</button>
                 </div>
-                <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${key}" style="${item.trangThai === 1 || item.trangThai === 2 ? 'display: none;' : ''}">Xóa</button>
-                ${item.trangThai === 2 ? `<button class="btn btn-sm btn-success ms-2 btn-da-gui" data-id="${key}">Gửi</button>` : ''}
+                <button class="btn btn-sm btn-danger ms-2 btn-xoa" data-id="${key}" style="${[1,2,3].includes(ct.trangThai) ? 'display: none;' : ''}">Xóa</button>
+                ${ct.trangThai === 2 ? `<button class="btn btn-sm btn-success ms-2 btn-da-gui" data-idchitiet="${ct.id}" >Gửi</button>` : ''}
             </div>
         `;
 
         donHangContainer.appendChild(orderItem);
 
-        // Gán sự kiện cho nút tăng, giảm, xóa, đã gửi món
+        // Event listeners
         const btnTang = orderItem.querySelector('.btn-tang');
         const btnGiam = orderItem.querySelector('.btn-giam');
         const btnXoa = orderItem.querySelector('.btn-xoa');
-        const btnDaGui = orderItem.querySelector('.btn-da-gui');
+        
         const inputSoLuong = orderItem.querySelector('.so-luong');
 
-        btnTang.addEventListener('click', () => {
-            inputSoLuong.value = parseInt(inputSoLuong.value) + 1;
-            updateTotal();
-        });
-
-        btnGiam.addEventListener('click', () => {
-            if (parseInt(inputSoLuong.value) > 1) {
-                inputSoLuong.value = parseInt(inputSoLuong.value) - 1;
+        if (btnTang) {
+            btnTang.addEventListener('click', () => {
+                inputSoLuong.value = parseInt(inputSoLuong.value) + 1;
                 updateTotal();
-            }
-        });
-
-        btnXoa.addEventListener('click', () => {
-            orderItem.remove();
-            updateTotal();
-        });
-
-        if (btnDaGui) {
-            btnDaGui.addEventListener('click', () => {
-                // Xử lý logic khi đã gửi món
-                console.log('Món đã được gửi!');
-                btnDaGui.disabled = true; // Vô hiệu hóa nút sau khi đã nhấn
             });
         }
+
+        if (btnGiam) {
+            btnGiam.addEventListener('click', () => {
+                if (parseInt(inputSoLuong.value) > 1) {
+                    inputSoLuong.value = parseInt(inputSoLuong.value) - 1;
+                    updateTotal();
+                }
+            });
+        }
+
+        if (btnXoa) {
+            btnXoa.addEventListener('click', () => {
+                orderItem.remove();
+                updateTotal();
+            });
+        }
+
     });
 
     updateTotal();
+
 }
 
