@@ -10,10 +10,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         donHang = await getAPILayGiaDonHang(orderId); // 👈 Gán vào biến toàn cục
         if (donHang) {
             const tongTien = donHang.tongTien;
+            const phiVanChuyen = donHang.phiVanChuyen
             const orderDescription = `DH${orderId}`;
             const qrImg = document.getElementById('qrImage');
             if (qrImg) {
-                const newQRUrl = `https://qr.sepay.vn/img?bank=TPBank&acc=10001198354&template=compact&amount=${tongTien}&des=${orderDescription}`;
+                const newQRUrl = `https://qr.sepay.vn/img?bank=TPBank&acc=10001198354&template=compact&amount=${parseInt(phiVanChuyen) + parseInt(tongTien)}&des=${orderDescription}`;
                 qrImg.src = newQRUrl;
             }
 

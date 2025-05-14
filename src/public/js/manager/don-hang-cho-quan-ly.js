@@ -4,7 +4,15 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Tải danh sách đơn hàng
     loadOrders();
-    
+    const socket = io();
+    socket.on('connect', function() {
+        console.log('Kết nối thành công với server socket:', socket.id);
+        socket.on('tao-don-hang', function(data) {
+            const { donHang } = data;
+            themDonHang(donHang);
+        });
+    });
+
     // Thêm sự kiện cho nút tìm kiếm
     document.getElementById('btnSearch')?.addEventListener('click', function() {
         loadOrders();
@@ -29,7 +37,67 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
-
+function themDonHang(donHang) {
+    const tableBody = document.getElementById('orderTableBody');
+    const row = document.createElement('tr');
+    console.log("Thêm đơn hàng vào bảng", donHang);
+    // Hiển thị loại đơn hàng
+    let orderTypeText = '';
+    switch (parseInt(donHang.hinhThuc)) {
+        case 0: orderTypeText = '<span class="badge bg-info">Tại quán</span>'; break;
+        case 1: orderTypeText = '<span class="badge bg-primary">Trực tuyến</span>'; break;
+        default: orderTypeText = '<span class="badge bg-light text-dark">Không xác định</span>';
+    }
+        
+    // Hiển thị trạng thái đơn hàng
+    let statusBadge = '';
+    switch (parseInt(donHang.trangThai)) {
+        case 0: statusBadge = '<span class="badge bg-warning">Đã hủy</span>'; break;
+        case 1: statusBadge = '<span class="badge bg-primary">Đặt thành công</span>'; break;
+        case 2: statusBadge = '<span class="badge bg-info">Đã thanh toán</span>'; break;
+        case 3: statusBadge = '<span class="badge bg-success">Đang chế biến</span>'; break;
+        case 4: statusBadge = '<span class="badge bg-success">Đã chế biến</span>'; break;
+        case 5: statusBadge = '<span class="badge bg-danger">Đang giao hàng</span>'; break;
+        case 6: statusBadge = '<span class="badge bg-secondary">Đã giao hàng</span>'; break;
+        case 7: statusBadge = '<span class="badge bg-warning">Chờ thanh toán</span>'; break;
+        default: statusBadge = '<span class="badge bg-secondary">Không xác định</span>';
+    }
+        
+    // Hiển thị phương thức thanh toán
+    let paymentMethod = '';
+    switch (parseInt(donHang.thanhToan)) {
+        case 0: paymentMethod = 'Tiền mặt'; break;
+        case 1: paymentMethod = 'Chuyển khoản'; break;
+        default: paymentMethod = 'Không xác định';
+    }
+        
+    // Format ngày đặt hàng
+    const orderDate = new Date(donHang.thoiGianGhi);
+    const formattedDate = `${orderDate.getDate()}/${orderDate.getMonth() + 1}/${orderDate.getFullYear()} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
+        
+    // Lấy thông tin khách hàng
+    const customerName = donHang.KhachHang ? donHang.KhachHang.ten || 'Khách vãng lai' : 'Khách vãng lai';
+    const customerPhone = donHang.KhachHang ? donHang.soDienThoaiNhan || '' : '';
+        
+    row.innerHTML = `
+        <td>#${donHang.id}</td>
+        <td>${customerName} ${customerPhone ? `<br><small class="text-muted">${customerPhone}</small>` : ''}</td>
+        <td>${formattedDate}</td>
+        <td>${orderTypeText}</td>
+        <td>${donHang.tongTien?.toLocaleString('vi-VN')}đ</td>
+        <td>${statusBadge}</td>
+        <td>${paymentMethod}</td>
+        <td>
+            <div class="btn-group" role="group">
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetailModal" onclick="viewOrderDetails(${donHang.id})">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </td>
+    `;
+        
+    tableBody.insertBefore(row, tableBody.firstChild);
+}
 /**
  * Khởi tạo giá trị mặc định cho bộ lọc ngày
  * - Từ ngày: 7 ngày trước
@@ -222,7 +290,7 @@ function renderOrdersTable(orders) {
         
         // Lấy thông tin khách hàng
         const customerName = order.KhachHang ? order.KhachHang.ten || 'Khách vãng lai' : 'Khách vãng lai';
-        const customerPhone = order.KhachHang ? order.KhachHang.soDienThoai || '' : '';
+        const customerPhone = order.KhachHang ? order.soDienThoaiNhan || '' : '';
         
         row.innerHTML = `
             <td>#${order.id}</td>
@@ -323,7 +391,7 @@ function renderOrderDetail(order) {
     // Hiển thị thông tin khách hàng
     if (order.KhachHang) {
         document.getElementById('customerName').textContent = order.KhachHang.ten || 'Không có thông tin';
-        document.getElementById('customerPhone').textContent = order.KhachHang.soDienThoai || 'Không có thông tin';
+        document.getElementById('customerPhone').textContent = order.soDienThoaiNhan || 'Không có thông tin';
     } else {
         document.getElementById('customerName').textContent = 'Khách vãng lai';
         document.getElementById('customerPhone').textContent = 'Không có thông tin';
@@ -349,7 +417,7 @@ function renderOrderDetail(order) {
         default: paymentMethod = 'Không xác định';
     }
     document.getElementById('paymentMethod').textContent = paymentMethod;
-    document.getElementById('addressOrder').textContent = order.diaChi || 'Không có thông tin';
+    document.getElementById('addressOrder').textContent = JSON.parse(order.diaChi) ? JSON.parse(order.diaChi).address : 'Không có thông tin';
     
     // Hiển thị chi tiết các món
     const orderItemsTable = document.getElementById('orderItemsTable');
@@ -387,6 +455,23 @@ function renderOrderDetail(order) {
     document.getElementById('orderSubtotal').textContent = subtotal.toLocaleString('vi-VN') + 'đ';
     document.getElementById('deliveryFee').textContent = deliveryFee.toLocaleString('vi-VN') + 'đ';
     document.getElementById('orderTotal').textContent = total.toLocaleString('vi-VN') + 'đ';
+
+    // Hiển thị lịch sử đơn hàng
+    document.getElementById('historyOrderId').textContent = order.id;
+    const orderHistoryTable = document.getElementById('orderHistoryTableBody');
+    orderHistoryTable.innerHTML = '';
+    if(order.LichSu){
+        order.LichSu.LichSuChiTiets.forEach((history) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${new Date(history.thoiGian).toLocaleString('vi-VN')}</td>
+                <td>${history.NhanVien.ten} (ID: ${history.NhanVien.id})</td>
+                <td>${history.thaoTac}</td>
+            `;
+            orderHistoryTable.appendChild(row);
+        });
+    }
+    
 }
 
 function showToastDanger(content = null) {//showErrorToast()

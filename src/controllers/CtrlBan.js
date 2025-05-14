@@ -131,11 +131,13 @@ module.exports = {
             if (!ban) {
                 return res.status(404).json({ status: false, error: 'Bàn không tồn tại' });
             }
-    
             // Cập nhật trạng thái bàn
             ban.trangThai = newStatus;
+            req.redis.publish('cap-nhat-trang-thai-ban', JSON.stringify({ 
+                id: idBan,
+                trangThai: newStatus
+            }));
             await ban.save();
-    
             return res.json({ status: true, message: 'Trạng thái bàn đã được cập nhật' });
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái bàn:', error);

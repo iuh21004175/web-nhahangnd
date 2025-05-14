@@ -1,7 +1,11 @@
 <%- include('../layouts/manager.html', {
     title: 'Quản lý đơn hàng - Bếp',
     styles: '<link rel="stylesheet" href="/css/manager/don-hang-cho-dau-bep.css">',
-    scripts: '<script src="/js/manager/don-hang-cho-dau-bep.js"></script>',
+    scripts: `
+        <!--Socket.io-->
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script src="/js/manager/don-hang-cho-dau-bep.js"></script>
+    `,
     body: `
     <div class="order-management-container">
         <!-- Món đang làm -->

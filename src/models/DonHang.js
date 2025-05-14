@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 const KhachHang = require('./KhachHang');
 const NhanVien = require('./NhanVien');
 const Ban = require('./Ban');
+const LichSu = require('./LichSu');
 
 const DonHang = sequelize.define('DonHang', {
     id: {
@@ -17,8 +18,13 @@ const DonHang = sequelize.define('DonHang', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
-    idNhanVien: {
-        field: 'id_nhan_vien',
+    soDienThoaiNhan: {
+        field: 'so_dien_thoai_nhan',
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    idLichSu: {
+        field: 'id_lich_su',
         type: DataTypes.INTEGER,
         allowNull: true
     },
@@ -52,6 +58,11 @@ const DonHang = sequelize.define('DonHang', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    phiVanChuyen: {
+        field: 'phi_van_chuyen',
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     thanhToan: {
         field: 'thanh_toan',
         type: DataTypes.INTEGER,
@@ -63,10 +74,12 @@ const DonHang = sequelize.define('DonHang', {
 });
 
 DonHang.belongsTo(KhachHang, { foreignKey: 'idKhachHang' });
-DonHang.belongsTo(NhanVien, { foreignKey: 'idNhanVien' });
+
 DonHang.belongsTo(Ban, { foreignKey: 'idBan' });
+DonHang.belongsTo(LichSu, { foreignKey: 'idLichSu' });
+
 KhachHang.hasMany(DonHang, { foreignKey: 'idKhachHang' });
-NhanVien.hasMany(DonHang, { foreignKey: 'idNhanVien' });
 Ban.hasMany(DonHang, { foreignKey: 'idBan' });
+LichSu.hasMany(DonHang, { foreignKey: 'idLichSu' });
 
 module.exports = DonHang;

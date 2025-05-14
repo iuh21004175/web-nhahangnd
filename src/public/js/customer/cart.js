@@ -64,17 +64,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             const htmlCartSummary = `
                 <div class="cart-summary mt-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Tạm tính:</span>
-                        <span id="tamTinh">${parseInt(tamTinh).toLocaleString('vi-VN')} ₫</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Phí giao hàng:</span>
-                        <span id="phi"> ${parseInt(30000).toLocaleString('vi-VN')} ₫</span>
-                    </div>
+                    
                     <div class="d-flex justify-content-between mb-2 fw-bold">
                         <span>Tổng cộng:</span>
-                        <span id="tongCong">${parseInt(tamTinh + 30000).toLocaleString('vi-VN')} ₫</span>
+                        <span id="tongCong">${parseInt(tamTinh).toLocaleString('vi-VN')} ₫</span>
                     </div>
                 </div>`;
 

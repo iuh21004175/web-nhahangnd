@@ -108,5 +108,34 @@ module.exports = {
         });
         res.clearCookie('AuthTokenManager');
         res.redirect('/manager/login');
+    },
+    doiMatKhau: async (req, res) => {
+        try {
+            const { matKhauCu, matKhauMoi } = req.body;
+            const token = req.cookies.AuthTokenManager;
+            if (!token) {
+                return res.status(401).json({ status: false, message: 'Bạn chưa đăng nhập' });
+            }
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const taiKhoan = await TaiKhoan.findOne({
+                where: {
+                    tenDangNhap: decoded.tenDangNhap,
+                    matKhau: crypto.createHash('md5').update(matKhauCu).digest('hex')
+                }
+            });
+            if (!taiKhoan) {
+                return res.status(401).json({ status: false, message: 'Mật khẩu cũ không đúng' });
+            }
+            // Cập nhật mật khẩu mới
+            await taiKhoan.update({
+                matKhau: crypto.createHash('md5').update(matKhauMoi).digest('hex')
+            });
+            // Xoá bỏ token cũ
+            res.clearCookie('AuthTokenManager');
+            return res.json({ status: true, message: 'Đổi mật khẩu thành công' });
+        } catch (error) {
+            console.error('Lỗi khi đổi mật khẩu:', error);
+            return res.status(500).json({ status: false, message: 'Đã xảy ra lỗi khi đổi mật khẩu' });
+        }
     }
 }

@@ -3,7 +3,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     let listBan = await getAPIBan();
     renderKhuVuc(listKhuVuc)
     thaoTacVoiBan(listBan)
-
+    const socket = io();
+    socket.on('connect', function() {
+        console.log('Kết nối thành công với server:', socket.id);
+        socket.on('cap-nhat-trang-thai-ban', function(data) {
+            console.log('Nhận dữ liệu cập nhật trạng thái bàn:', data);
+            const { id, trangThai } = data;
+            const tableCard = document.querySelector(`.table-card[data-id-ban="${id}"]`);
+            if (tableCard) {
+                const statusElement = tableCard.querySelector('.table-status');
+                const badgeElement = tableCard.querySelector('.badge');
+                if (statusElement) {
+                    statusElement.className = `table-status ${trangThai == 0 ? 'empty' : trangThai == 1 ? 'occupied' : 'maintenance'}`;
+                }
+                if (badgeElement) {
+                    badgeElement.className = `badge ${trangThai == 0 ? 'bg-success' : trangThai == 1 ? 'bg-danger' : 'bg-warning'}`;
+                    badgeElement.textContent = trangThai == 0 ? 'Trống' : trangThai == 1 ? 'Đang sử dụng' : 'Bảo trì';
+                }
+            }
+        });
+    });
     const khuVucList = document.querySelector('.list-group');
     
     // Phải attach event listener sau khi render khu vực

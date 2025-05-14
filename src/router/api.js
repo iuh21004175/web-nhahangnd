@@ -47,34 +47,7 @@ const uploadDisk = multer({ storage: storageDisk });
 
 router.use(express.json({limit: '50mb'}));
 
-// API DICH VU GIAO HANG TIET KIEM
-router.get("/suggestions", async (req, res) => {
-    const { province, district, ward_street, address } = req.query;
-  
-    const query = new URLSearchParams({
-      province,
-      district,
-      ward_street,
-      address: address || "",
-    });
-  
-    try {
-      const response = await fetch(
-        `https://services.giaohangtietkiem.vn/services/address/getAddressLevel4?${query}`,
-        {
-          headers: {
-            Token: "1P8rh4LffiWppUJXd9Fn0o1EtSSWmOI98a6cZVA"
-          },
-        }
-      );
-  
-      const data = await response.json();
-      res.json(data);
-    } catch (err) {
-      console.error("Error fetching address suggestions:", err);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-});
+
 router.post('/sepay/webhook', sepayController.handleWebhook);
 router.post('/dang-nhap', CtrlTaiKhoan.dangNhap);
 router.post('/nhan-vien', uploadMemory.single('hinhAnh'), CtrlNhanVien.themNhanVien);
@@ -171,5 +144,6 @@ router.put('/mon-dang-cho/nhan-mon', CtrlDonHang.nhanMon);
 router.get('/mon-dang-che-bien', CtrlDonHang.layMonDangCheBien);
 router.put('/mon-dang-che-bien/hoan-thanh', CtrlDonHang.hoanThanhMon);
 router.put('/mon-da-gui', CtrlDonHang.guiMon);
-
+router.post('/lay-phi-van-chuyen', CtrlDonHang.layPhiVanChuyen);
+router.post('/doi-mat-khau', CtrlTaiKhoan.doiMatKhau)
 module.exports = router;

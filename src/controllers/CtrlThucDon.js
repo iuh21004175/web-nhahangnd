@@ -269,11 +269,9 @@ module.exports = {
           // Tạo URL dẫn tới trang chi tiết món ăn
           const baseUrl = 'https://nhahangcnmiuh.io.vn/'; //Đổi thành domain thật 
           const qrContent = `${baseUrl}/chi-tiet-mon-an?idMon=${monAnId}`;
-          console.log('Nội dung QR:', qrContent);
     
           // Tạo mã QR từ URL
           const qrCodeBase64 = await QRCode.toDataURL(qrContent);
-          console.log('QR Code Base64:', qrCodeBase64);
     
           res.json({ qrCode: qrCodeBase64 });
         } catch (error) {

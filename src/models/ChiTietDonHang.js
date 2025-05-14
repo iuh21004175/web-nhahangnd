@@ -47,6 +47,12 @@ const ChiTietDonHang = sequelize.define('ChiTietDonHang', {
         allowNull: false,
         defaultValue: DataTypes.NOW
     },
+    thoiGianTao: {
+        field: 'thoi_gian_tao',
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+    },
     idNhanVien: {
         field: 'id_nhan_vien',
         type: DataTypes.INTEGER,
