@@ -46,6 +46,8 @@ const chatService = (socket,redis) => {
                     noiDung: autoReply,
                     thoiGianGui: new Date()
                 });
+                 // Gửi tin nhắn đến Redis
+                redis.publish("tin-nhan-khach-hang", JSON.stringify(data));
                 // Gửi tin nhắn tự động về cho khách hàng
                 redis.publish("tin-nhan-nha-hang", JSON.stringify({
                     idKhachHang,
@@ -54,10 +56,13 @@ const chatService = (socket,redis) => {
                     socketId: null
                 }));
             }
+            else{
+                // Gửi tin nhắn đến Redis
+                redis.publish("tin-nhan-khach-hang", JSON.stringify(data));
+            }
+            redis.publish('dang-cap-nhat-du-lieu-chat', 'ok');
         }
-         // Gửi tin nhắn đến Redis
-         redis.publish("tin-nhan-khach-hang", JSON.stringify(data));
-         redis.publish('dang-cap-nhat-du-lieu-chat', 'ok');
+         
     });
     socket.on("nha-hang-gui-tin-nhan", async(data) => {
         const { idKhachHang, noiDung, thoiGianGui } = data;

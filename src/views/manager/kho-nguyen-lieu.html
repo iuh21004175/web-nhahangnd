@@ -45,27 +45,29 @@
                     <div class="inventory-container">
                         <!-- Bảng danh sách kho -->
                         <div class="card">
-                            <div class="card-body">
-                                <!-- Header với tiêu đề và tìm kiếm -->
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="d-flex gap-2">
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                id="searchInput" 
-                                                placeholder="Tìm kiếm theo tên, mã phiếu..."
-                                                style="width: 250px;">
-                                            <select class="form-select" style="width: 200px;" id="categoryFilter">
-                                                <option value="all">Tất cả danh mục</option>
-                                                <option value="1">Gia vị</option>
-                                                <option value="2">Thịt</option>
-                                                <option value="3">Rau củ</option>
-                                                <option value="4">Hải sản</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-warehouse me-2"></i>Kho nguyên liệu
+                                    </h5>
                                 </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Đổi ID từ searchInput thành warehouseSearchInput -->
+                                    <div class="input-group">
+                                        <input type="text" id="warehouseSearchInput" class="form-control" placeholder="Tìm kiếm nguyên liệu...">
+                                        <button class="btn btn-light" type="button">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Đổi ID từ categoryFilter thành warehouseCategoryFilter -->
+                                    <select id="warehouseCategoryFilter" class="form-select" style="max-width: 200px;">
+                                        <option value="all">Tất cả danh mục</option>
+                                        <!-- Options sẽ được thêm bằng JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Bảng danh sách kho giữ nguyên -->
                                 <div class="table-responsive">
                                     <table class="table table-hover table-danhSach">
                                         <thead>
@@ -198,7 +200,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                                            <!-- Dữ liệu sẽ được thêm vào bằng JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -311,17 +313,17 @@
                         <div class="mb-4">
                             <div class="card">
                                 <div class="card-body">
-                                    <form id="searchForm" class="row g-3">
+                                    <form id="searchExportForm" class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label fw-bold">Thời gian xuất</label>
                                             <div class="d-flex gap-2">
                                                 <div class="flex-grow-1">
                                                     <label class="form-label small">Từ ngày</label>
-                                                    <input type="date" class="form-control" id="startDate">
+                                                    <input type="date" class="form-control" id="exportStartDate">
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <label class="form-label small">Đến ngày</label>
-                                                    <input type="date" class="form-control" id="endDate">
+                                                    <input type="date" class="form-control" id="exportEndDate">
                                                 </div>
                                             </div>
                                         </div>
@@ -331,20 +333,20 @@
                                             <div class="d-flex gap-2">
                                                 <div class="flex-grow-1">
                                                     <label class="form-label small">Từ</label>
-                                                    <input type="number" class="form-control" id="minAmount" placeholder="Giá thấp nhất">
+                                                    <input type="number" class="form-control" id="exportMinAmount" placeholder="Giá thấp nhất">
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <label class="form-label small">Đến</label>
-                                                    <input type="number" class="form-control" id="maxAmount" placeholder="Giá cao nhất">
+                                                    <input type="number" class="form-control" id="exportMaxAmount" placeholder="Giá cao nhất">
                                                 </div>
                                             </div>
                                         </div>
-                
+
                                         <div class="col-12 d-flex justify-content-start gap-2">
-                                            <button type="submit" class="btn btn-primary btn-timKiem">
+                                            <button type="submit" class="btn btn-primary btn-timKiemXuat">
                                                 <i class="fas fa-search me-2"></i>Tìm kiếm
                                             </button>
-                                            <button type="reset" class="btn btn-secondary btn-datLai">
+                                            <button type="reset" class="btn btn-secondary btn-datLaiXuat">
                                                 <i class="fas fa-undo me-2"></i>Đặt lại
                                             </button>
                                         </div>
@@ -1031,13 +1033,13 @@
                             <div class="card mb-3">
                                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">Danh sách nguyên liệu</h6>
-                                    <button type="button" class="btn btn-sm btn-secondary" id="addIngredientRow">
+                                    <button type="button" class="btn btn-sm btn-secondary" id="addExportIngredientRow">
                                         <i class="fas fa-plus me-2"></i>Thêm nguyên liệu
                                     </button>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive" style="max-height: 250px;">
-                                        <table class="table table-bordered mb-0" id="ingredientTable">
+                                        <table class="table table-bordered mb-0" id="exportIngredientTable">
                                             <thead class="table-light">
                                                 <tr>
                                                     <th class="text-center" style="width: 50px">STT</th>
@@ -1051,20 +1053,19 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr class="ingredient-row">
+                                                <tr class="export-ingredient-row">
                                                     <td class="text-center">1</td>
                                                     <td>
-                                                        <!-- Thay thế phần dropdown hiện tại trong phiếu xuất kho bằng đoạn code này -->
                                                         <div class="custom-dropdown-container">
                                                             <div class="dropdown-wrapper">
-                                                                <input type="text" class="form-control inventory-search" placeholder="Nhập nguyên liệu" autocomplete="off">
-                                                                <input type="hidden" class="inventory-id" name="inventoryId[]" required>
-                                                                <input type="hidden" class="id-phieuNhap" name="idPhieuNhap[]" required>
+                                                                <input type="text" class="form-control export-inventory-search" placeholder="Nhập nguyên liệu" autocomplete="off">
+                                                                <input type="hidden" class="export-inventory-id" name="exportInventoryId[]" required>
+                                                                <input type="hidden" class="export-id-phieuNhap" name="exportIdPhieuNhap[]" required>
                                                                 <div class="dropdown-arrow">
                                                                     <i class="fas fa-chevron-down"></i>
                                                                 </div>
                                                             </div>
-                                                            <div class="dropdown-menu inventory-dropdown">
+                                                            <div class="dropdown-menu export-inventory-dropdown">
                                                                 <div class="dropdown-search-results">
                                                                     <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
                                                                     <div class="dropdown-no-results">Nhập để tìm kiếm nguyên liệu...</div>
@@ -1072,19 +1073,19 @@
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td class="unit-cell"><input type="text" class="form-control unit-input" style="width: 100px;" readonly></td>
+                                                    <td class="export-unit-cell"><input type="text" class="form-control export-unit-input" style="width: 100px;" readonly></td>
                                                     <td>
-                                                        <input type="number" class="form-control quantity-input" min="0" step="1" name="quantity[]" required>
+                                                        <input type="number" class="form-control export-quantity-input" min="0" step="1" name="exportQuantity[]" required>
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control price-input" name="price[]" readonly>
+                                                        <input type="text" class="form-control export-price-input" name="exportPrice[]" readonly>
                                                     </td>
-                                                    <td class="amount-cell">0đ</td>
+                                                    <td class="export-amount-cell">0đ</td>
                                                     <td>
-                                                        <textarea class="form-control note-input" name="" id="" rows="2"></textarea>
+                                                        <textarea class="form-control export-note-input" name="exportNote[]" rows="2"></textarea>
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-sm btn-danger remove-row">
+                                                        <button type="button" class="btn btn-sm btn-danger export-remove-row">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </td>
@@ -1112,17 +1113,15 @@
                                                 <label class="form-label">
                                                     <i class="fas fa-user me-1"></i>Người nhận
                                                 </label>
-                                                <div class="input-group receiver-container">
+                                                <div class="input-group export-receiver-container">
                                                     <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                                                    <input type="text" class="form-control" id="receiverName" name="receiverName" 
+                                                    <input type="text" class="form-control" id="exportReceiverName" name="exportReceiverName" 
                                                            placeholder="Nhập tên người nhận" autocomplete="off">
-                                                    <input type="hidden" id="receiverId" name="receiverId">
-                                                    <!-- Tùy chọn: thêm dropdown-arrow nếu muốn -->
+                                                    <input type="hidden" id="exportReceiverId" name="exportReceiverId">
                                                     <span class="input-group-text dropdown-arrow">
                                                         <i class="fas fa-chevron-down"></i>
                                                     </span>
                                                 </div>
-                                                <!-- Dropdown sẽ được thêm vào đây bằng JavaScript -->
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -1130,15 +1129,12 @@
                                                 <label class="form-label">
                                                     <i class="fas fa-tags me-1"></i> Lý do xuất kho
                                                 </label>
-                                                <input type="text" class="form-control" id="exportReason" name="exportReason" placeholder="Nhập lý do">
+                                                <input type="text" class="form-control" id="exportReasonInput" name="exportReasonInput" placeholder="Nhập lý do">
                                             </div>
                                         </div>
                                     </div>
-                                   
                                 </div>
                             </div>
-
-                            
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

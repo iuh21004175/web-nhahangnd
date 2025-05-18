@@ -20,148 +20,149 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('warehouse-tab').click(); // Mặc định mở tab kho nguyên liệu
 })
 async function xuLyKho() {
+    // Lấy danh sách kho nguyên liệu và danh mục
     let listKho = await getAPIKhoNguyenLieu();
+    let listDanhMucNguyenLieu = await getAPIDanhMucNguyenLieu();
+    
+    // Hiển thị dữ liệu kho
     if (listKho.length > 0) {
         thaoTacVoiBang(listKho);
-    }
-    else {
-        const tableBody = document.querySelector('.table-danhSach tbody');
-        tableBody.innerHTML = ''; // Xóa nội dung hiện tại của bảng
+    } else {
+        const tableBody = document.querySelector('#warehouse .table-danhSach tbody');
+        tableBody.innerHTML = ''; 
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="7" class="text-center">Không tìm thấy nguyên liệu trong kho</td>`;
+        row.innerHTML = `<td colspan="8" class="text-center">Không tìm thấy nguyên liệu trong kho</td>`;
         tableBody.appendChild(row);
     }
 
-    // Xử lý tìm kiếm
-    const searchInput = document.getElementById('searchInput');
+    // Thiết lập tìm kiếm - sử dụng ID riêng để tránh xung đột
+    const searchInput = document.getElementById('warehouseSearchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
-            const searchText = removeAccents(this.value.toLowerCase().trim());
-            const rows = document.querySelectorAll('tbody tr:not(.table-light)');
+            const keyword = this.value.trim().toLowerCase();
+            const selectedCategory = document.getElementById('warehouseCategoryFilter').value;
             
-            rows.forEach(row => {
-                // Bỏ qua các dòng hết hàng
-                if (row.querySelector('.badge.bg-danger')) {
-                    row.style.display = 'none';
-                    return;
-                }
-
-                //const code = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                const name = removeAccents(row.querySelector('td:nth-child(2)').textContent.toLowerCase());
-                if (name.includes(searchText)) {
-                    row.style.display = '';
-                    showCategoryHeader(row);
-                } else {
-                    row.style.display = 'none';
-                }
+            // Lọc danh sách nguyên liệu dựa trên từ khóa tìm kiếm và danh mục đã chọn
+            const filteredList = listKho.filter(item => {
+                const matchKeyword = removeAccents(item.NguyenLieu.ten.toLowerCase()).includes(removeAccents(keyword));
+                const matchCategory = selectedCategory === 'all' || item.NguyenLieu.idDanhMuc === selectedCategory;
+                return matchKeyword && matchCategory;
             });
-
-            updateCategoryHeaders();
+            
+            thaoTacVoiBang(filteredList);
         });
     }
 
-    // Xử lý filter danh mục
-    const categoryFilter = document.getElementById('categoryFilter');
-    if (categoryFilter) {
+    // Thiết lập bộ lọc danh mục - sử dụng ID riêng để tránh xung đột
+    const categoryFilter = document.getElementById('warehouseCategoryFilter');
+    if (categoryFilter && listDanhMucNguyenLieu.length > 0) {
+        // Xóa các options cũ (trừ option "Tất cả danh mục")
+        while (categoryFilter.options.length > 1) {
+            categoryFilter.remove(1);
+        }
+        
+        // Thêm options danh mục từ API
+        listDanhMucNguyenLieu.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.tenDanhMuc;
+            categoryFilter.appendChild(option);
+        });
+        
+        // Xử lý sự kiện khi thay đổi danh mục
         categoryFilter.addEventListener('change', function() {
             const selectedCategory = this.value;
-            const rows = document.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                // Bỏ qua các dòng hết hàng
-                if (!row.classList.contains('table-light') && row.querySelector('.badge.bg-danger')) {
-                    row.style.display = 'none';
-                    return;
-                }
-
-                if (row.classList.contains('table-light')) {
-                    // Xử lý header danh mục
-                    const categoryName = row.querySelector('td').textContent.trim();
-                    row.style.display = selectedCategory === 'all' || categoryName.includes(selectedCategory) ? '' : 'none';
-                } else {
-                    // Xử lý dòng dữ liệu
-                    const category = row.querySelector('td:nth-child(3)').textContent;
-                    row.style.display = selectedCategory === 'all' || category.includes(selectedCategory) ? '' : 'none';
-                }
+            const keyword = document.getElementById('warehouseSearchInput').value.trim().toLowerCase();
+            
+            // Lọc danh sách nguyên liệu dựa trên từ khóa tìm kiếm và danh mục đã chọn
+            const filteredList = listKho.filter(item => {
+                const matchKeyword = removeAccents(item.NguyenLieu.ten.toLowerCase()).includes(removeAccents(keyword));
+                const matchCategory = selectedCategory === 'all' || item.NguyenLieu.idDanhMuc == selectedCategory;
+                return matchKeyword && matchCategory;
             });
-
-            updateCategoryHeaders();
+            
+            thaoTacVoiBang(filteredList);
         });
     }
 
-    // Hàm hiển thị header danh mục
-    function showCategoryHeader(row) {
-        const prevHeader = row.previousElementSibling;
-        if (prevHeader && prevHeader.classList.contains('table-light')) {
-            prevHeader.style.display = '';
-        }
-    }
-
-    // Hàm cập nhật hiển thị của các header danh mục
-    function updateCategoryHeaders() {
-        document.querySelectorAll('.category-header').forEach(header => {
-            let nextRow = header.nextElementSibling;
-            let hasVisibleItems = false;
-            while (nextRow && !nextRow.classList.contains('table-light')) {
-                if (nextRow.style.display !== 'none') {
-                    hasVisibleItems = true;
-                    break;
-                }
-                nextRow = nextRow.nextElementSibling;
-            }
-            header.style.display = hasVisibleItems ? '' : 'none';
-        });
-    }
-    function thaoTacVoiBang(list){
+    // Hàm thao tác với bảng
+    function thaoTacVoiBang(list) {
         const tableBody = document.querySelector('#warehouse .table-danhSach tbody');
         tableBody.innerHTML = ''; // Xóa nội dung hiện tại của bảng
     
         list.forEach((item, index) => {
             const row = document.createElement('tr');
-            const col = document.createElement('td');
             const hanSuDung = new Date(item.hanSuDung);
             const ngayHienTai = new Date();
             const khoangCach = Math.floor((hanSuDung - ngayHienTai) / (1000 * 60 * 60 * 24)); // Tính số ngày còn lại
-            col.innerHTML = `<span class="badge bg-success">Bình thường</span>`;
+            
+            // Tạo badge cho trạng thái
+            let statusBadge = `<span class="badge bg-success">Bình thường</span>`;
             if (khoangCach < 5) {
-                col.innerHTML = `<span class="badge bg-warning text-dark">Sắp hết hạn</span>`;
+                statusBadge = `<span class="badge bg-warning text-dark">Sắp hết hạn</span>`;
             }
             if (khoangCach < 0) {
-                col.innerHTML = `<span class="badge bg-danger">Hết hạn</span>`;
+                statusBadge = `<span class="badge bg-danger">Hết hạn</span>`;
             }
+            
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${item.NguyenLieu.ten}</td>
-                <td>${item.NguyenLieu.DanhMucNguyenLieu.tenDanhMuc}</td>
+                <td>${item.NguyenLieu.DanhMucNguyenLieu?.tenDanhMuc || 'Không có'}</td>
                 <td>${item.NguyenLieu.donVi}</td>
-                <td>${item.gia}</td>
+                <td>${formatCurrency(item.gia)}</td>
                 <td>${item.soLuong}</td>
                 <td>${formatDate(hanSuDung)}</td>
+                <td>${statusBadge}</td>
             `;
-            row.appendChild(col); // Thêm cột vào hàng
-            tableBody.appendChild(row); // Thêm hàng vào bảng
+            tableBody.appendChild(row);
         });
     }
+
+    // Hàm loại bỏ dấu tiếng Việt để tìm kiếm
     function removeAccents(str) {
         return str.normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/đ/g, 'd').replace(/Đ/g, 'D');
     }
+    
+    // Hàm lấy dữ liệu kho nguyên liệu từ API
     async function getAPIKhoNguyenLieu() {
         try {
             const response = await fetch('/api/kho-nguyen-lieu');
             const data = await response.json();
-            if(data.status){
-                return data.list
-            }
-            else {
-                console.error('Error fetching kho nguyen lieu:', data.message);
+            if (data.status) {
+                return data.list;
+            } else {
+                console.error('Error fetching kho nguyen lieu:', data.error || data.message);
                 return [];
             }
         } catch (error) {
             console.error('Error fetching kho nguyen lieu:', error);
             return [];
         }
+    }
+    
+    // Hàm lấy danh sách danh mục nguyên liệu từ API
+    async function getAPIDanhMucNguyenLieu() {
+        try {
+            const response = await fetch('/api/danh-muc-nguyen-lieu');
+            const data = await response.json();
+            if (data.status) {
+                return data.list;
+            } else {
+                console.error('Error fetching danh muc nguyen lieu:', data.error);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching danh muc nguyen lieu:', error);
+            return [];
+        }
+    }
+
+    // Hàm định dạng tiền tệ
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     }
 }
 async function xuLyNguyenLieu() {
@@ -1051,6 +1052,31 @@ async function xuLyPhieuNhap(){
             addReceiptForm.addEventListener('submit', submitPhieuNhap);
         }
     }
+    function setupDefaultDates() {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        if (startDateInput && endDateInput) {
+            const today = new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            
+            startDateInput.value = sevenDaysAgo.toISOString().split('T')[0];
+            endDateInput.value = today.toISOString().split('T')[0];
+        }
+        
+        // Thiết lập ngày hạn sử dụng mặc định cho form phiếu nhập (nếu có)
+        const expireDateInputs = document.querySelectorAll('.expire-date-input');
+        if (expireDateInputs.length > 0) {
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            
+            const formattedDate = nextMonth.toISOString().split('T')[0];
+            expireDateInputs.forEach(input => {
+                input.value = formattedDate;
+            });
+        }
+    }
     // Thêm hàm này vào file phieu-nhap.js
     async function submitPhieuNhap(e) {
         e.preventDefault();
@@ -1469,7 +1495,7 @@ async function xuLyPhieuNhap(){
             
             // Chỉ ẩn các input khác nếu cần, KHÔNG ẩn unit-input
             if (input.classList.contains('unit-input')) {
-                // Đảm bảo unit-input hiển thị và là readonly
+                // Đảm bảo input đơn vị hiển thị và là readonly
                 input.style.display = ''; // Xóa style display:none nếu có
                 input.readOnly = true;
             }
@@ -1778,263 +1804,129 @@ async function xuLyPhieuNhap(){
         return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     }
 }
-async function xuLyPhieuXuat(){
+async function xuLyPhieuXuat() {
     // Thiết lập giá trị mặc định cho ngày bắt đầu và ngày kết thúc
     setDefaultDate();
-    // Biến lưu trữ danh sách nguyên liệu
+    
+    // Biến lưu trữ danh sách nguyên liệu và người nhận
     let inventoryList = [];
     let receiverList = [];
+    
+    // Lấy danh sách phiếu xuất từ API
     let listPhieuXuat = await getAPIPhieuXuat();
-    thaoTacVoiBang(listPhieuXuat)
+    thaoTacVoiBang(listPhieuXuat);
+    
     // Khởi tạo ứng dụng
     init();
-
-    // Hàm khởi tạo
-    function init() {
-        // Tải danh sách nguyên liệu
-        loadInventoryData();
+    
+    // Hàm khởi tạo để thiết lập các sự kiện và đổ dữ liệu
+    async function init() {
+        // Tải danh sách nguyên liệu từ kho
+        inventoryList = await getAPIKhoNguyenLieu();
         
-        // Xử lý nút thêm hàng mới
-        const addIngredientRowButton = document.getElementById('addIngredientRow');
+        // Tải danh sách người nhận (nếu cần)
+        receiverList = await getAPIReceivers();
+        
+        // Thiết lập sự kiện cho nút thêm hàng mới
+        const addIngredientRowButton = document.getElementById('addExportIngredientRow');
         if (addIngredientRowButton) {
-            addIngredientRowButton.addEventListener('click', addIngredientRow);
+            addIngredientRowButton.addEventListener('click', addExportIngredientRow);
         }
         
         // Khởi tạo sự kiện cho hàng đầu tiên
-        document.querySelectorAll('.ingredient-row').forEach(row => {
-            attachRowEventListeners(row);
+        document.querySelectorAll('.export-ingredient-row').forEach(row => {
+            attachExportRowEventListeners(row);
         });
         
-        // Xử lý submit form
+        // Thiết lập sự kiện submit form
         const addExportForm = document.getElementById('addExportForm');
         if (addExportForm) {
             addExportForm.addEventListener('submit', submitPhieuXuat);
         }
         
-        // Khởi tạo dropdown tìm kiếm
-        initializeCustomDropdowns();
-
-        // Tải danh sách nhân viên (người nhận)
-        loadReceiverData();
-        
-        // Thiết lập tìm kiếm người nhận
-        setupReceiverSearch();
+        // Khởi tạo dropdown tùy chỉnh
+        initializeExportDropdowns();
     }
-    // Hàm tải danh sách nhân viên từ API
-    async function loadReceiverData() {
+    
+    // Hàm lấy dữ liệu từ kho nguyên liệu
+    async function getAPIKhoNguyenLieu() {
+        try {
+            const response = await fetch('/api/kho-nguyen-lieu');
+            const data = await response.json();
+            if (data.status) {
+                return data.list;
+            } else {
+                showToastDanger(data.error || 'Không thể tải danh sách nguyên liệu');
+                return [];
+            }
+        } catch (error) {
+            showToastDanger('Lỗi khi tải danh sách nguyên liệu');
+            console.error('Error fetching inventory:', error);
+            return [];
+        }
+    }
+    
+    // Hàm lấy danh sách người nhận
+    async function getAPIReceivers() {
         try {
             const response = await fetch('/api/nhan-vien');
-            if (!response.ok) throw new Error('Không thể tải danh sách nhân viên');
-            
-            // Lưu danh sách nhân viên vào biến toàn cục
             const data = await response.json();
-            receiverList = data.list || [];
-            
-            console.log('Đã tải thành công danh sách nhân viên:', receiverList.length);
+            if (data.status) {
+                return data.list;
+            } else {
+                return [];
+            }
         } catch (error) {
-            console.error("Lỗi khi tải danh sách nhân viên:", error);
+            console.error('Error fetching receivers:', error);
+            return [];
         }
     }
-
-    // Hàm thiết lập tìm kiếm người nhận
-    function setupReceiverSearch() {
-        const input = document.getElementById('receiverName');
-        if (!input) return;
+    
+    // Khởi tạo dropdown tùy chỉnh
+    function initializeExportDropdowns() {
+        document.querySelectorAll('.export-inventory-search').forEach(input => {
+            if (!input.dataset.initialized) {
+                setupExportIngredientSearch(input);
+                input.dataset.initialized = "true";
+            }
+        });
         
-        const container = input.closest('.receiver-container');
-        if (!container) return;
-        
-        // Tạo dropdown container nếu chưa có
-        let dropdown = container.querySelector('.receiver-dropdown');
-        if (!dropdown) {
-            dropdown = document.createElement('div');
-            dropdown.className = 'dropdown-menu receiver-dropdown';
-            container.appendChild(dropdown);
+        // Thiết lập dropdown cho người nhận (nếu cần)
+        const receiverInput = document.getElementById('exportReceiverName');
+        if (receiverInput && !receiverInput.dataset.initialized) {
+            setupReceiverSearch(receiverInput);
+            receiverInput.dataset.initialized = "true";
         }
+    }
+    
+    // Thiết lập tìm kiếm nguyên liệu trong phiếu xuất
+    function setupExportIngredientSearch(input) {
+        const container = input.closest('.custom-dropdown-container');
+        const dropdown = container.querySelector('.export-inventory-dropdown');
         
-        // Tạo kết quả tìm kiếm container nếu chưa có
-        let resultsContainer = dropdown.querySelector('.receiver-results');
+        // Kiểm tra và thêm phần tử dropdown-search-results nếu chưa có
+        let resultsContainer = dropdown.querySelector('.dropdown-search-results');
         if (!resultsContainer) {
             resultsContainer = document.createElement('div');
-            resultsContainer.className = 'dropdown-search-results receiver-results';
+            resultsContainer.className = 'dropdown-search-results';
             dropdown.appendChild(resultsContainer);
         }
         
         // Xử lý hiển thị dropdown khi focus vào input
         input.addEventListener('focus', function() {
-            // Đóng tất cả dropdown khác
-            document.querySelectorAll('.inventory-dropdown.active, .receiver-dropdown.active')
-                .forEach(d => d.classList.remove('active'));
-            
-            // Hiển thị dropdown
-            dropdown.classList.add('active');
-            filterReceivers(input.value, resultsContainer);
-        });
-        
-        // Xử lý tìm kiếm khi gõ
-        input.addEventListener('input', function() {
-            filterReceivers(input.value, resultsContainer);
-        });
-        
-        // Xử lý click bên ngoài để đóng dropdown
-        document.addEventListener('click', function(e) {
-            if (!container.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-        
-        // Xử lý click vào dropdown arrow nếu có
-        const arrow = container.querySelector('.dropdown-arrow');
-        if (arrow) {
-            arrow.addEventListener('click', function() {
-                input.focus();
-            });
-        }
-    }
-
-    // Lọc danh sách người nhận theo từ khóa tìm kiếm
-    function filterReceivers(keyword, resultsContainer) {
-        // Xóa nội dung hiện tại
-        resultsContainer.innerHTML = '';
-        
-        // Nếu không có từ khóa và không có danh sách
-        if (keyword.length === 0 && (!receiverList || receiverList.length === 0)) {
-            resultsContainer.innerHTML = '<div class="dropdown-no-results">Nhập để tìm kiếm nhân viên...</div>';
-            return;
-        }
-        
-        // Nếu danh sách trống
-        if (!receiverList || receiverList.length === 0) {
-            resultsContainer.innerHTML = '<div class="dropdown-no-results">Không có dữ liệu nhân viên</div>';
-            return;
-        }
-        
-        // Chuẩn hóa từ khóa tìm kiếm
-        const normalizedKeyword = removeDiacritics(keyword.toLowerCase());
-        
-        // Lọc danh sách người nhận
-        let filteredReceivers;
-        if (normalizedKeyword.length > 0) {
-            // Lọc theo từ khóa
-            filteredReceivers = receiverList.filter(nv => {
-                // Giả sử mỗi nhân viên có tên trong thuộc tính "ten" hoặc "hoTen"
-                const tenNhanVien = nv.ten || nv.hoTen || '';
-                const normalizedName = removeDiacritics(tenNhanVien.toLowerCase());
-                return normalizedName.includes(normalizedKeyword);
-            });
-        } else {
-            // Hiển thị tất cả nhân viên nếu không có từ khóa
-            filteredReceivers = [...receiverList];
-        }
-        
-        // Nếu không có kết quả
-        if (filteredReceivers.length === 0) {
-            resultsContainer.innerHTML = '<div class="dropdown-no-results">Không tìm thấy nhân viên phù hợp</div>';
-            return;
-        }
-        
-        // Hiển thị kết quả
-        filteredReceivers.forEach(nv => {
-            const element = document.createElement('div');
-            element.className = 'dropdown-item';
-            element.dataset.id = nv.id || nv.maNV || '';
-            element.dataset.name = nv.ten || nv.hoTen || '';
-            
-            // Format mã nhân viên
-            let id = nv.id || nv.maNV || '';
-            id = `NV${id.toString().padStart(8, '0')}`; // Thêm NV và các số 0 vào trước để đảm bảo đủ 10 ký tự
-            
-            // Highlight từ khóa tìm kiếm nếu có
-            const name = nv.ten || nv.hoTen || '';
-            if (normalizedKeyword.length > 0) {
-                const normalizedName = removeDiacritics(name.toLowerCase());
-                const start = normalizedName.indexOf(normalizedKeyword);
-                if (start !== -1) {
-                    const end = start + normalizedKeyword.length;
-                    element.innerHTML = name.substring(0, start) + 
-                    '<span class="highlight">' + name.substring(start, start + normalizedKeyword.length) + '</span>' + 
-                    name.substring(end) + ` (${id})`;
-                } else {
-                    element.textContent = `${name} (${id})`;
-                }
-            } else {
-                element.textContent = `${name} (${id})`;
-            }
-            
-            // Xử lý khi chọn một nhân viên
-            element.addEventListener('click', function() {
-                const input = document.getElementById('receiverName');
-                const hiddenInput = document.getElementById('receiverId'); // Nếu bạn muốn lưu ID người nhận
-                const dropdown = this.closest('.receiver-dropdown');
-                
-                // Cập nhật giá trị
-                input.value = this.dataset.name;
-                if (hiddenInput) hiddenInput.value = this.dataset.id;
-                dropdown.classList.remove('active');
-            });
-            
-            resultsContainer.appendChild(element);
-        });
-    }
-    // Hàm loại bỏ dấu tiếng Việt để tìm kiếm
-    function removeDiacritics(str) {
-        return str.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd').replace(/Đ/g, 'D');
-    }
-    
-    // Hàm tải danh sách nguyên liệu từ API
-    async function loadInventoryData() {
-        try {
-            const response = await fetch('/api/kho-nguyen-lieu');
-            if (!response.ok) throw new Error('Không thể tải danh sách nguyên liệu');
-            
-            // Lưu danh sách nguyên liệu vào biến toàn cục
-            const data = await response.json();
-            inventoryList = data.list;
-            
-            console.log('Đã tải thành công danh sách nguyên liệu:', inventoryList.length);
-            
-            // Khởi tạo dropdown
-            initializeCustomDropdowns();
-            
-        } catch (error) {
-            showToastDanger()
-            console.error("Lỗi khi tải danh sách nguyên liệu:", error);
-        }
-    }
-    
-    // Khởi tạo dropdown tùy chỉnh
-    function initializeCustomDropdowns() {
-        document.querySelectorAll('.inventory-search').forEach(input => {
-            if (!input.dataset.initialized) {
-                setupInventorySearch(input);
-                input.dataset.initialized = "true";
-            }
-        });
-    }
-    
-    // Thiết lập tìm kiếm nguyên liệu
-    function setupInventorySearch(input) {
-        const container = input.closest('.custom-dropdown-container');
-        const dropdown = container.querySelector('.inventory-dropdown');
-        const resultsContainer = dropdown.querySelector('.dropdown-search-results');
-        
-        // Xử lý hiển thị dropdown khi focus vào input
-        input.addEventListener('focus', function() {
-            closeAllDropdowns();
+            closeAllExportDropdowns();
             
             // Tính toán và đặt vị trí cho dropdown
-            positionDropdownAbsolute(dropdown, input);
+            positionExportDropdown(dropdown, input);
             
             // Hiển thị dropdown
             dropdown.classList.add('active');
-            filterInventory(input.value, resultsContainer);
+            filterExportIngredients(input.value, resultsContainer);
         });
         
         // Xử lý tìm kiếm khi gõ
         input.addEventListener('input', function() {
-            filterInventory(input.value, resultsContainer);
+            filterExportIngredients(input.value, resultsContainer);
         });
         
         // Xử lý click bên ngoài để đóng dropdown
@@ -2052,331 +1944,335 @@ async function xuLyPhieuXuat(){
             });
         }
     }
-    // Hàm tính toán vị trí chính xác cho dropdown
-    function positionDropdownAbsolute(dropdown, input) {
-        // Lấy vị trí của input trên trang
-        const rect = input.getBoundingClientRect();
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-        
-        // Đặt vị trí top và left cho dropdown
-        dropdown.style.top = (rect.bottom + scrollTop) + 'px';
-        dropdown.style.left = (rect.left + scrollLeft) + 'px';
-        dropdown.style.width = Math.max(rect.width, 250) + 'px';
-        
-        // Kiểm tra nếu dropdown sẽ bị tràn ra khỏi màn hình
-        const dropdownHeight = 250; // Chiều cao ước lượng
-        const windowHeight = window.innerHeight;
-        const windowWidth = window.innerWidth;
-        
-        // Nếu tràn ra dưới màn hình, hiển thị dropdown lên trên
-        if (rect.bottom + dropdownHeight > windowHeight) {
-            dropdown.style.top = (rect.top + scrollTop - dropdownHeight) + 'px';
-        }
-        
-        // Nếu tràn ra phải, dịch sang trái
-        if (rect.left + dropdown.offsetWidth > windowWidth) {
-            dropdown.style.left = (windowWidth - dropdown.offsetWidth - 10 + scrollLeft) + 'px';
-        }
-        
-        // Đặt max-height để tránh quá dài
-        dropdown.style.maxHeight = '250px';
-        dropdown.style.overflowY = 'auto';
-    }
-
-    // Cập nhật khi cuộn trang
-    window.addEventListener('scroll', function() {
-        const activeDropdown = document.querySelector('.inventory-dropdown.active');
-        if (activeDropdown) {
-            const input = activeDropdown.closest('.custom-dropdown-container')?.querySelector('.inventory-search');
-            if (input) {
-                positionDropdownAbsolute(activeDropdown, input);
-            }
-        }
-    }, true);
-
-    // Cập nhật khi thay đổi kích thước cửa sổ
-    window.addEventListener('resize', function() {
-        const activeDropdown = document.querySelector('.inventory-dropdown.active');
-        if (activeDropdown) {
-            const input = activeDropdown.closest('.custom-dropdown-container')?.querySelector('.inventory-search');
-            if (input) {
-                positionDropdownAbsolute(activeDropdown, input);
-            }
-        }
-    });
-
-    // Cập nhật khi cuộn trong table-responsive
-    document.querySelectorAll('.table-responsive').forEach(table => {
-        table.addEventListener('scroll', function() {
-            const activeDropdown = document.querySelector('.inventory-dropdown.active');
-            if (activeDropdown) {
-                const input = activeDropdown.closest('.custom-dropdown-container')?.querySelector('.inventory-search');
-                if (input) {
-                    positionDropdownAbsolute(activeDropdown, input);
-                }
-            }
-        });
-    });
-    // Xử lý sự kiện khi nhấn nút tìm kiếm
-    document.querySelector('.btn-timKiem').addEventListener('click', async function(e) {
-        e.preventDefault();
-        try {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const minAmount = document.getElementById('minAmount').value;
-            const maxAmount = document.getElementById('maxAmount').value;
-            const response = await fetch(`/api/tim-kiem-phieu-xuat?startDate=${startDate}&endDate=${endDate}&minAmount=${minAmount}&maxAmount=${maxAmount}`);
-            const data = await response.json();
-            if(data.status){
-               
-                thaoTacVoiBang(data.list);
-            }
-            else{
-                showToastDanger(data.error)
-                console.error('Lỗi khi gọi API:', data.error);
-                thaoTacVoiBang([]);
-            }
-        }
-        catch (error) {
-            showToastDanger()
-            console.error('Lỗi khi gọi API:', error);
-            thaoTacVoiBang([]);
-        }
-    })
-    // Đặt lại tìm kiếm
-    document.querySelector('.btn-datLai').addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log(123)
-        // Đặt lại giá trị của các input
-        setDefaultDate();
-        document.getElementById('minAmount').value = '';
-        document.getElementById('maxAmount').value = '';
-        thaoTacVoiBang(listPhieuXuat)
-    })
-    // Đóng tất cả dropdown đang mở
-    function closeAllDropdowns() {
-        document.querySelectorAll('.inventory-dropdown.active').forEach(dropdown => {
-            dropdown.classList.remove('active');
-        });
-    }
     
-    // Lọc danh sách nguyên liệu trong kho theo từ khóa tìm kiếm
-    function filterInventory(keyword, resultsContainer) {
+    // Lọc danh sách nguyên liệu theo từ khóa tìm kiếm
+    function filterExportIngredients(keyword, resultsContainer) {
+        // Kiểm tra nếu resultsContainer không tồn tại, tạo mới
+        if (!resultsContainer) {
+            console.error('Result container not found');
+            return;
+        }
+        
         // Xóa nội dung hiện tại
         resultsContainer.innerHTML = '';
         
-        // Nếu không có từ khóa, hiển thị tất cả
+        // Log để debug
+        console.log("Filtering with keyword:", keyword);
+        console.log("Available inventory:", inventoryList);
+        
+        // Chuẩn hóa từ khóa tìm kiếm
         const normalizedKeyword = removeDiacritics(keyword.toLowerCase());
         
         // Lọc danh sách nguyên liệu
-        const filteredInventory = normalizedKeyword.length > 0 
+        const filteredIngredients = normalizedKeyword.length > 0 
             ? inventoryList.filter(item => {
                 const normalizedName = removeDiacritics(item.NguyenLieu.ten.toLowerCase());
                 return normalizedName.includes(normalizedKeyword);
               })
             : inventoryList;
         
+        // Log để debug
+        console.log("Filtered results:", filteredIngredients);
+        
         // Nếu không có kết quả
-        if (filteredInventory.length === 0) {
+        if (filteredIngredients.length === 0) {
             resultsContainer.innerHTML = '<div class="dropdown-no-results">Không tìm thấy nguyên liệu</div>';
             return;
         }
         
         // Hiển thị kết quả
-        filteredInventory.forEach(item => {
-            const element = document.createElement('div');
-            element.className = 'dropdown-item';
-            element.dataset.id = item.idNguyenLieu;
-            element.dataset.idPhieuNhap = item.idPhieu || '';
-            element.dataset.name = item.NguyenLieu.ten;
-            element.dataset.unit = item.NguyenLieu.donVi || '';
-            element.dataset.price = item.gia || '0';
-            element.dataset.maxQuantity = item.soLuong || '0';
+        filteredIngredients.forEach(item => {
+            const ingredient = item.NguyenLieu;
+            const inventoryItem = document.createElement('div');
+            inventoryItem.className = 'dropdown-item';
+            inventoryItem.dataset.id = item.id;
+            inventoryItem.dataset.name = ingredient.ten;
+            inventoryItem.dataset.unit = ingredient.donVi || '';
+            inventoryItem.dataset.price = item.gia || 0;
             
             // Highlight từ khóa tìm kiếm
-            const name = item.NguyenLieu.ten;
+            const name = ingredient.ten;
             if (normalizedKeyword.length > 0) {
                 const normalizedName = removeDiacritics(name.toLowerCase());
                 const start = normalizedName.indexOf(normalizedKeyword);
                 if (start !== -1) {
                     const end = start + normalizedKeyword.length;
-                    element.innerHTML = name.substring(0, start) + 
+                    inventoryItem.innerHTML = name.substring(0, start) + 
                         '<span class="highlight">' + name.substring(start, start + normalizedKeyword.length) + '</span>' + 
                         name.substring(end);
                 } else {
-                    element.textContent = name;
+                    inventoryItem.textContent = name;
                 }
             } else {
-                element.textContent = name;
+                inventoryItem.textContent = name;
             }
             
+            // Thêm thông tin tồn kho
+            const stockInfo = document.createElement('small');
+            stockInfo.className = 'text-muted ms-2';
+            stockInfo.textContent = `(Tồn: ${item.soLuong} ${ingredient.donVi})`;
+            inventoryItem.appendChild(stockInfo);
+            
             // Xử lý khi chọn một nguyên liệu
-            element.addEventListener('click', function() {
-                const input = this.closest('.custom-dropdown-container').querySelector('.inventory-search');
-                const hiddenInput = this.closest('.custom-dropdown-container').querySelector('.inventory-id');
-                const hiddenInputIdPhieuNhap = this.closest('.custom-dropdown-container').querySelector('.id-phieuNhap');
-                const dropdown = this.closest('.inventory-dropdown');
+            inventoryItem.addEventListener('click', function() {
+                const input = this.closest('.custom-dropdown-container').querySelector('.export-inventory-search');
+                const hiddenInput = this.closest('.custom-dropdown-container').querySelector('.export-inventory-id');
+                const dropdown = this.closest('.export-inventory-dropdown');
                 
                 // Cập nhật giá trị
                 input.value = this.dataset.name;
                 hiddenInput.value = this.dataset.id;
-                hiddenInputIdPhieuNhap.value = this.dataset.idPhieuNhap;
                 dropdown.classList.remove('active');
                 
-                // Cập nhật đơn vị và đơn giá
-                const row = input.closest('.ingredient-row');
-                const unitInput = row.querySelector('.unit-input');
-                const priceInput = row.querySelector('.price-input');
-                const quantityInput = row.querySelector('.quantity-input');
+                // Cập nhật đơn vị
+                const row = input.closest('.export-ingredient-row');
+                const unitInput = row.querySelector('.export-unit-input');
+                const priceInput = row.querySelector('.export-price-input');
                 
                 if (unitInput && this.dataset.unit) {
-                    // Đảm bảo input đơn vị hiển thị và được cập nhật
-                    unitInput.style.display = '';
                     unitInput.value = this.dataset.unit;
                 }
                 
                 if (priceInput && this.dataset.price) {
-                    priceInput.value = formatCurrency(this.dataset.price);
+                    priceInput.value = this.dataset.price;
                 }
                 
-                if (quantityInput && this.dataset.maxQuantity) {
-                    quantityInput.setAttribute('max', this.dataset.maxQuantity);
-                    quantityInput.setAttribute('min', 0);
-                    quantityInput.value = 1;
-                }
                 // Tính lại thành tiền
-                calculateAmount(row);
+                calculateExportAmount(row);
             });
             
-            resultsContainer.appendChild(element);
+            resultsContainer.appendChild(inventoryItem);
         });
     }
     
-    // Thêm hàng nguyên liệu mới
-    function addIngredientRow() {
-        const tbody = document.querySelector('#ingredientTable tbody');
-        if (!tbody) {
-            console.error('Không tìm thấy bảng nguyên liệu');
-            return;
+    // Loại bỏ dấu tiếng Việt để tìm kiếm
+    function removeDiacritics(str) {
+        return str.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    }
+    
+    // Tính toán vị trí cho dropdown
+    function positionExportDropdown(dropdown, input) {
+        // Lấy vị trí của input
+        const rect = input.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+        
+        // Đặt vị trí và kích thước cho dropdown
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = (rect.bottom + scrollTop) + 'px';
+        dropdown.style.left = (rect.left + scrollLeft) + 'px';
+        dropdown.style.width = Math.max(rect.width, 250) + 'px';
+        dropdown.style.zIndex = '1050';
+        
+        // Kiểm tra nếu dropdown sẽ bị tràn ra khỏi màn hình
+        const dropdownHeight = 250; // Chiều cao ước lượng
+        const windowHeight = window.innerHeight;
+        
+        if (rect.bottom + dropdownHeight > windowHeight) {
+            dropdown.style.top = (rect.top + scrollTop - dropdownHeight) + 'px';
         }
+    }
+    
+    // Đóng tất cả dropdown đang mở
+    function closeAllExportDropdowns() {
+        document.querySelectorAll('.export-inventory-dropdown.active').forEach(dropdown => {
+            dropdown.classList.remove('active');
+        });
+    }
+    
+    // Thiết lập tìm kiếm người nhận
+    function setupReceiverSearch(input) {
+        // Xóa dropdown cũ nếu đã tồn tại
+        const container = input.closest('.export-receiver-container');
+        container.querySelectorAll('.receiver-dropdown').forEach(el => el.remove());
         
-        const firstRow = tbody.querySelector('.ingredient-row');
-        if (!firstRow) {
-            console.error('Không tìm thấy dòng nguyên liệu mẫu');
-            return;
+        // Tạo dropdown mới với style rõ ràng
+        const dropdownMenu = document.createElement('div');
+        dropdownMenu.className = 'dropdown-menu receiver-dropdown';
+        dropdownMenu.style.width = '100%';
+        dropdownMenu.style.maxHeight = '250px';
+        dropdownMenu.style.overflow = 'auto';
+        dropdownMenu.style.position = 'absolute';
+        dropdownMenu.style.zIndex = '9999';
+        dropdownMenu.style.display = 'none';
+        
+        // Phải thêm vào container để có context đúng
+        container.appendChild(dropdownMenu);
+
+        // Đảm bảo hidden input tồn tại
+        if (!document.getElementById('exportReceiverId')) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = 'exportReceiverId';
+            hiddenInput.name = 'exportReceiverId';
+            container.appendChild(hiddenInput);
         }
-        
-        const newRow = firstRow.cloneNode(true);
-        
-        // Reset các giá trị trong dòng mới
-        newRow.querySelectorAll('input').forEach(input => {
-            // Reset giá trị nhưng không ẩn input đơn vị
-            input.value = '';
+
+        // Xử lý hiển thị dropdown khi focus vào input
+        input.addEventListener('focus', function() {
+            // Đóng tất cả dropdown khác
+            document.querySelectorAll('.receiver-dropdown').forEach(menu => {
+                if (menu !== dropdownMenu) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Đặt vị trí cho dropdown - đây là phần quan trọng cần sửa
+            const rect = input.getBoundingClientRect();
             
-            // Chỉ ẩn các input khác nếu cần, KHÔNG ẩn unit-input
-            if (input.classList.contains('unit-input')) {
-                // Đảm bảo unit-input hiển thị và là readonly
-                input.style.display = ''; // Xóa style display:none nếu có
-                input.readOnly = true;
+            // Đặt vị trí theo container thay vì toàn trang
+            dropdownMenu.style.top = input.offsetHeight + 'px';
+            dropdownMenu.style.left = '0';
+            dropdownMenu.style.width = '100%';
+            
+            // Hiển thị dropdown
+            dropdownMenu.style.display = 'block';
+            
+            // Lọc và hiển thị danh sách người nhận
+            filterReceivers(input.value);
+        });
+
+        // Xử lý tìm kiếm khi gõ
+        input.addEventListener('input', function() {
+            if (dropdownMenu.style.display !== 'block') {
+                dropdownMenu.style.display = 'block';
             }
-            
-            // Reset initialized attribute cho input tìm kiếm
-            if (input.classList.contains('inventory-search')) {
-                input.removeAttribute('data-initialized');
+            filterReceivers(this.value);
+        });
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            if (!container.contains(e.target)) {
+                dropdownMenu.style.display = 'none';
             }
         });
-        
-        // Reset thành tiền
-        const amountCell = newRow.querySelector('.amount-cell');
-        if (amountCell) amountCell.textContent = '0đ';
-        
-        // Reset ghi chú
-        const noteInput = newRow.querySelector('.note-input');
-        if (noteInput) noteInput.value = '';
-        
-        // Reset select boxes nếu có
-        newRow.querySelectorAll('select').forEach(select => {
-            select.selectedIndex = 0;
-        });
-        
-        // Cập nhật STT
-        const rowCount = tbody.children.length + 1;
-        const sttCell = newRow.querySelector('td:first-child');
-        if (sttCell) {
-            sttCell.textContent = rowCount;
+
+        // Xử lý khi nhấn vào dropdown arrow
+        const arrow = container.querySelector('.dropdown-arrow');
+        if (arrow) {
+            arrow.addEventListener('click', function() {
+                input.focus();
+            });
         }
-        
-        // Đảm bảo các phần tử có đúng style
-        const unitInput = newRow.querySelector('.unit-input');
-        if (unitInput) {
-            // Đảm bảo input đơn vị hiển thị đúng
-            unitInput.style.display = '';
-            unitInput.readOnly = true;
+
+        // Hàm lọc và hiển thị danh sách người nhận
+        function filterReceivers(keyword) {
+            dropdownMenu.innerHTML = '';
+            console.log("Danh sách người nhận:", receiverList);
+
+            // Chuẩn hóa từ khóa tìm kiếm
+            const normalizedKeyword = removeDiacritics(keyword.toLowerCase());
+
+            // Lọc danh sách người nhận - sử dụng trường ten
+            const filteredReceivers = normalizedKeyword.length > 0
+                ? receiverList.filter(receiver => {
+                    const normalizedName = removeDiacritics(receiver.ten.toLowerCase());
+                    return normalizedName.includes(normalizedKeyword);
+                  })
+                : receiverList;
+
+            // Nếu không có kết quả
+            if (filteredReceivers.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'dropdown-item text-muted';
+                noResults.textContent = 'Không tìm thấy người nhận';
+                dropdownMenu.appendChild(noResults);
+            } else {
+                // Hiển thị kết quả
+                filteredReceivers.forEach(receiver => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.dataset.id = receiver.id;
+                    item.dataset.name = receiver.ten;
+
+                    // Highlight từ khóa tìm kiếm
+                    const name = receiver.ten;
+                    if (normalizedKeyword.length > 0) {
+                        const normalizedName = removeDiacritics(name.toLowerCase());
+                        const start = normalizedName.indexOf(normalizedKeyword);
+                        if (start !== -1) {
+                            const end = start + normalizedKeyword.length;
+                            item.innerHTML = name.substring(0, start) +
+                                '<span class="highlight">' + name.substring(start, start + normalizedKeyword.length) + '</span>' +
+                                name.substring(end);
+                        } else {
+                            item.textContent = name;
+                        }
+                    } else {
+                        item.textContent = name;
+                    }
+
+                    // Thêm thông tin phòng ban/vị trí (nếu có)
+                    if (receiver.phongBan || receiver.viTri) {
+                        const info = document.createElement('small');
+                        info.className = 'text-muted d-block';
+                        info.textContent = `${receiver.phongBan || ''} ${receiver.viTri ? `- ${receiver.viTri}` : ''}`.trim();
+                        item.appendChild(info);
+                    }
+
+                    // Xử lý khi chọn một người nhận
+                    item.addEventListener('click', function() {
+                        input.value = this.dataset.name;
+                        document.getElementById('exportReceiverId').value = this.dataset.id;
+                        dropdownMenu.style.display = 'none';
+                    });
+
+                    dropdownMenu.appendChild(item);
+                });
+            }
+
+            // Thêm tùy chọn để thêm người nhận mới
+            if (keyword.trim()) {
+                const addCustomOption = document.createElement('div');
+                addCustomOption.className = 'dropdown-item text-primary';
+                addCustomOption.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Sử dụng "' + keyword + '" làm người nhận';
+                addCustomOption.addEventListener('click', function() {
+                    input.value = keyword;
+                    document.getElementById('exportReceiverId').value = '';
+                    dropdownMenu.style.display = 'none';
+                });
+                dropdownMenu.appendChild(addCustomOption);
+            }
         }
-        
-        // Thêm dòng mới vào bảng
-        tbody.appendChild(newRow);
-        
-        // Khởi tạo lại dropdown
-        initializeCustomDropdowns();
-        
-        // Gắn lại các event listeners
-        attachRowEventListeners(newRow);
-        
-        // Tính lại tổng tiền
-        calculateTotal();
     }
     
     // Gắn sự kiện cho các phần tử trong hàng
-    function attachRowEventListeners(row) {
-        const removeButton = row.querySelector('.remove-row');
+    function attachExportRowEventListeners(row) {
+        const removeButton = row.querySelector('.export-remove-row');
         if (removeButton) {
             removeButton.addEventListener('click', function() {
-                if (document.querySelectorAll('.ingredient-row').length > 1) {
+                if (document.querySelectorAll('.export-ingredient-row').length > 1) {
                     row.remove();
-                    updateRowNumbers();
-                    calculateTotal();
+                    updateExportRowNumbers();
+                    calculateExportTotal();
                 }
             });
         }
         
-        const quantityInput = row.querySelector('.quantity-input');
-        const priceInput = row.querySelector('.price-input');
-        
-        if (quantityInput) quantityInput.addEventListener('input', () => calculateAmount(row));
-        if (priceInput) priceInput.addEventListener('input', () => calculateAmount(row));
-        
-        // Đảm bảo input đơn vị hiển thị
-        const unitInput = row.querySelector('.unit-input');
-        if (unitInput) {
-            unitInput.style.display = '';
+        const quantityInput = row.querySelector('.export-quantity-input');
+        if (quantityInput) {
+            quantityInput.addEventListener('input', () => calculateExportAmount(row));
         }
     }
     
-    // Cập nhật số thứ tự các hàng
-    function updateRowNumbers() {
-        document.querySelectorAll('.ingredient-row').forEach((row, index) => {
-            row.querySelector('td:first-child').textContent = index + 1;
-        });
-    }
-    
     // Tính toán thành tiền cho một hàng
-    function calculateAmount(row) {
-        const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
-        const price = parseInt(parseFormattedCurrency(row.querySelector('.price-input').value)) || 0;
+    function calculateExportAmount(row) {
+        const quantity = parseFloat(row.querySelector('.export-quantity-input').value) || 0;
+        const price = parseFloat(row.querySelector('.export-price-input').value) || 0;
         const amount = quantity * price;
         
-        row.querySelector('.amount-cell').textContent = formatCurrency(amount);
-        calculateTotal();
+        row.querySelector('.export-amount-cell').textContent = formatCurrency(amount);
+        calculateExportTotal();
     }
     
     // Tính tổng tiền
-    function calculateTotal() {
+    function calculateExportTotal() {
         let total = 0;
-        document.querySelectorAll('.ingredient-row').forEach(row => {
-            const amountText = row.querySelector('.amount-cell').textContent;
-            const amount = parseFormattedCurrency(amountText);
+        document.querySelectorAll('.export-ingredient-row').forEach(row => {
+            const amountText = row.querySelector('.export-amount-cell').textContent;
+            const amount = parseFloat(amountText.replace(/[^\d]/g, '')) || 0;
             total += amount;
         });
         
@@ -2386,15 +2282,213 @@ async function xuLyPhieuXuat(){
         }
     }
     
-
-    // Hàm chuyển chuỗi tiền tệ thành số nguyên
-    function parseFormattedCurrency(formattedValue) {
-        // Loại bỏ tất cả các ký tự không phải số từ chuỗi
-        const numericString = formattedValue.replace(/[^\d]/g, '');
+    // Thêm hàng nguyên liệu mới
+    function addExportIngredientRow() {
+        const tbody = document.querySelector('#exportIngredientTable tbody');
+        if (!tbody) {
+            console.error('Không tìm thấy bảng nguyên liệu xuất');
+            return;
+        }
         
-        // Chuyển đổi chuỗi số thành số nguyên
-        return parseInt(numericString) || 0;
+        const firstRow = tbody.querySelector('.export-ingredient-row');
+        if (!firstRow) {
+            console.error('Không tìm thấy dòng nguyên liệu xuất mẫu');
+            return;
+        }
+        
+        const newRow = firstRow.cloneNode(true);
+        
+        // Reset các giá trị trong dòng mới
+        newRow.querySelectorAll('input').forEach(input => {
+            input.value = '';
+            
+            // Reset initialized attribute cho input tìm kiếm
+            if (input.classList.contains('export-inventory-search')) {
+                input.removeAttribute('data-initialized');
+            }
+        });
+        
+        // Reset thành tiền
+        const amountCell = newRow.querySelector('.export-amount-cell');
+        if (amountCell) amountCell.textContent = '0đ';
+        
+        // Reset ghi chú
+        const noteInput = newRow.querySelector('.export-note-input');
+        if (noteInput) noteInput.value = '';
+        
+        // Cập nhật STT
+        const rowCount = tbody.children.length + 1;
+        const sttCell = newRow.querySelector('td:first-child');
+        if (sttCell) {
+            sttCell.textContent = rowCount;
+        }
+        
+        // Thêm dòng mới vào bảng
+        tbody.appendChild(newRow);
+        
+        // Khởi tạo lại dropdown
+        initializeExportDropdowns();
+        
+        // Gắn lại các event listeners
+        attachExportRowEventListeners(newRow);
+        
+        // Tính lại tổng tiền
+        calculateExportTotal();
     }
+    
+    // Cập nhật số thứ tự các hàng
+    function updateExportRowNumbers() {
+        document.querySelectorAll('.export-ingredient-row').forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+        });
+    }
+    
+    // Xử lý submit form tạo phiếu xuất
+    async function submitPhieuXuat(e) {
+        e.preventDefault();
+        
+        try {
+            showLoading(true);
+            
+            // Lấy thông tin chung của phiếu xuất
+            const phieuXuat = {
+                nguoiNhan: document.getElementById('exportReceiverName').value,
+                lyDo: document.getElementById('exportReasonInput').value,
+                thoiGianXuat: new Date().toISOString(),
+                tongTien: parseInt(document.getElementById('exportTotalAmount').textContent.replace(/[^\d]/g, '')) || 0,
+                chiTiet: [] // Chi tiết các nguyên liệu
+            };
+            
+            // Lặp qua tất cả các hàng để lấy thông tin chi tiết
+            const rows = document.querySelectorAll('.export-ingredient-row');
+            let hasError = false;
+            
+            rows.forEach((row, index) => {
+                const ingredientId = row.querySelector('.export-inventory-id').value;
+                const ingredientName = row.querySelector('.export-inventory-search').value;
+                const quantity = parseFloat(row.querySelector('.export-quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.export-price-input').value) || 0;
+                const note = row.querySelector('.export-note-input').value || '';
+                
+                // Kiểm tra dữ liệu hợp lệ
+                if (!ingredientId || !ingredientName) {
+                    showToastDanger(`Vui lòng chọn nguyên liệu ở hàng ${index + 1}`);
+                    hasError = true;
+                    return;
+                }
+                
+                if (!quantity || quantity <= 0) {
+                    showToastDanger(`Vui lòng nhập số lượng hợp lệ ở hàng ${index + 1}`);
+                    hasError = true;
+                    return;
+                }
+                
+                // Kiểm tra số lượng tồn kho
+                const inventoryItem = inventoryList.find(item => item.id == ingredientId);
+                if (inventoryItem && quantity > inventoryItem.soLuong) {
+                    showToastDanger(`Số lượng xuất (${quantity}) vượt quá số lượng tồn kho (${inventoryItem.soLuong}) ở hàng ${index + 1}`);
+                    hasError = true;
+                    return;
+                }
+                
+                // Thêm chi tiết vào phiếu xuất
+                phieuXuat.chiTiet.push({
+                    idNguyenLieuKho: ingredientId,
+                    soLuong: quantity,
+                    gia: price,
+                    ghiChu: note
+                });
+            });
+            
+            // Nếu có lỗi, dừng việc gửi API
+            if (hasError) {
+                showLoading(false);
+                return;
+            }
+            
+            // Kiểm tra thông tin người nhận và lý do
+            if (!phieuXuat.nguoiNhan) {
+                showToastDanger('Vui lòng nhập tên người nhận');
+                showLoading(false);
+                return;
+            }
+            
+            // Gọi API để tạo phiếu xuất
+            const response = await fetch('/api/phieu-xuat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(phieuXuat)
+            });
+            
+            const data = await response.json();
+            if (data.status) {
+                showToastSuccess("Tạo phiếu xuất thành công!");
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addExportModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Reset form
+                resetPhieuXuatForm();
+                
+                // Thêm phiếu xuất mới vào danh sách và cập nhật bảng
+                listPhieuXuat.unshift(data.obj);
+                thaoTacVoiBang(listPhieuXuat);
+            } else {
+                showToastDanger(data.error || 'Lỗi khi tạo phiếu xuất');
+                console.error('Lỗi khi tạo phiếu xuất:', data.error);
+            }
+        } catch (error) {
+            showToastDanger('Đã xảy ra lỗi khi tạo phiếu xuất');
+            console.error('Lỗi khi tạo phiếu xuất:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+    
+    // Reset form phiếu xuất
+    function resetPhieuXuatForm() {
+        // Giữ lại dòng đầu tiên và xóa các dòng khác
+        const tbody = document.querySelector('#exportIngredientTable tbody');
+        const allRows = tbody.querySelectorAll('.export-ingredient-row');
+        
+        if (allRows.length > 1) {
+            const firstRow = allRows[0];
+            tbody.innerHTML = '';
+            tbody.appendChild(firstRow);
+        }
+        
+        // Reset giá trị trong dòng đầu tiên
+        const firstRow = tbody.querySelector('.export-ingredient-row');
+        if (firstRow) {
+            firstRow.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                if (input.classList.contains('export-inventory-search')) {
+                    input.removeAttribute('data-initialized');
+                }
+            });
+            
+            // Reset thành tiền
+            const amountCell = firstRow.querySelector('.export-amount-cell');
+            if (amountCell) amountCell.textContent = '0đ';
+        }
+        
+        // Reset thông tin người nhận và lý do
+        document.getElementById('exportReceiverName').value = '';
+        document.getElementById('exportReasonInput').value = '';
+        
+        // Reset tổng tiền
+        const totalElement = document.getElementById('exportTotalAmount');
+        if (totalElement) {
+            totalElement.textContent = formatCurrency(0);
+        }
+        
+        // Khởi tạo lại dropdown
+        initializeExportDropdowns();
+    }
+    
     // Hiển thị loading indicator
     function showLoading(show) {
         if (show) {
@@ -2424,201 +2518,65 @@ async function xuLyPhieuXuat(){
         }
     }
     
-    // Thêm hàm xử lý submit phiếu xuất
-    async function submitPhieuXuat(e) {
+    // Xử lý sự kiện khi nhấn nút tìm kiếm
+    document.querySelector('.btn-timKiemXuat').addEventListener('click', async function(e) {
         e.preventDefault();
-        
         try {
-            // Trong hàm submitPhieuXuat - cập nhật phần lấy thông tin người nhận
-            const phieuXuat = {
-                thoiGianXuat: new Date().toISOString(),
-                tongTien: parseInt(document.getElementById('exportTotalAmount')?.textContent.replace(/[^\d]/g, '')) || 0,
-                idNguoiNhan: document.getElementById('receiverId')?.value || null, // Thêm id người nhận nếu cần
-                lyDoXuat: document.getElementById('exportReason')?.value || '',
-                chiTiet: [] // Chi tiết các nguyên liệu
-            };
-            // Kiểm tra xem có nguyên liệu nào không              
-            // Lặp qua tất cả các hàng để lấy thông tin chi tiết
-            const rows = document.querySelectorAll('.ingredient-row');
-            let hasError = false;
-            
-            rows.forEach((row, index) => {
-                const inventoryId = row.querySelector('.inventory-id')?.value;
-                const idPhieuNhap = row.querySelector('.id-phieuNhap')?.value;
-                const inventoryName = row.querySelector('.inventory-search')?.value;
-                const quantity = parseFloat(row.querySelector('.quantity-input')?.value) || 0;
-                const note = row.querySelector('.note-input')?.value || '';
-                
-                // Kiểm tra dữ liệu hợp lệ
-                if (!inventoryId || !inventoryName) {
-                    alert(`Vui lòng chọn nguyên liệu ở hàng ${index + 1}`);
-                    hasError = true;
-                    return;
-                }
-                
-                if (!quantity || quantity <= 0) {
-                    alert(`Vui lòng nhập số lượng hợp lệ ở hàng ${index + 1}`);
-                    hasError = true;
-                    return;
-                }
-                
-                
-                // Thêm chi tiết vào phiếu xuất
-                phieuXuat.chiTiet.push({
-                    idNguyenLieu: inventoryId,
-                    idPhieuNhap: idPhieuNhap,
-                    soLuong: quantity,
-                    ghiChu: note
-                });
-            });
-            console.log('Chi tiết phiếu xuất:', phieuXuat);
-            // Kiểm tra lý do xuất
-            if (!phieuXuat.lyDoXuat) {
-                alert('Vui lòng nhập lý do xuất kho');
-                hasError = true;
-            }
-            
-            // Nếu có lỗi, dừng việc gửi API
-            if (hasError) {
-                return;
-            }
-            
-            // Gọi API để tạo phiếu xuất
-            const response = await fetch('/api/phieu-xuat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(phieuXuat)
-            });
-            
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+            const minAmount = document.getElementById('exportMinAmount').value;
+            const maxAmount = document.getElementById('exportMaxAmount').value;
+            const response = await fetch(`/api/tim-kiem-phieu-xuat?startDate=${startDate}&endDate=${endDate}&minAmount=${minAmount}&maxAmount=${maxAmount}`);
             const data = await response.json();
-            if (data.status){
-                // Reset form hoặc đóng modal
-                showToastSuccess("Tạo phiếu xuất thành công!")
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addExportModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                listPhieuXuat.unshift(data.obj)
-                thaoTacVoiBang(listPhieuXuat)
-                resetPhieuXuatForm();
+            if(data.status) {
+                thaoTacVoiBang(data.list);
             }
             else {
-                showToastDanger(data.error)
-                console.error('Lỗi khi tạo phiếu xuất:', data.error);
-            }
-            
-        } catch (error) {
-            showToastDanger()
-            console.error('Lỗi khi tạo phiếu xuất:', error);
-            alert('Lỗi khi tạo phiếu xuất: ' + error.message);
-        }
-    }
-
-    // Hàm reset form phiếu xuất
-    function resetPhieuXuatForm() {
-        // Giữ lại dòng đầu tiên và xóa các dòng khác
-        const tbody = document.querySelector('#ingredientTable tbody');
-        const allRows = tbody.querySelectorAll('.ingredient-row');
-        
-        // Nếu có nhiều hơn 1 dòng, giữ lại dòng đầu và xóa các dòng còn lại
-        if (allRows.length > 1) {
-            const firstRow = allRows[0];
-            
-            // Xóa tất cả các dòng
-            tbody.innerHTML = '';
-            
-            // Thêm lại dòng đầu tiên
-            tbody.appendChild(firstRow);
-        }
-        
-        // Reset giá trị trong dòng đầu tiên
-        const firstRow = tbody.querySelector('.ingredient-row');
-        if (firstRow) {
-            // Reset các input
-            firstRow.querySelectorAll('input').forEach(input => {
-                input.value = '';
-                
-                // Đảm bảo unit-input hiển thị và là readonly
-                if (input.classList.contains('unit-input')) {
-                    input.style.display = '';
-                    input.readOnly = true;
-                }
-                
-                // Reset initialized attribute cho input tìm kiếm
-                if (input.classList.contains('inventory-search')) {
-                    input.removeAttribute('data-initialized');
-                }
-            });
-            
-            // Reset thành tiền
-            const amountCell = firstRow.querySelector('.amount-cell');
-            if (amountCell) amountCell.textContent = '0đ';
-            
-            // Reset ghi chú
-            const noteInput = firstRow.querySelector('.note-input');
-            if (noteInput) noteInput.value = '';
-            
-            // Reset select boxes nếu có
-            firstRow.querySelectorAll('select').forEach(select => {
-                select.selectedIndex = 0;
-            });
-            
-            // Reset STT
-            const sttCell = firstRow.querySelector('td:first-child');
-            if (sttCell) sttCell.textContent = '1';
-        }
-        
-        // Reset các trường thông tin khác
-        document.getElementById('receiverName').value = '';
-        document.getElementById('exportReason').value = '';
-        
-        // Reset tổng tiền
-        const totalElement = document.getElementById('exportTotalAmount');
-        if (totalElement) {
-            totalElement.textContent = formatCurrency(0);
-        }
-        
-        // Khởi tạo lại dropdown
-        initializeCustomDropdowns();
-    }
-    async function getAPIPhieuXuat() {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        try{
-            const response = await fetch(`/api/phieu-xuat?startDate=${startDate}&endDate=${endDate}`);
-            const data = await response.json();
-            if(data.status){
-                return data.list;
-            }
-            else{
+                showToastDanger(data.error);
                 console.error('Lỗi khi gọi API:', data.error);
-                return []
+                thaoTacVoiBang([]);
             }
         }
         catch (error) {
+            showToastDanger();
             console.error('Lỗi khi gọi API:', error);
-            return []
+            thaoTacVoiBang([]);
         }
-    }
-    function thaoTacVoiBang(list){
+    });
+    
+    // Đặt lại tìm kiếm
+    document.querySelector('.btn-datLaiXuat').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Đặt lại giá trị của các input
+        setDefaultDate();
+        document.getElementById('exportMinAmount').value = '';
+        document.getElementById('exportMaxAmount').value = '';
+        // Lấy lại danh sách phiếu xuất
+        getAPIPhieuXuat().then(data => {
+            listPhieuXuat = data;
+            thaoTacVoiBang(listPhieuXuat);
+        });
+    });
+
+    // Xử lý bảng danh sách phiếu xuất
+    function thaoTacVoiBang(list) {
         const tableBody = document.querySelector('#export .table-danhSach tbody');
-        tableBody.innerHTML = ''; // Xóa nội dung hiện tại của tbody
-        if(list.length > 0){
-            list.forEach((item, index) => {
+        tableBody.innerHTML = ''; // Xóa nội dung hiện tại
+        
+        if (list.length > 0) {
+            list.forEach((phieuXuat, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td>${item.idNhanVien ? item.NhanVien.ten : 'Không có'}</td>
-                    <td>${formatDate(new Date(item.thoiGianXuat))}</td>
-                    <td>${formatCurrency(item.tongTien)}</td>
+                    <td>${phieuXuat.nguoiNhan}</td>
+                    <td>${formatDate(new Date(phieuXuat.thoiGianXuat))}</td>
+                    <td>${formatCurrency(phieuXuat.tongTien)}</td>
                     <td>
-                        <button class="btn btn-sm btn-info btn-xem text-white" 
+                        <button class="btn btn-sm btn-info text-white btn-xem-xuat" 
                             data-bs-toggle="modal"
                             data-bs-target="#viewExportModal"
                             data-bs-tooltip="tooltip"
-                            data-id = "${item.id}"
+                            data-id="${phieuXuat.id}"
                             title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -2626,90 +2584,158 @@ async function xuLyPhieuXuat(){
                 `;
                 tableBody.appendChild(row);
             });
-        }
-        else{
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td colspan="6" class="text-center">Không tìm thấy phiếu xuất kho</td>
-            `;
-            tableBody.appendChild(row);
-        }
-        // Khởi tạo tooltips
-        const tooltips = document.querySelectorAll('[data-bs-tooltip="tooltip"]');
-        tooltips.forEach(tooltip => {
-            new bootstrap.Tooltip(tooltip);
-        });
-        // Gắn sự kiện cho nút xem chi tiết
-        document.querySelectorAll('.btn-xem').forEach(button => {
-            button.addEventListener('click', async function() {
-                const id = this.dataset.id;
-                const phieuXuat = list.find(item => item.id == id);
-                document.getElementById('viewExportReason').innerHTML = phieuXuat.lyDo
-                document.getElementById('viewExportDate').innerHTML = formatDate(new Date(phieuXuat.thoiGianXuat))
-                document.getElementById('viewReceiverName').innerHTML = phieuXuat.idNhanVien ? phieuXuat.NhanVien.ten : 'Không có'
-                document.getElementById('viewTotalAmount').innerHTML = formatCurrency(phieuXuat.tongTien)
-                const listNguyenLieu = await getAPINguyenLieuByIdPhieu(id);
-                renderNguyenLieuPhieuXuat(listNguyenLieu);
+            
+            // Khởi tạo tooltips
+            const tooltips = document.querySelectorAll('[data-bs-tooltip="tooltip"]');
+            tooltips.forEach(tooltip => {
+                new bootstrap.Tooltip(tooltip);
             });
-        });
+            
+            // Xử lý sự kiện khi nhấn nút xem chi tiết
+            document.querySelectorAll('.btn-xem-xuat').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await loadExportDetails(id);
+                });
+            });
+        } else {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">Không tìm thấy phiếu xuất nào</td>
+                </tr>
+            `;
+        }
     }
-    function renderNguyenLieuPhieuXuat(list){
-        const tableBody = document.getElementById('viewExportDetails')
-        tableBody.innerHTML = ''; // Xóa nội dung hiện tại của tbody
-        list.forEach((item, index) => {
+    
+    // Hàm tải chi tiết phiếu xuất
+    async function loadExportDetails(id) {
+        try {
+            showLoading(true);
+            
+            // Tìm phiếu xuất trong danh sách
+            const phieuXuat = listPhieuXuat.find(item => item.id == id);
+            if (!phieuXuat) {
+                throw new Error('Không tìm thấy phiếu xuất');
+            }
+            
+            // Cập nhật thông tin phiếu xuất
+            document.getElementById('viewExportDate').textContent = formatFullDateTime(new Date(phieuXuat.thoiGianXuat));
+            document.getElementById('viewExportReason').textContent = phieuXuat.lyDo || 'Không có';
+            document.getElementById('viewReceiverName').textContent = phieuXuat.nguoiNhan;
+            document.getElementById('viewTotalAmount').textContent = formatCurrency(phieuXuat.tongTien);
+            
+            // Tải chi tiết phiếu xuất
+            const response = await fetch(`/api/chi-tiet-phieu-xuat?id=${id}`);
+            const data = await response.json();
+            
+            if (data.status) {
+                renderExportDetails(data.list);
+            } else {
+                throw new Error(data.error || 'Không thể tải chi tiết phiếu xuất');
+            }
+        } catch (error) {
+            showToastDanger(error.message || 'Đã xảy ra lỗi khi tải chi tiết phiếu xuất');
+            console.error('Error loading export details:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+    
+    // Hiển thị chi tiết phiếu xuất
+    function renderExportDetails(details) {
+        const tableBody = document.getElementById('viewExportDetails');
+        tableBody.innerHTML = '';
+        
+        if (!details || details.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">Không có chi tiết phiếu xuất</td>
+                </tr>
+            `;
+            return;
+        }
+        
+        details.forEach((item, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.ChiTietPhieuNhap.NguyenLieu.ten}</td>
-                <td>${item.ChiTietPhieuNhap.NguyenLieu.donVi}</td>
+                <td class="text-center">${index + 1}</td>
+                <td>${item.NguyenLieu.ten}</td>
+                <td>${item.NguyenLieu.donVi}</td>
                 <td>${item.soLuong}</td>
-                <td>${formatCurrency(item.ChiTietPhieuNhap.gia)}</td>
-                <td>${formatCurrency(item.ChiTietPhieuNhap.gia * item.soLuong)}</td>
+                <td>${formatCurrency(item.gia)}</td>
+                <td>${formatCurrency(item.soLuong * item.gia)}</td>
                 <td>${item.ghiChu || 'N/A'}</td>
             `;
             tableBody.appendChild(row);
-        })
+        });
     }
-    async function getAPINguyenLieuByIdPhieu(id){
-        try{
-            const response = await fetch(`/api/chi-tiet-phieu-xuat?id=${id}`);
-            const data = await response.json();
-            if(data.status){
-                return data.list;
-            }
-            else{
-                console.error('Lỗi khi gọi API:', data.error);
-                return []
-            }
-        }
-        catch (error) {
-            console.error('Lỗi khi gọi API:', error);
-            return []
-        }
-    }
-    function formatDate (date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${day}/${month}/${year}`;
-    };
     
-    function setDefaultDate(){
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-    
+    // Thiết lập giá trị mặc định cho ngày bắt đầu và ngày kết thúc
+    function setDefaultDate() {
+        const startDateInput = document.getElementById('exportStartDate');
+        const endDateInput = document.getElementById('exportEndDate');
+        
         if (startDateInput && endDateInput) {
             const today = new Date();
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(today.getDate() - 7);
-    
+            
             startDateInput.value = sevenDaysAgo.toISOString().split('T')[0];
             endDateInput.value = today.toISOString().split('T')[0];
         }
     }
+    
+    // Hàm lấy danh sách phiếu xuất từ API
+    async function getAPIPhieuXuat() {
+        const startDate = document.getElementById('exportStartDate').value;
+        const endDate = document.getElementById('exportEndDate').value;
+        
+        try {
+            const response = await fetch(`/api/phieu-xuat?startDate=${startDate}&endDate=${endDate}`);
+            const data = await response.json();
+            
+            if (data.status) {
+                return data.list;
+            } else {
+                showToastDanger(data.error);
+                console.error('Lỗi khi gọi API:', data.error);
+                return [];
+            }
+        } catch (error) {
+            showToastDanger();
+            console.error('Lỗi khi gọi API:', error);
+            return [];
+        }
+    }
+    
     // Format số tiền
     function formatCurrency(amount) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+    
+    // Format ngày
+    function formatDate(date) {
+        if (!date || isNaN(date)) return 'N/A';
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+    }
+    
+    // Format ngày giờ đầy đủ
+    function formatFullDateTime(date) {
+        if (!date || isNaN(date)) return 'N/A';
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     }
 }
  // Thêm hàm định dạng ngày kiểu DD/MM/YYYY
@@ -2766,4 +2792,16 @@ function showToastPrimary(content = null) { //showSuccessToastSua
     
     // Hiển thị toast
     toast.show();
+}
+// Hàm helper để reset tất cả các bộ lọc
+function resetAllFilters() {
+    // Reset bộ lọc theo tab hiện tại
+    const activeTab = document.querySelector('.tab-pane.active');
+    if (activeTab.id === 'warehouse') {
+        document.getElementById('warehouseSearchInput').value = '';
+        document.getElementById('warehouseCategoryFilter').value = 'all';
+    } else if (activeTab.id === 'ingredients') {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = 'all';
+    }
 }

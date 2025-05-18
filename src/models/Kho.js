@@ -31,12 +31,7 @@ const Kho = sequelize.define('Kho', {
         field: 'han_su_dung',
         type: DataTypes.DATE,
         allowNull: false
-    },
-    ghiChu: {
-        field: 'ghi_chu',
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
+    }
 }, {
     tableName: 'kho',
     timestamps: false
