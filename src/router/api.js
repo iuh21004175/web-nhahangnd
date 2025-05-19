@@ -110,6 +110,7 @@ router.get('/lay-don-hang', CtrlDonHang.layDonHang);
 router.get('/don-hang-cho-quan-ly', CtrlDonHang.layDonHangQuanLy);
 router.get('/don-hang-chi-tiet', CtrlDonHang.layChiTietDonHang);
 router.put('/huy-don-hang/:id', CtrlDonHang.huyDonHang);
+router.put('/phuc-vu-huy-don-hang', CtrlDonHang.huyDonHangPhucVu);
 router.get('/thoi-gian-bat-dau-co-don-hang', CtrlThongKe.getFirstOrderTime)
 router.get('/thong-ke-tong-quat', CtrlThongKe.thongKeTongQuat)
 router.get('/thong-ke-theo-thoi-gian', CtrlThongKe.thongKeTheoThoiGian)

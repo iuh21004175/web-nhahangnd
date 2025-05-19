@@ -195,3 +195,19 @@ function getFirstMondayOfYear(year) {
   });
 
 });
+
+function showToastDanger(content = null) {//showErrorToast()
+    if (content) {
+        document.querySelector('#dangerToast .toastMessage').textContent = content;
+    }
+    else{
+        document.querySelector('#dangerToast .toastMessage').textContent = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+    }
+    const toastElement = document.getElementById('dangerToast');
+    const toast = new bootstrap.Toast(toastElement, {
+        delay: 3000 // Tự động ẩn sau 3 giây
+    });
+    
+    // Hiển thị toast
+    toast.show();
+}

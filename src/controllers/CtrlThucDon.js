@@ -267,7 +267,7 @@ module.exports = {
           }
     
           // Tạo URL dẫn tới trang chi tiết món ăn
-          const baseUrl = 'https://nhahangcnmiuh.io.vn/'; //Đổi thành domain thật 
+          const baseUrl = 'https://nhahangcnmiuh.io.vn'; //Đổi thành domain thật 
           const qrContent = `${baseUrl}/chi-tiet-mon-an?idMon=${monAnId}`;
     
           // Tạo mã QR từ URL

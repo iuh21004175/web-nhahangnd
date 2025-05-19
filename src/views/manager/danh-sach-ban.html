@@ -45,7 +45,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Quản lý bàn ăn</h4>
                     <!-- <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTableModal">
-                        <i class="fas fa-plus me-2"></i>Thêm bàn
+                        <i class="fas fa-plus me-2"></i>Thêm đặt bàn
                     </button> -->
                 </div>
                 <!-- <div class="table-filters mt-3">
@@ -84,7 +84,7 @@
                 </div>
                 <div class="legend-item">
                     <span class="legend-color bg-warning"></span>
-                    <span class="legend-text">Đã đặt trước</span>
+                    <span class="legend-text">Bảo trì</span>
                 </div>
             </div>
 
@@ -145,7 +145,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thêm bàn mới</h5>
+                    <h5 class="modal-title">Thêm đặt bàn</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="addTableForm">
@@ -155,17 +155,11 @@
                         <!-- Tên bàn -->
                         <div class="mb-3">
                             <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="tableName" required>
-                        </div>
-
-                        <!-- Khu vực -->
-                        <div class="mb-3">
-                            <label class="form-label">Khu vực <span class="text-danger">*</span></label>
-                            <select class="form-select" name="areaId" required>
-                                <option value="">Chọn khu vực</option>
-                                <option value="1">Tầng 1</option>
-                                <option value="2">Tầng 2</option>
-                                <option value="3">Sân vườn</option>
+                            <select class="form-select" name="tableName" required>
+                                <option value="">Chọn tên bàn</option>
+                                <option value="1">Tên 01 - Tầng 1</option>
+                                <option value="2">Tên 01 - Tầng 2</option>
+                                <option value="3">Tên 01 - Tầng 3</option>
                             </select>
                         </div>
 

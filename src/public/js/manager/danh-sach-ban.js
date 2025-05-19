@@ -17,9 +17,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                     statusElement.className = `table-status ${trangThai == 0 ? 'empty' : trangThai == 1 ? 'occupied' : 'maintenance'}`;
                 }
                 if (badgeElement) {
-                    badgeElement.className = `badge ${trangThai == 0 ? 'bg-success' : trangThai == 1 ? 'bg-danger' : 'bg-warning'}`;
-                    badgeElement.textContent = trangThai == 0 ? 'Trống' : trangThai == 1 ? 'Đang sử dụng' : 'Bảo trì';
+                    badgeElement.className = `badge ${
+                        trangThai == 0 ? 'bg-success' :
+                        trangThai == 1 ? 'bg-danger' :
+                        trangThai == 2 ? 'bg-warning' :
+                        trangThai == 3 ? 'bg-primary' : ''
+                    }`;
+
+                    badgeElement.textContent =
+                        trangThai == 0 ? 'Trống' :
+                        trangThai == 1 ? 'Đang sử dụng' :
+                        trangThai == 2 ? 'Bảo trì' :
+                        trangThai == 3 ? 'Đã đặt trước' :
+                        '';
                 }
+
             }
         });
     });
@@ -99,15 +111,21 @@ function thaoTacVoiBan(list){
         banList.insertAdjacentHTML('beforeend', card);
     })
 
-    // 
     const tableCards = document.querySelectorAll('.table-card');
     tableCards.forEach(card => {
         card.addEventListener('click', function() {
             const idBan = this.dataset.idBan;
+            const statusElement = this.querySelector('.table-status');
+            if (statusElement.classList.contains('maintenance')) {
+                alert('Bàn đang trong trạng thái bảo trì, không thể chọn!');
+                return;
+            }
+            // Nếu không phải bảo trì thì cho phép chuyển trang
             window.location.href = `/manager/ghi-don-hang?idBan=${idBan}`;
         });
     });
 }
+
 
 
 // Hàm lấy khu vực

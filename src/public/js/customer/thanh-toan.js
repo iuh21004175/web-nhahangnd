@@ -363,6 +363,7 @@ async function capNhatChiPhiVanChuyen(address){
             document.getElementById('serviceCharge').innerText = parseInt(phiVanChuyen).toLocaleString('vi-VN') + '₫';
             const tongTien = document.getElementById('subTotal').innerText.replace(/\./g, '').replace('₫', '').trim();
             document.getElementById('totalAmount').innerText = (parseInt(tongTien) + parseInt(phiVanChuyen)).toLocaleString('vi-VN') + '₫';
+            
         }
     } catch (error) {
         console.error('Lỗi khi cập nhật phí vận chuyển:', error);

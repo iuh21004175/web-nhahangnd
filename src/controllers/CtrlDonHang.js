@@ -4,6 +4,7 @@ const MonAn = require('../models/MonAn');
 const LichSuChiTiet = require('../models/LichSuChiTiet');
 const LichSu = require('../models/LichSu');
 const NhanVien = require('../models/NhanVien');
+const Ban = require('../models/Ban');
 const moment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
 const KhachHang = require('../models/KhachHang');
@@ -894,4 +895,45 @@ module.exports = {
             return res.status(500).json({ status: false, error: 'Lỗi server' });
         }
     },
+    huyDonHangPhucVu: async (req, res) => {
+        try {
+            const { id } = req.query;
+            console.log("ID nhận được:", id);
+            if (!id) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Thiếu thông tin ID đơn hàng'
+                });
+            }
+            const donHang = await DonHang.findOne({ where: { id } });
+            if (!donHang) {
+                return res.status(404).json({ status: false, message: 'Không tìm thấy đơn hàng' });
+            }
+
+            // Chỉ cho phép hủy đơn đang ở trạng thái chưa xử lý (1 hoặc 2)
+            if (![7].includes(donHang.trangThai)) {
+                return res.status(400).json({ status: false, error: 'Chỉ có thể hủy đơn hàng chưa xử lý' });
+            }
+
+            // Cập nhật trạng thái đơn hàng thành hủy (0)
+            donHang.trangThai = 0;
+            await donHang.save();
+            if (donHang.idBan) {
+                await Ban.update(
+                    { trangThai: 0 }, 
+                    { where: { id: donHang.idBan } }
+                );
+            }
+
+            return res.json({ status: true, message: 'Đơn hàng đã được hủy' });
+        } catch (error) {
+            console.error('Lỗi khi hủy đơn hàng:', error);
+            return res.status(500).json({
+                status: false,
+                message: 'Đã xảy ra lỗi khi hủy đơn hàng',
+                error: error.message
+            });
+        }
+    }
+
 };
