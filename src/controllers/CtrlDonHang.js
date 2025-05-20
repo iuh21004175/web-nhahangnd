@@ -67,6 +67,7 @@ module.exports = {
                         thoiGianCapNhat: moment().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
                         ghiChu: ''
                     });
+                    
                     // Nếu đơn hàng thanh toán bằng tiền mặt
                     if(parseInt(thanhToan) == 0 ){
                         req.redis.publish('don-hang-tao-mon', JSON.stringify({ // Phát thông điệp đến kênh đơn hàng tạo món
@@ -240,7 +241,6 @@ module.exports = {
                     if (!idMonAn) {
                         return res.status(400).json({ status: false, error: 'ID món ăn không hợp lệ' });
                     }
-                    console.log('ID món ăn:', idMonAn);
                     const chiTiet = await ChiTietDonHang.create({
                         idDonHang: donHang.id,
                         idMonAn,
@@ -288,10 +288,10 @@ module.exports = {
             }
     
             if (successOrders.length > 0) {
-                successOrders.forEach(order => {
-                    console.log(`Đơn hàng ${order.id} đã thanh toán thành công.`);
+                // successOrders.forEach(order => {
+                //     console.log(`Đơn hàng ${order.id} đã thanh toán thành công.`);
                     
-                });
+                // });
                 res.json(successOrders); // Trả về danh sách đơn hàng
             } else {
                 console.log('Không có đơn hàng nào thanh toán thành công.');
@@ -343,7 +343,7 @@ module.exports = {
         try {
             const { batDau, ketThuc, khachHang, trangThai, thanhToan, hinhThuc, id } = req.query;
             
-            console.log('Query params:', { batDau, ketThuc, khachHang, trangThai, thanhToan, hinhThuc, id });
+            // console.log('Query params:', { batDau, ketThuc, khachHang, trangThai, thanhToan, hinhThuc, id });
             
             // Xây dựng điều kiện tìm kiếm cho đơn hàng
             const whereCondition = {};
@@ -551,7 +551,6 @@ module.exports = {
             }
     
             const plainDonHang = donHang.toJSON(); 
-            console.log('Đơn hàng:', plainDonHang);
     
             return res.json({ status: true, obj: plainDonHang });
         } catch (error) {

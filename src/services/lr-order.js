@@ -1,6 +1,5 @@
 const DonHang = require('../models/DonHang');
 const ChiTietDonHang = require('../models/ChiTietDonHang');
-const khachHang = require('../models/KhachHang');
 const MonAn = require('../models/MonAn');
 const Transaction = require('../models/Transaction');
 async function xulyWebhook(data, io) {
@@ -51,7 +50,7 @@ async function xulyWebhook(data, io) {
                 }
             });
             chiTietDonHang.forEach(async (item) => {
-                guiYeuCauTaoMon(orderId, io)
+                guiYeuCauTaoMon(item.id, io)
             })
             order.thanhToan = 1;
             order.trangThai = 2;
@@ -79,6 +78,8 @@ async function guiYeuCauTaoMon(id, io) {
             }
         ]
     });
+    console.log("id", id);
+    console.log("Gửi yêu cầu tạo món:", chiTiet);
     io.emit('don-hang-yeu-cau-tao-mon', {
         chiTiet: chiTiet.toJSON()
     });

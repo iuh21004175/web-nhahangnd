@@ -63,10 +63,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/service', serviceRouter); // Đường dẫn cho router service
 app.use('/api', apiRouter);
 app.use('/manager', manageRouter);
 app.use('/auth', authRouter); // Đường dẫn cho router auth
-app.use('/service', serviceRouter); // Đường dẫn cho router service
 app.use('/', customerRouter); // Đường dẫn cho router khách hàng
 
 app.use((req, res) => {
