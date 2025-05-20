@@ -61,7 +61,8 @@ const DonHang = sequelize.define('DonHang', {
     phiVanChuyen: {
         field: 'phi_van_chuyen',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false,
+        defaultValue: 0
     },
     thanhToan: {
         field: 'thanh_toan',

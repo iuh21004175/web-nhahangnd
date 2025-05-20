@@ -41,7 +41,7 @@ module.exports = {
         if (!user || !user.id) {
             return res.status(401).json({ status: false, error: 'Chưa đăng nhập hoặc token hết hạn' });
         }
-        const { hinhThuc, diaChi, trangThai, tongTien, thanhToan, gioHang, phiVanChuyen, soDienThoaiNhan } = req.body;
+        const { hinhThuc, diaChi, trangThai, tongTien, thanhToan, gioHang, soDienThoaiNhan } = req.body;
 
         try {
             const thoiGianGhi = moment().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
@@ -51,7 +51,6 @@ module.exports = {
                 hinhThuc,
                 diaChi: JSON.stringify(diaChi),
                 trangThai,
-                phiVanChuyen,
                 soDienThoaiNhan,
                 tongTien,
                 thanhToan
@@ -801,97 +800,6 @@ module.exports = {
             return res.json({ status: true, message: 'Cập nhật thành công'});
         } catch (error) {
             console.error('Lỗi khi cập nhật món:', error);
-            return res.status(500).json({ status: false, error: 'Lỗi server' });
-        }
-    },
-    layPhiVanChuyen: async (req, res) => { // Lấy phí vận chuyển
-        const { diaChi, tongTien, gioHang } = req.body;
-        const khoiLuongTB = 200; // Trọng lượng trung bình của một món ăn (đơn vị gram)
-        const tongPhan = gioHang.reduce((total, item) => {
-            return total + item.soLuong;
-        }, 0)
-        try {
-            if (!diaChi || !tongTien || !tongPhan) {
-                return res.status(400).json({ status: false, error: 'Thiếu thông tin địa chỉ hoặc hình thức giao hàng' });
-            }
-            const listQuanHuyen = await axios.post(
-                'https://online-gateway.ghn.vn/shiip/public-api/master-data/district', 
-                {
-                    province_id: 202 // ID tỉnh Hồ Chí Minh
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Token': process.env.TOKEN_GIAO_HANG_NHANH,
-                    }
-                }
-            )
-            const tuQuan = listQuanHuyen.data.data.find(item => item.NameExtension.includes('Quận Gò Vấp'));
-            const denQuan = listQuanHuyen.data.data.find(item => item.NameExtension.includes(diaChi.level_3));
-            const listPhuongXaTuQuan = await axios.post(
-                `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`, 
-                {
-                    district_id: tuQuan.DistrictID
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Token': process.env.TOKEN_GIAO_HANG_NHANH,
-                    }
-                }
-            )
-            const listPhuongXaDenQuan = await axios.post(
-                `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`, 
-                {
-                    district_id: denQuan.DistrictID
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Token': process.env.TOKEN_GIAO_HANG_NHANH,
-                    }
-                }
-            );
-            const tuPhuongXa = listPhuongXaTuQuan.data.data.find(item => item.NameExtension.includes("Phường 4"));
-            const denPhuongXa = listPhuongXaDenQuan.data.data.find(item => item.NameExtension.includes(diaChi.level_4));
-            if (!tuQuan || !denQuan || !tuPhuongXa || !denPhuongXa) {
-                console.error('Không tìm thấy thông tin địa chỉ');
-                return res.status(400).json({ status: false, error: 'Không tìm thấy thông tin địa chỉ' });
-            }
-            const response = await axios.post(
-                    'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
-                    {
-                        service_type_id: 2,
-                        from_district_id: tuQuan.DistrictID,
-                        from_ward_code: tuPhuongXa.WardCode,
-                        to_district_id: denQuan.DistrictID,
-                        to_ward_code: denPhuongXa.WardCode,
-                        length: 35,
-                        width: 20,
-                        height: 25 * tongPhan,
-                        weight: (khoiLuongTB * tongPhan) > 20000 ? 19000 : khoiLuongTB * tongPhan, // Thêm trọng lượng (đơn vị gram)
-                        insurance_value: parseInt(tongTien),
-                        cod_value: parseInt(tongTien),
-                        coupon: null,
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Token': process.env.TOKEN_GIAO_HANG_NHANH,
-                            'ShopId': process.env.ID_SHOP,
-                        },
-                    }
-                );
-                if (response.data.code === 200) {
-                    const phiVanChuyen = response.data.data.total;
-                    return res.json({ status: true, phiVanChuyen });
-                } else {
-                    console.error('Lỗi khi lấy phí vận chuyển:', response.data.message);
-                    return res.status(400).json({ status: false, error: 'Lỗi khi lấy phí vận chuyển' });
-                }
-            
-        } catch (error) {
-            console.error('Lỗi khi lấy phí vận chuyển:', error);
             return res.status(500).json({ status: false, error: 'Lỗi server' });
         }
     },

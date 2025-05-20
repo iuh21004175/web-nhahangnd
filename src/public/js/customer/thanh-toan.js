@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         const trangThai = 1; // Đặt thành công
         const tongTien = document.getElementById('totalAmount').innerText.replace(/\./g, '').replace('₫', '').trim();
         const hinhThuc = 1; // Đặt hàng online
-        const phiVanChuyen = document.getElementById('serviceCharge').innerText.replace(/\./g, '').replace('₫', '').trim();
 
         // Kiểm tra các trường bắt buộc
         if (!fullName || !phone || !profileStreet.value.trim()) {
@@ -150,8 +149,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         hinhThuc: hinhThuc,
                         diaChi: diaChi,
                         trangThai,
-                        tongTien: parseInt(tongTien) - parseInt(phiVanChuyen),
-                        phiVanChuyen,
+                        tongTien: parseInt(tongTien),
                         soDienThoaiNhan: phone,
                         thanhToan: paymentMethod,
                         gioHang
@@ -184,8 +182,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         hinhThuc: hinhThuc,
                         diaChi: diaChi,
                         trangThai: trangThai,
-                        tongTien: parseInt(tongTien) - parseInt(phiVanChuyen),
-                        phiVanChuyen,
+                        tongTien: parseInt(tongTien) ,
                         soDienThoaiNhan: phone,
                         thanhToan: paymentMethod,
                         gioHang
@@ -328,47 +325,12 @@ function showStreetDropdown(input, dropdown, items) {
             input.dataset.level3 = item.level_3;
             input.dataset.level2 = item.level_2;
             dropdown.classList.remove('show');
-
-            capNhatChiPhiVanChuyen(item);
-
         };
             
         dropdown.appendChild(div);
     });
         
     dropdown.classList.add('show');
-}
-async function capNhatChiPhiVanChuyen(address){
-    const gioHang = JSON.parse(localStorage.getItem('gioHang')) || [];
-    items = gioHang.map(item => ({
-        ten: item.name,
-        soLuong: item.quantity,
-        gia: item.price,
-    }))
-    try {
-        const response = await fetch('/api/lay-phi-van-chuyen', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                diaChi: address,
-                tongTien: document.getElementById('subTotal').innerText.replace(/\./g, '').replace('₫', '').trim(),
-                gioHang: items
-            })
-        });
-        const data = await response.json();
-        if(data.status){
-            const phiVanChuyen = data.phiVanChuyen;
-            document.getElementById('serviceCharge').innerText = parseInt(phiVanChuyen).toLocaleString('vi-VN') + '₫';
-            const tongTien = document.getElementById('subTotal').innerText.replace(/\./g, '').replace('₫', '').trim();
-            document.getElementById('totalAmount').innerText = (parseInt(tongTien) + parseInt(phiVanChuyen)).toLocaleString('vi-VN') + '₫';
-            
-        }
-    } catch (error) {
-        console.error('Lỗi khi cập nhật phí vận chuyển:', error);
-        
-    }
 }
 function thaoTacThongTinKhachHang(khachHang) {
     document.getElementById('fullNameTT').value = khachHang?.ten || '';
