@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/sepay/webhook', (req, res) => {
-    res.send('Xin chào bạn, đây là webhook của SEPAY!');
+router.get('/sepay/webhook', async (req, res) => {
+    try {
+        // Kiểm tra kết nối Redis bằng lệnh PING
+        const pong = await req.redis.ping();
+        res.send(`Xin chào bạn, đây là webhook của SEPAY! Redis status: ${pong}`);
+    } catch (err) {
+        res.status(500).send('Không thể kết nối Redis: ' + err.message);
+    }
 });
 router.post('/sepay/webhook', async (req, res) => {
     const data = req.body;
@@ -17,7 +23,7 @@ router.post('/sepay/webhook', async (req, res) => {
         content, referenceCode, description
         } = data;
         // Publish lên Redis để xử lý tiếp
-        await req.redis.publish('sepay-gui-webhook', JSON.stringify(data));
+        req.redis.publish('sepay-gui-webhook', JSON.stringify(data));
 
         const match = content?.match(/DH(\d+)/);
         const orderId = match ? parseInt(match[1]) : null;

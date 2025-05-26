@@ -139,7 +139,7 @@ module.exports = {
                     const { idNguyenLieu, dinhLuong, donVi } = nguyenLieu[i];
                     await ChiTietMonAn.create({ idMonAn: monAn.id, idNguyenLieu, dinhLuong, donVi });
                 }
-                monAn - monAn.toJSON();
+                monAn = monAn.toJSON();
                 // Thay đổi thuộc tính của đối tượng monAn
                 monAn.DanhMucMonAn = DanhMucMonAn.findOne({ 
                     where: { id: monAn.idDanhMuc }, 

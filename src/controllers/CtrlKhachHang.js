@@ -47,17 +47,17 @@ const CtrlKhachHang = {
                 httpOnly: true,
                 maxAge: luuDangNhap ?  1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60, // 30 ngày hoặc 1 giờ
             });
-            const tokenIDCustomer = req.cookies.ChatIDCustomer;
-            if (tokenIDCustomer) {
+            // const tokenIDCustomer = req.cookies.ChatIDCustomer;
+            // if (tokenIDCustomer) {
                 
-                const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
-                const khachHangIDCustomer = await KhachHang.findOne({
-                    where: { id: decodedIDCustomer.id }
-                });
-                if (khachHangIDCustomer) {
-                    await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
-                }
-            }
+            //     const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
+            //     const khachHangIDCustomer = await KhachHang.findOne({
+            //         where: { id: decodedIDCustomer.id }
+            //     });
+            //     if (khachHangIDCustomer) {
+            //         await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
+            //     }
+            // }
             // Xóa cookie ChatIDCustomer nếu có
             res.clearCookie('ChatIDCustomer');
             // Gọi hàm đăng nhập từ CtrlTaiKhoan
@@ -71,6 +71,7 @@ const CtrlKhachHang = {
         const { ten, gioiTinh, ngaySinh, soDienThoai, tenDangNhap, matKhau } = req.body;
         try {
             const tokenIDCustomer = req.cookies.ChatIDCustomer;
+            let khachHang = null;
             if (tokenIDCustomer) {
                 const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
                 const khachHangIDCustomer = await KhachHang.findOne({
@@ -85,11 +86,12 @@ const CtrlKhachHang = {
                     khachHangIDCustomer.matKhau = crypto.createHash('md5').update(matKhau).digest('hex');
                     khachHangIDCustomer.soDaXacThuc = 1; // Đánh dấu số điện thoại đã được xác thực
                     await khachHangIDCustomer.save()
+                    khachHang = await khachHangIDCustomer.reload(); // Tải lại thông tin khách hàng từ cơ sở dữ liệu
                 }
             }
             else {
                 // Tạo mới khách hàng
-                const khachHang = await KhachHang.create({
+                khachHang = await KhachHang.create({
                     ten,
                     gioiTinh: parseInt(gioiTinh), // Chuyển đổi string sang number
                     ngaySinh,
@@ -274,7 +276,6 @@ const CtrlKhachHang = {
             const khachHang = await KhachHang.findOne({
                 where: { id: decoded.id }
             });
-    
             return res.json({ status: true, khachHang });
         } catch (error) {
             console.error(error);
@@ -549,6 +550,7 @@ const CtrlKhachHang = {
                             khachHangIDCustomer.providerId = user.id
                             khachHangIDCustomer.hinhAnh = user.picture
                             await khachHangIDCustomer.save()
+                            khachHang = khachHangIDCustomer
                         }
                     }
                     else{
@@ -579,43 +581,41 @@ const CtrlKhachHang = {
                         tieuDe: `${user.displayName}-#${khachHang.id}`,
                     });
                 }
-                else{
-                    // Tạo token cho khách hàng
-                    const token = jwt.sign({ 
-                        id: khachHang.id, 
-                        ten: khachHang.ten, 
-                        luuDangNhap: true, 
-                        hinhAnh: khachHang.hinhAnh,
-                        provider: 'google', // Lưu provider là google
-                        accessToken: user.accessToken // Lưu accessToken nếu cần thiết
-                    }, process.env.JWT_SECRET, { expiresIn:  '30d' });
-                    // Lưu token vào cookie
-                    res.cookie('AuthTokenCustomer', token, {
-                        httpOnly: true,
-                        maxAge:  1000 * 60 * 60 * 24 * 30  // 30 ngày hoặc 1 giờ
-                    });
-                    res.locals.user = {
-                        id: khachHang.id,
-                        ten: khachHang.ten,
-                        luuDangNhap: true, // Mặc định là true khi đăng nhập bằng Google
-                        hinhAnh: khachHang.hinhAnh,
-                        provider: 'google', // Lưu provider là google
-                        accessToken: user.accessToken // Lưu accessToken nếu cần thiết
-                    }
-                    const tokenIDCustomer = req.cookies.ChatIDCustomer;
-                    if (tokenIDCustomer) {
-                        
-                        const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
-                        const khachHangIDCustomer = await KhachHang.findOne({
-                            where: { id: decodedIDCustomer.id }
-                        });
-                        if (khachHangIDCustomer) {
-                            await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
-                        }
-                    }
-                    // Xóa cookie ChatIDCustomer nếu có
-                    res.clearCookie('ChatIDCustomer');
+                // Tạo token cho khách hàng
+                const token = jwt.sign({ 
+                    id: khachHang.id, 
+                    ten: khachHang.ten, 
+                    luuDangNhap: true, 
+                    hinhAnh: khachHang.hinhAnh,
+                    provider: 'google', // Lưu provider là google
+                    accessToken: user.accessToken // Lưu accessToken nếu cần thiết
+                }, process.env.JWT_SECRET, { expiresIn:  '30d' });
+                // Lưu token vào cookie
+                res.cookie('AuthTokenCustomer', token, {
+                    httpOnly: true,
+                    maxAge:  1000 * 60 * 60 * 24 * 30  // 30 ngày hoặc 1 giờ
+                });
+                res.locals.user = {
+                    id: khachHang.id,
+                    ten: khachHang.ten,
+                    luuDangNhap: true, // Mặc định là true khi đăng nhập bằng Google
+                    hinhAnh: khachHang.hinhAnh,
+                    provider: 'google', // Lưu provider là google
+                    accessToken: user.accessToken // Lưu accessToken nếu cần thiết
                 }
+                const tokenIDCustomer = req.cookies.ChatIDCustomer;
+                if (tokenIDCustomer) {
+                        
+                    const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
+                    const khachHangIDCustomer = await KhachHang.findOne({
+                        where: { id: decodedIDCustomer.id }
+                    });
+                    if (khachHangIDCustomer) {
+                        await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
+                    }
+                }
+                    // Xóa cookie ChatIDCustomer nếu có
+                res.clearCookie('ChatIDCustomer');
                 // Chuyển hướng người dùng đến trang mong muốn sau khi đăng nhập thành công
                 return res.redirect('/'); // Chuyển hướng về trang chủ hoặc trang mong muốn khác
             });
@@ -643,8 +643,6 @@ const CtrlKhachHang = {
                     console.error('Lỗi khi đăng nhập:', err);
                     return res.redirect('/');
                 }
-    
-                // Kiểm tra và lưu vào CSDL
                 let khachHang = await KhachHang.findOne({
                     where: {
                         providerId: user.id,
@@ -666,7 +664,9 @@ const CtrlKhachHang = {
                             khachHangIDCustomer.providerId = user.id
                             khachHangIDCustomer.hinhAnh = user.picture
                             await khachHangIDCustomer.save()
+                            khachHang = khachHangIDCustomer
                         }
+
                     }
                     else{
                         khachHang = await KhachHang.create({
@@ -685,45 +685,43 @@ const CtrlKhachHang = {
                     
                    
                 }
-                else{
-                    res.locals.user = {
-                        id: khachHang.id,
-                        ten: khachHang.ten,
-                        luuDangNhap: true,
-                        hinhAnh: khachHang.hinhAnh,
-                        provider: 'facebook', // Lưu provider là facebook
-                        accessToken: user.accessToken // Lưu accessToken nếu cần thiết
-                    };
+                res.locals.user = {
+                    id: khachHang.id,
+                    ten: khachHang.ten,
+                    luuDangNhap: true,
+                    hinhAnh: khachHang.hinhAnh,
+                    provider: 'facebook', // Lưu provider là facebook
+                    accessToken: user.accessToken // Lưu accessToken nếu cần thiết
+                };
         
-                    const token = jwt.sign({
-                        id: khachHang.id,
-                        ten: khachHang.ten,
-                        luuDangNhap: true,
-                        hinhAnh: khachHang.hinhAnh,
-                        provider: 'facebook', // Lưu provider là facebook
-                        accessToken: user.accessToken // Lưu accessToken nếu cần thiết
-                    }, process.env.JWT_SECRET, {
-                        expiresIn: '30d'
-                    });
+                const token = jwt.sign({
+                    id: khachHang.id,
+                    ten: khachHang.ten,
+                    luuDangNhap: true,
+                    hinhAnh: khachHang.hinhAnh,
+                    provider: 'facebook', // Lưu provider là facebook
+                    accessToken: user.accessToken // Lưu accessToken nếu cần thiết
+                }, process.env.JWT_SECRET, {
+                    expiresIn: '30d'
+                });
         
-                    res.cookie('AuthTokenCustomer', token, {
-                        httpOnly: true,
-                        maxAge: 1000 * 60 * 60 * 24 * 30
-                    });
-                    const tokenIDCustomer = req.cookies.ChatIDCustomer;
-                    if (tokenIDCustomer) {
+                res.cookie('AuthTokenCustomer', token, {
+                    httpOnly: true,
+                    maxAge: 1000 * 60 * 60 * 24 * 30
+                });
+                const tokenIDCustomer = req.cookies.ChatIDCustomer;
+                if (tokenIDCustomer) {
                         
-                        const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
-                        const khachHangIDCustomer = await KhachHang.findOne({
-                            where: { id: decodedIDCustomer.id }
-                        });
-                        if (khachHangIDCustomer) {
-                            await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
-                        }
+                    const decodedIDCustomer = jwt.verify(tokenIDCustomer, process.env.JWT_SECRET);
+                    const khachHangIDCustomer = await KhachHang.findOne({
+                        where: { id: decodedIDCustomer.id }
+                     });
+                    if (khachHangIDCustomer) {
+                        await khachHangIDCustomer.destroy(); // Xóa khách hàng vãng lai
                     }
-                    // Xóa cookie ChatIDCustomer nếu có
-                    res.clearCookie('ChatIDCustomer');
                 }
+                    // Xóa cookie ChatIDCustomer nếu có
+                res.clearCookie('ChatIDCustomer');
                 return res.redirect('/');
             });
         })(req, res, next);

@@ -43,15 +43,17 @@ async function xulyWebhook(data, io) {
             console.log("Không tìm thấy đơn hàng hoặc đơn hàng đã được thanh toán.");
             return;
         } else {
-            // Gủi yều yêu cầu tạo món 
-            const chiTietDonHang = await ChiTietDonHang.findAll({
-                where: {
-                    idDonHang: orderId
-                }
-            });
-            chiTietDonHang.forEach(async (item) => {
-                guiYeuCauTaoMon(item.id, io)
-            })
+            // Gủi yều yêu cầu tạo món cho đơn hàng trực tuyến
+            if(order.hinhThuc == 1){
+                const chiTietDonHang = await ChiTietDonHang.findAll({
+                    where: {
+                        idDonHang: orderId
+                    }
+                });
+                chiTietDonHang.forEach(async (item) => {
+                    guiYeuCauTaoMon(item.id, io)
+                })
+            }
             order.thanhToan = 1;
             order.trangThai = 2;
             await order.save();

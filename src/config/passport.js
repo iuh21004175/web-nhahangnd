@@ -46,7 +46,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
   clientID: process.env.FACEBOOK_CLIENT_ID,
   clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-  callbackURL: "/auth/facebook/callback",
+  callbackURL: process.env.FACEBOOK_CALLBACK_URL || "/auth/facebook/callback",
   profileFields: ['id', 'displayName', 'photos'] // lấy dữ liệu cần
 }, (accessToken, refreshToken, profile, done) =>{
 

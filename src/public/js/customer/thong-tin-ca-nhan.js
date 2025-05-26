@@ -701,6 +701,7 @@ async function getAPIThongTinKhachHang(){
         const response = await fetch('/api/lay-thong-tin-khach-hang');
         const data = await response.json();
         if(data.status){
+            console.log('Thông tin khách hàng:', data);
             return data.khachHang;
         }
         else{

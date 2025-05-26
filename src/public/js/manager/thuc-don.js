@@ -141,6 +141,12 @@ async function xuLyMonAn(){
     let listDanhMucMonAn = await getAPIDanhMucMonAn();
     let listMonAn = await getAPIMonAn();
     thaoTacVoiBang(listMonAn);
+    document.getElementById('categoryFilter').innerHTML = ''; // Xóa nội dung hiện tại của categoryFilter
+    document.getElementById('addFoodCategory').innerHTML = ''; // Xóa nội dung hiện tại của addFoodCategory
+    document.getElementById('editFoodCategory').innerHTML = ''; // Xóa nội dung hiện tại của editFoodCategory
+    document.getElementById('addFoodCategory').innerHTML = '<option value="all">Tất cả danh mục</option>';
+    document.getElementById('editFoodCategory').innerHTML = '<option value="all">Tất cả danh mục</option>';
+    document.getElementById('categoryFilter').innerHTML = '<option value="all">Tất cả danh mục</option>';
     if(listDanhMucMonAn.length > 0){
         listDanhMucMonAn.forEach(function(item) {
             const option1 = document.createElement('option');
@@ -324,7 +330,7 @@ async function xuLyMonAn(){
                 const data = await response.json();
                 if (data.status) {
                     showToastSuccess("Thêm món ăn thành công!");
-                    listMonAn.unshift(data.obj);
+                    listMonAn = await getAPIMonAn();
                     // Reset form sau khi thêm thành công
                     addFoodForm.reset();
                     // Xóa tất cả hàng nguyên liệu
