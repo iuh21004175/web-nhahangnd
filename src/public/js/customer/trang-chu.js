@@ -62,7 +62,18 @@ function thaoTacThucDon(list) {
                 if (value > 1) input.value = value - 1;
             });
         });
-
+        document.querySelectorAll('.so-luong').forEach(function(input) {
+            input.addEventListener('input', function () {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) {
+                    this.value = 1;
+                    alert("Số lượng phải từ 1 đến 20");
+                } else if (value > 20) {
+                    this.value = 20;
+                    alert("Số lượng tối đa là 20");
+                }
+            });
+        });
         const monCard = document.querySelectorAll('.table-card');
         monCard.forEach(card => {
             card.addEventListener('click', function() {

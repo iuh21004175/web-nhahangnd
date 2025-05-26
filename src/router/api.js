@@ -145,6 +145,6 @@ router.put('/mon-dang-cho/nhan-mon', CtrlDonHang.nhanMon);
 router.get('/mon-dang-che-bien', CtrlDonHang.layMonDangCheBien);
 router.put('/mon-dang-che-bien/hoan-thanh', CtrlDonHang.hoanThanhMon);
 router.put('/mon-da-gui', CtrlDonHang.guiMon);
-router.post('/lay-phi-van-chuyen', CtrlDonHang.layPhiVanChuyen);
+
 router.post('/doi-mat-khau', CtrlTaiKhoan.doiMatKhau)
 module.exports = router;
