@@ -36,11 +36,6 @@ document.addEventListener('DOMContentLoaded',async function () {
         if (soTienDiv) {
             soTienDiv.textContent = tongTien.toLocaleString('vi-VN') + 'đ';
         }
-
-        // Lấy id đơn hàng từ URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const orderId = urlParams.get('id'); // Lấy giá trị của tham số 'id' trong URL
-
         // Kiểm tra xem có id không, nếu không thì dùng mặc định '12345'
         const orderDescription = orderId ? `DH${orderId}` : 'DH12345';
 
