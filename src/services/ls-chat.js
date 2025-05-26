@@ -28,7 +28,7 @@ const chatService = (socket,redis) => {
             hoiThoai.thoiGianGuiCuoi = thoiGianGui;
             hoiThoai.nguoiGuiCuoi = 1;
             await hoiThoai.save();
-            await TinNhan.create({
+            const tinNhan = await TinNhan.create({
                 idHoiThoai: parseInt(idKhachHang),
                 nguoiGui: 1,
                 noiDung: noiDung,
@@ -44,7 +44,8 @@ const chatService = (socket,redis) => {
                 // Gửi trả lời tự động
                 const autoReply = "Xin chào, cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi đã nhận được tin nhắn của bạn và sẽ sớm trả lời.";
                 // Đảm bảo thoiGianGui của autoReply luôn sau thoiGianGui của khách hàng
-                const autoReplyTime = new Date(Math.max(new Date(thoiGianGui).getTime() + 1, Date.now()));
+                const autoReplyTime = new Date(Math.max(new Date(tinNhan.thoiGianGui).getTime() + 1000, Date.now()));
+
                 await TinNhan.create({
                     idHoiThoai: parseInt(idKhachHang),
                     nguoiGui: 0, // 0 là nhà hàng
