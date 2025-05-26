@@ -38,21 +38,23 @@ const chatService = (socket,redis) => {
             // Kiểm tra nếu là tin nhắn đầu tiên
             const soTinNhan = await TinNhan.count({ where: { idHoiThoai: idKhachHang } });
             if (soTinNhan === 1) {
+                 // Gửi tin nhắn đến Redis
+                redis.publish("tin-nhan-khach-hang", JSON.stringify(data));
+                // Gửi tin nhắn tự động về cho khách hàng
                 // Gửi trả lời tự động
                 const autoReply = "Xin chào, cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi đã nhận được tin nhắn của bạn và sẽ sớm trả lời.";
+                // Đảm bảo thoiGianGui của autoReply luôn sau thoiGianGui của khách hàng
+                const autoReplyTime = new Date(Math.max(new Date(thoiGianGui).getTime() + 1, Date.now()));
                 await TinNhan.create({
                     idHoiThoai: parseInt(idKhachHang),
                     nguoiGui: 0, // 0 là nhà hàng
                     noiDung: autoReply,
-                    thoiGianGui: new Date()
+                    thoiGianGui: autoReplyTime
                 });
-                 // Gửi tin nhắn đến Redis
-                redis.publish("tin-nhan-khach-hang", JSON.stringify(data));
-                // Gửi tin nhắn tự động về cho khách hàng
                 redis.publish("tin-nhan-nha-hang", JSON.stringify({
                     idKhachHang,
                     noiDung: autoReply,
-                    thoiGianGui: new Date(),
+                    thoiGianGui: autoReplyTime,
                     socketId: null
                 }));
             }
