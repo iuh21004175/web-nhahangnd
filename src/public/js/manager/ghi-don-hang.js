@@ -523,6 +523,22 @@ function themVaoGioHang(id, name, price, img) {
         if (input.value > 1) input.value = parseInt(input.value) - 1;
         updateTotal(); // Cập nhật lại tổng giá trị
     });
+
+    const inputSoLuong = orderItem.querySelector('.so-luong');
+        inputSoLuong.addEventListener('change', function () {
+            let value = parseInt(this.value);
+            
+            if (isNaN(value) || value < 1) {
+                alert('Số lượng phải lớn hơn 0!');
+                this.value = 1;
+            } else if (value > 20) {
+                alert('Không được đặt quá 20 món cho mỗi loại!');
+                this.value = 20;
+            }
+
+            updateTotal();
+        });
+
 }
 
 function updateTotal() {

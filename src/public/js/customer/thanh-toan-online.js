@@ -22,14 +22,14 @@ document.addEventListener('DOMContentLoaded',async function () {
     let cart = JSON.parse(localStorage.getItem('gioHang')) || [];
     if (cart.length > 0) {
         let tongGia = 0;
-        donHang = await getAPILayGiaDonHang(orderId);
-        const phiDichVu = donHang.phiVanChuyen;
+        //donHang = await getAPILayGiaDonHang(orderId);
+        // const phiDichVu = donHang.phiVanChuyen;
 
         cart.forEach(item => {
             tongGia += item.price * item.quantity;
         });
 
-        let tongTien = tongGia + phiDichVu;
+        let tongTien = tongGia;
 
         // Cập nhật nội dung số tiền
         const soTienDiv = document.getElementById('soTien');
